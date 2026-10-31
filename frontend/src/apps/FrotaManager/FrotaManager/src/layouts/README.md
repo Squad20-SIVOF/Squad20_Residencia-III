@@ -1,0 +1,1 @@
+O layout compartilhado será extraído para cá quando houver mais de uma tela/app usando a mesma casca. Atualmente, a página de veículos ainda controla a navegação e o shell para preservar o comportamento original.

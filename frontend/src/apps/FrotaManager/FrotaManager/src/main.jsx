@@ -1,0 +1,1 @@
+import './entries/gestor.jsx';

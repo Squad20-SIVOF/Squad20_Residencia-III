@@ -1,0 +1,1 @@
+Componentes exclusivos do módulo Veículos devem ficar nesta pasta. A implementação atual ainda contém subcomponentes locais em VehiclesPage.jsx; extraia-os para arquivos próprios conforme forem reutilizados ou testados.
