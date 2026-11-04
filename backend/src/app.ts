@@ -13,6 +13,7 @@ import profileRoutes from "./routes/profileRoutes";
 import userProfileRoutes from "./routes/userProfileRoutes";
 import alertRoutes from "./routes/alertRoutes";
 import requestRoutes from "./routes/requestRoutes";
+import svoRoutes from "./routes/svoRoutes";
 
 export const app = express();
 
@@ -34,6 +35,7 @@ app.use("/perfis", authenticate, profileRoutes);
 app.use("/usuarios", authenticate, usersRoutes, userProfileRoutes);
 app.use("/alerts", authenticate, alertRoutes);
 app.use("/solicitacoes", authenticate, requestRoutes);
+app.use("/svo", authenticate, svoRoutes);
 
 export default app;
 

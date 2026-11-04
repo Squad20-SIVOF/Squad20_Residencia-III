@@ -12,6 +12,8 @@ export const PERMISSIONS = [
   "manutencoes:gerenciar",
   "notificacoes:ler",
   "notificacoes:gerenciar",
+  "svo:registrar",
+  "svo:ler",
   "solicitacoes:criar",
   "solicitacoes:ler-proprias",
   "viagens:ler-proprias",
