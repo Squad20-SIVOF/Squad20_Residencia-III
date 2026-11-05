@@ -1,5 +1,11 @@
+import { PageHeader } from '@/components/PageHeader'
+import { StatCard } from '@/components/StatCard'
+import { Card } from '@/components/Card'
+import { TextField } from '@/components/TextField'
+import { SelectField } from '@/components/SelectField'
+import { ButtonLink } from '@/components/ButtonLink'
+import { DataTable, type DataTableColumn } from '@/components/DataTable'
 import { useCallback, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { currentUser } from '@/service/authService'
 import { useAsync } from '@/hooks/useAsync'
 import { StateMessage } from '@/components/StateMessage'
@@ -67,61 +73,97 @@ export default function AbastecimentosPage() {
       setSaving(false)
     }
   }
+  const columns: DataTableColumn<FuelRecord>[] = [
+    {
+      key: 'vehicle',
+      header: 'Veículo / placa',
+      isPrimary: true,
+      render: (row) => (
+        <>
+          <strong>{row.identificacao || row.modelo || 'Veículo removido'}</strong>
+          <span className={styles.secondary}>{row.placa ?? '—'}</span>
+        </>
+      ),
+    },
+    {
+      key: 'driver',
+      header: 'Motorista',
+      render: (row) => row.motorista_nome ?? 'Motorista removido',
+    },
+    {
+      key: 'date',
+      header: 'Data',
+      render: (row) => new Date(row.data_abastecimento).toLocaleString('pt-BR'),
+    },
+    {
+      key: 'fuel',
+      header: 'Combustível / posto',
+      render: (row) => (
+        <span>
+          {row.combustivel ?? 'Não registrado'}
+          <span className={styles.secondary}>{row.posto ?? 'Não registrado'}</span>
+        </span>
+      ),
+    },
+    {
+      key: 'liters',
+      header: 'Litros',
+      render: (row) => `${Number(row.litros).toLocaleString('pt-BR')} L`,
+    },
+    {
+      key: 'price',
+      header: 'Preço / L',
+      render: (row) => (row.preco_litro == null ? '—' : money(row.preco_litro)),
+    },
+    { key: 'total', header: 'Total', render: (row) => money(row.valor_total) },
+    {
+      key: 'mileage',
+      header: 'Hodômetro',
+      render: (row) => `${row.km_momento_abastecimento.toLocaleString('pt-BR')} km`,
+    },
+  ]
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1>Abastecimentos</h1>
-          <p>Acompanhe os registros, os volumes e o teto de gastos de cada veículo.</p>
-        </div>
-        {canManage && (
-          <Link to="/abastecimentos/registrar" className={styles.btnPrimary}>
-            Registrar abastecimento
-          </Link>
-        )}
-      </header>
+      <PageHeader
+        title="Abastecimentos"
+        subtitle="Acompanhe os registros, os volumes e o teto de gastos de cada veículo."
+      />
       {error && <Alert variant="danger">{error}</Alert>}
       <div className={styles.filterGrid}>
-        <div className={styles.formGroup}>
-          <label htmlFor="filtroVeiculo">Veículo</label>
-          <select
-            id="filtroVeiculo"
-            value={vehicle}
-            onChange={(e) => setVehicle(e.target.value)}
-          >
-            <option value="">Todos os veículos</option>
-            {options.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="filtroPeriodo">Período</label>
-          <input
-            id="filtroPeriodo"
-            type="month"
-            required
-            value={month}
-            onChange={(e) => {
-              if (e.target.value) {
-                setMonth(e.target.value)
-                setVehicle('')
-              }
-            }}
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="filtroBusca">Buscar motorista ou posto</label>
-          <input
-            id="filtroBusca"
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar nos registros..."
-          />
-        </div>
+        <TextField
+          id="filtroBusca"
+          label="Buscar motorista ou posto"
+          type="search"
+          value={search}
+          onChange={setSearch}
+          placeholder="Buscar nos registros..."
+        />
+        <SelectField
+          id="filtroVeiculo"
+          label="Veículo"
+          value={vehicle}
+          onChange={setVehicle}
+          options={[
+            { value: '', label: 'Todos os veículos' },
+            ...options.map((option) => ({ value: option.id, label: option.label })),
+          ]}
+        />
+        <TextField
+          id="filtroPeriodo"
+          label="Período"
+          type="month"
+          required
+          value={month}
+          onChange={(value) => {
+            if (value) {
+              setMonth(value)
+              setVehicle('')
+            }
+          }}
+        />
+        {canManage && (
+          <ButtonLink to="/abastecimentos/registrar">Registrar abastecimento</ButtonLink>
+        )}
       </div>
       {request.status === 'loading' ? (
         <StateMessage variant="loading" title="Carregando abastecimentos" />
@@ -134,98 +176,72 @@ export default function AbastecimentosPage() {
         />
       ) : (
         <>
-          <div className={styles.kpiGrid}>
-            <div className={styles.card}>
-              <p className={styles.kpiTitle}>Gasto no período</p>
-              <h2>{money(total)}</h2>
-              <p className={styles.kpiSub}>
-                {rows.length} registros nos filtros selecionados
-              </p>
-            </div>
-            <div className={styles.card}>
-              <p className={styles.kpiTitle}>Volume abastecido</p>
-              <h2>{volume.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} L</h2>
-            </div>
-            <div className={styles.card}>
-              <p className={styles.kpiTitle}>Preço médio por litro</p>
-              <h2>{volume ? money(total / volume) : '—'}</h2>
-            </div>
-          </div>
+          <section className={styles.statsGrid} aria-label="Resumo dos abastecimentos">
+            <StatCard
+              label="Gasto no período"
+              value={money(total)}
+              hint={`${rows.length} registros nos filtros selecionados`}
+              variant="info"
+            />
+            <StatCard
+              label="Volume abastecido"
+              value={`${volume.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} L`}
+              variant="success"
+            />
+            <StatCard
+              label="Preço médio por litro"
+              value={volume ? money(total / volume) : '—'}
+              variant="warning"
+            />
+          </section>
           {vehicle && cap != null && (
-            <div className={styles.card}>
-              <h3>Teto mensal do veículo</h3>
+            <Card title="Teto mensal do veículo">
               <p>
                 {money(monthlyTotal)} de {money(cap)} ·{' '}
                 {Number(cap) > 0
                   ? `${Math.round((monthlyTotal / Number(cap)) * 100)}% utilizado`
                   : 'Teto zero'}
               </p>
-              <p>
+              <p className={styles.muted}>
                 {monthlyTotal > Number(cap)
                   ? `Teto excedido em ${money(monthlyTotal - Number(cap))}`
                   : `Restam ${money(Number(cap) - monthlyTotal)}`}
               </p>
-            </div>
+            </Card>
           )}
-          {!rows.length ? (
-            <StateMessage
-              title="Nenhum abastecimento encontrado."
-              description="Selecione outro período ou registre um abastecimento."
-            />
-          ) : (
-            <div className={styles.card}>
-              <h3>Histórico de abastecimentos</h3>
-              <div className={styles.tableScroll}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Veículo / placa</th>
-                      <th>Motorista</th>
-                      <th>Data</th>
-                      <th>Combustível / posto</th>
-                      <th>Litros</th>
-                      <th>Preço / L</th>
-                      <th>Total</th>
-                      <th>Hodômetro</th>
-                      {canManage && <th>Ações</th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row) => (
-                      <tr key={row.id}>
-                        <td>
-                          {row.identificacao || row.modelo || 'Veículo removido'}
-                          <br />
-                          {row.placa ?? '—'}
-                        </td>
-                        <td>{row.motorista_nome ?? 'Motorista removido'}</td>
-                        <td>
-                          {new Date(row.data_abastecimento).toLocaleString('pt-BR')}
-                        </td>
-                        <td>
-                          {row.combustivel ?? 'Não registrado'}
-                          <br />
-                          {row.posto ?? 'Não registrado'}
-                        </td>
-                        <td>{Number(row.litros).toLocaleString('pt-BR')} L</td>
-                        <td>{row.preco_litro == null ? '—' : money(row.preco_litro)}</td>
-                        <td>{money(row.valor_total)}</td>
-                        <td>{row.km_momento_abastecimento.toLocaleString('pt-BR')} km</td>
-                        {canManage && (
-                          <td>
-                            <Link to={`/abastecimentos/editar/${row.id}`}>Editar</Link>
-                            <Button variant="danger" onClick={() => setRemoving(row)}>
-                              Excluir
-                            </Button>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          <section className={styles.list} aria-label="Abastecimentos">
+            <h2 className={styles.sectionTitle}>Histórico de abastecimentos</h2>
+            {!rows.length ? (
+              <StateMessage
+                title="Nenhum abastecimento encontrado."
+                description="Selecione outro período ou registre um abastecimento."
+              />
+            ) : (
+              <DataTable
+                caption="Histórico de abastecimentos"
+                rows={rows}
+                columns={columns}
+                getRowKey={(row) => row.id}
+                renderActions={
+                  canManage
+                    ? (row) => (
+                        <>
+                          <ButtonLink
+                            variant="secondary"
+                            to={`/abastecimentos/editar/${row.id}`}
+                          >
+                            Editar
+                          </ButtonLink>
+                          <Button variant="danger" onClick={() => setRemoving(row)}>
+                            Excluir
+                          </Button>
+                        </>
+                      )
+                    : undefined
+                }
+              />
+            )}
+          </section>
         </>
       )}
       <ConfirmDialog
