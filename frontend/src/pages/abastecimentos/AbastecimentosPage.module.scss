@@ -1,142 +1,48 @@
-.page {
-  padding: clamp(0rem, 1vw, 1rem);
-  container-type: inline-size;
-  min-width: 0;
-  background: #f8fafc;
-  min-height: 0;
-  font-family: inherit;
-}
-.header {
+@use '../../styles/tokens' as *;
+@use '../../styles/breakpoints' as *;
+.page,
+.list {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  align-items: center;
-  margin-bottom: 2rem;
-  h1 {
-    font-size: 1.5rem;
-    color: #1e293b;
-    margin-bottom: 0.2rem;
-  }
-  p {
-    color: #64748b;
-    font-size: 0.875rem;
-  }
-}
-.btnPrimary {
-  padding: 0.6rem 1.2rem;
-  background: #2563eb;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  color: white;
-}
-.btnSecondary {
-  padding: 0.6rem 1.2rem;
-  background: white;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  color: #475569;
-}
-.kpiGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-.card {
+  flex-direction: column;
+  gap: $space-4;
   min-width: 0;
-  background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  border: 1px solid #e2e8f0;
-  h2 {
-    font-size: 1.8rem;
-    color: #1e293b;
-    margin: 0.5rem 0;
-  }
 }
-.kpiTitle {
-  font-size: 0.85rem;
-  color: #64748b;
-  font-weight: 600;
-}
-.kpiSub {
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-.progressBarWarning {
-  width: 100%;
-  height: 10px;
-  background: #e2e8f0;
-  border-radius: 5px;
-  overflow: hidden;
-}
-.progressBarWarning div {
-  height: 100%;
-  background: #f59e0b;
-}
+.statsGrid,
 .filterGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: $space-3;
 }
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #475569;
-    margin-bottom: 0.4rem;
-  }
-  input,
-  select {
-    width: 100%;
-    min-width: 0;
-    padding: 0.6rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 0.9rem;
-  }
+.filterGrid {
+  align-items: end;
 }
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-  text-align: left;
-  th {
-    padding: 1rem;
-    background: #eff6ff;
-    color: #1e40af;
-    font-weight: 600;
-    border-bottom: 2px solid #bfdbfe;
-  }
-  td {
-    padding: 1rem;
-    border-bottom: 1px solid #e2e8f0;
-    color: #334155;
-  }
+.sectionTitle {
+  font-size: $font-size-h3;
+  font-weight: 500;
+  color: $color-primary;
 }
-.subText {
-  font-size: 0.75rem;
-  color: #94a3b8;
+.muted,
+.secondary {
+  color: $color-text-muted;
+  font-size: $font-size-small;
 }
-
-.tableScroll {
-  max-width: 100%;
-  overflow-x: auto;
+.secondary {
+  display: block;
+  font-weight: 400;
 }
-
-@container (min-width: 700px) {
-  .kpiGrid {
+@include up(md) {
+  .statsGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .filterGrid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  }
+  .filterGrid > :last-child {
+    justify-self: start;
+  }
+}
+@include up(xl) {
+  .filterGrid {
+    grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)) auto;
   }
 }

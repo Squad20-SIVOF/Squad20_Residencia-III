@@ -1,13 +1,217 @@
+@use '../../styles/tokens' as *;
+@use '../../styles/breakpoints' as *;
+
 .page {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding-bottom: 2rem;
+  gap: $space-4;
+  min-width: 0;
+  container-type: inline-size;
 }
 .header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: $space-3;
+}
+.statsGrid,
+.fieldsGrid,
+.formLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
+}
+.formLayout {
+  gap: $space-4;
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  min-width: 0;
+}
+.card {
+  min-width: 0;
+  padding: $space-3;
+  background: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+.cardSpaced {
+  @extend .card;
+  margin-top: $space-3;
+}
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: $color-primary;
+}
+.muted,
+.hint {
+  color: $color-text-muted;
+  font-size: $font-size-small;
+}
+.hint {
+  line-height: $line-height-small;
+}
+.fieldThird,
+.fieldHalf,
+.fieldQuarter,
+.fieldFull,
+.formColumn,
+.summaryColumn {
+  min-width: 0;
+}
+.label {
+  display: block;
+  margin-bottom: $space-1;
+  font-size: $font-size-small;
+  font-weight: 500;
+}
+.input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: $touch-target;
+  padding: $space-2 $space-3;
+  color: $color-text;
+  font: inherit;
+  font-size: $font-size-body;
+  background: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  &::placeholder {
+    color: $color-text-muted;
+  }
+  &:focus-visible {
+    border-color: $color-primary;
+  }
+  &:disabled {
+    color: $color-text-muted;
+    background: $color-surface;
+    opacity: 0.7;
+  }
+}
+textarea.input {
+  resize: vertical;
+}
+.input[type='file'] {
+  white-space: normal;
+  overflow: hidden;
+}
+.form > fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.filterActions,
+.actions,
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  align-items: center;
+  justify-content: flex-end;
+}
+.filterActions {
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+.formActions {
+  margin-top: $space-4;
+  padding-top: $space-3;
+  border-top: 1px solid $color-border;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: $space-3;
+}
+.detailLabel {
+  color: $color-text-muted;
+  font-size: $font-size-small;
+  font-weight: 500;
+}
+.detailValue {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: $font-size-small;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: $space-3;
+}
+.empty {
+  padding: $space-5 $space-3;
+  text-align: center;
+  color: $color-text-muted;
+}
+.summaryLine {
+  font-size: $font-size-small;
+  overflow-wrap: anywhere;
+}
+@include up(md) {
+  .card {
+    padding: $space-4;
+  }
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .fieldsGrid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .fieldThird {
+    grid-column: span 4;
+  }
+  .fieldQuarter {
+    grid-column: span 3;
+  }
+  .fieldHalf,
+  .filterActions {
+    grid-column: span 6;
+  }
+  .fieldFull {
+    grid-column: 1 / -1;
+  }
+}
+@include up(xl) {
+  .statsGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@container (min-width: 850px) {
+  .formLayout {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+select.input {
+  appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%235b6575' stroke-width='1.5' stroke-linecap='round' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  background-size: 1rem;
+}
+.input::file-selector-button {
+  border: 0;
+  border-radius: $radius-sm;
+  padding: $space-1 $space-2;
+  margin-right: $space-2;
+  color: $color-primary;
+  background: $color-primary-soft;
+  font: inherit;
+  cursor: pointer;
 }
