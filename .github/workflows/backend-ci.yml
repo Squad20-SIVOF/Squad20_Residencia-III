@@ -64,7 +64,7 @@ jobs:
   deploy:
     name: Deploy no Render
     needs: quality
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.repository == 'Squad20-SIVOF/Squad20_Residencia-III' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     concurrency:
