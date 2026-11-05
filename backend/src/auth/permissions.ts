@@ -19,6 +19,8 @@ export const PERMISSIONS = [
   "solicitacoes:criar",
   "solicitacoes:ler-proprias",
   "viagens:ler-proprias",
+  "obitos:ler",
+  "obitos:gerenciar",
 ] as const;
 export const DELEGABLE_PERMISSIONS = [
   "abastecimentos:ler",

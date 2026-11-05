@@ -16,6 +16,9 @@ import driverInspectionRoutes from "./routes/driverInspectionRoutes";
 import fuelRoutes from "./routes/fuelRoutes";
 import driverFuelRoutes from "./routes/driverFuelRoutes";
 import requestRoutes from "./routes/requestRoutes";
+import deathRoutes from "./routes/deathRoutes";
+import deathController from "./controller/deathController";
+import { authorize } from "./middleware/authorization";
 
 export const app = express();
 
@@ -40,6 +43,13 @@ app.use("/motorista/vistorias", authenticate, driverInspectionRoutes);
 app.use("/motorista/abastecimentos", authenticate, driverFuelRoutes);
 app.use("/abastecimentos", authenticate, fuelRoutes);
 app.use("/solicitacoes", authenticate, requestRoutes);
+app.use("/obitos", authenticate, deathRoutes);
+app.get(
+  "/viagens/:id/obitos",
+  authenticate,
+  authorize("obitos:ler"),
+  deathController.listByTrip,
+);
 
 export default app;
 
