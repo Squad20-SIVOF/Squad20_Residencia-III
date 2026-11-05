@@ -6,7 +6,7 @@ import {
   fuelQuerySchema,
 } from "../../middleware/validations/schemas/fuelSchema";
 import { calculateFuelTotal } from "../../utils/fuelUtils";
-
+//ttt
 const execute = async (operation: () => Promise<unknown>, status = 200) => {
   try {
     return { message: await operation(), status };
