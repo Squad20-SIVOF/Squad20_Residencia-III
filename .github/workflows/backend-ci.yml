@@ -72,6 +72,7 @@ jobs:
       cancel-in-progress: false
     steps:
       - name: Publicar commit validado
+        working-directory: .
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
           DEPLOY_SHA: ${{ github.sha }}
