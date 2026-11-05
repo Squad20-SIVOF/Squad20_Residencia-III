@@ -1,10 +1,58 @@
-import type { Vehicle } from "../types/vehicle";
+import type { Vehicle } from '../types/vehicle'
 
 export const mockVehicles: Vehicle[] = [
-  { id: "v1", codigo: "SVD-01", placa: "ABC1D23", marca: "Fiat", modelo: "Fiorino 1.4", quilometragem: 45320, status: "Disponível" },
-  { id: "v2", codigo: "SVD-02", placa: "BRA2E19", marca: "Renault", modelo: "Master 2.3", quilometragem: 78210, status: "Em manutenção" },
-  { id: "v3", codigo: "SVD-03", placa: "QWE4F56", marca: "Fiat", modelo: "Doblò Cargo", quilometragem: 61870, status: "Em uso" },
-  { id: "v4", codigo: "SVD-04", placa: "RTY7G89", marca: "VW", modelo: "Saveiro 1.6", quilometragem: 32540, status: "Disponível" },
-  { id: "v5", codigo: "SVD-05", placa: "JKL3H21", marca: "Mercedes-Benz", modelo: "Sprinter 415", quilometragem: 104300, status: "Em uso" },
-  { id: "v6", codigo: "SVD-06", placa: "MNO8J45", marca: "Chevrolet", modelo: "Montana 1.4", quilometragem: 27690, status: "Disponível" },
-];
+  {
+    id: 'v1',
+    codigo: 'SVD-01',
+    placa: 'ABC1D23',
+    marca: 'Fiat',
+    modelo: 'Fiorino 1.4',
+    quilometragem: 45320,
+    status: 'Disponível',
+  },
+  {
+    id: 'v2',
+    codigo: 'SVD-02',
+    placa: 'BRA2E19',
+    marca: 'Renault',
+    modelo: 'Master 2.3',
+    quilometragem: 78210,
+    status: 'Em manutenção',
+  },
+  {
+    id: 'v3',
+    codigo: 'SVD-03',
+    placa: 'QWE4F56',
+    marca: 'Fiat',
+    modelo: 'Doblò Cargo',
+    quilometragem: 61870,
+    status: 'Em uso',
+  },
+  {
+    id: 'v4',
+    codigo: 'SVD-04',
+    placa: 'RTY7G89',
+    marca: 'VW',
+    modelo: 'Saveiro 1.6',
+    quilometragem: 32540,
+    status: 'Disponível',
+  },
+  {
+    id: 'v5',
+    codigo: 'SVD-05',
+    placa: 'JKL3H21',
+    marca: 'Mercedes-Benz',
+    modelo: 'Sprinter 415',
+    quilometragem: 104300,
+    status: 'Em uso',
+  },
+  {
+    id: 'v6',
+    codigo: 'SVD-06',
+    placa: 'MNO8J45',
+    marca: 'Chevrolet',
+    modelo: 'Montana 1.4',
+    quilometragem: 27690,
+    status: 'Disponível',
+  },
+]

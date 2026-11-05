@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import { currentUser, type SessionUser } from '@/service/authService'
 import { getSessionToken } from '@/service/api'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 
 export function RequireAuth() {
   const [user, setUser] = useState<SessionUser | null>(null)
@@ -24,7 +25,7 @@ export function RequireAuth() {
     }
   }, [])
   if (!getSessionToken()) return <Navigate to="/login" replace />
-  if (status === 'loading') return <output>Validando sessão…</output>
+  if (status === 'loading') return <LoadingState fullPage label="Carregando seu acesso" />
   if (status === 'error')
     return (
       <p role="alert">

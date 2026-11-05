@@ -9,6 +9,14 @@ const projectRoot = fileURLToPath(new URL('.', import.meta.url))
  * pasta public, porta e saída de build, mas compartilha `src/`.
  */
 export function createAppConfig(app: 'gestor' | 'motorista', port: number) {
+  const proxy = {
+    '/api': {
+      target: 'http://127.0.0.1:3000',
+      changeOrigin: true,
+      rewrite: (path: string) => path.replace(/^\/api(?=\/|$)/, ''),
+    },
+  }
+
   return defineConfig({
     root: fileURLToPath(new URL(`./apps/${app}`, import.meta.url)),
     envDir: projectRoot,
@@ -31,8 +39,8 @@ export function createAppConfig(app: 'gestor' | 'motorista', port: number) {
         },
       },
     },
-    server: { port, strictPort: true, host: true },
-    preview: { port, strictPort: true, host: true },
+    server: { port, strictPort: true, host: true, proxy },
+    preview: { port, strictPort: true, host: true, proxy },
     build: {
       outDir: fileURLToPath(new URL(`./dist/${app}`, import.meta.url)),
       emptyOutDir: true,

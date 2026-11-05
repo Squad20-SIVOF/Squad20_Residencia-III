@@ -1,7 +1,7 @@
 import { useVehicles } from '@/pages/vehicles/hooks/useVehicles'
 import { DriverVehiclesField } from '../DriverVehiclesField/DriverVehiclesField'
 import { DRIVER_FLEETS } from '../../types'
-import { Avatar } from '@/components/Avatar'
+import { PhotoUpload } from '../PhotoUpload'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
@@ -67,17 +67,11 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
 
           <div className={styles.layout}>
             <aside className={styles.photo}>
-              <Avatar
-                name={values.name || 'Foto'}
-                src={values.photo}
-                size="lg"
-                className={styles.avatar}
+              <PhotoUpload
+                name={values.name}
+                photo={values.photo}
+                onChange={(photo) => setField('photo', photo)}
               />
-              <Button variant="secondary" disabled>
-                Enviar foto
-              </Button>
-              <small>JPG ou PNG · até 5 MB</small>
-              <small>Upload em breve</small>
             </aside>
             <div className={styles.sections}>
               <fieldset className={styles.section}>
@@ -108,7 +102,9 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                     type="tel"
                     placeholder="(79) 00000-0000"
                     value={values.phone}
-                    disabled
+                    onChange={(value) => setField('phone', value)}
+                    isInvalid={!!errors.phone}
+                    errorMessage={errors.phone}
                   />
                   <TextField
                     id={fieldId('email')}
@@ -116,11 +112,13 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                     type="email"
                     placeholder="email@exemplo.com"
                     value={values.email}
-                    disabled
+                    onChange={(value) => setField('email', value)}
+                    isInvalid={!!errors.email}
+                    errorMessage={errors.email}
                   />
                 </div>
                 <p className={styles.helper}>
-                  Contato e foto aguardam integração com a API.
+                  Contato e foto são opcionais e ficam salvos no cadastro.
                 </p>
               </fieldset>
 

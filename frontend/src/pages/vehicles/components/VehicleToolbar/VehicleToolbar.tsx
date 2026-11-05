@@ -31,6 +31,7 @@ export interface VehicleToolbarProps {
   onStatusChange: (value: VehicleStatusFilter) => void
   onFleetChange: (value: FleetFilter) => void
   onCreate: () => void
+  canManage?: boolean
 }
 
 export function VehicleToolbar({
@@ -41,6 +42,7 @@ export function VehicleToolbar({
   onStatusChange,
   onFleetChange,
   onCreate,
+  canManage = true,
 }: VehicleToolbarProps) {
   return (
     <search className={styles.toolbar}>
@@ -70,22 +72,24 @@ export function VehicleToolbar({
         options={FLEET_OPTIONS}
         onChange={onFleetChange}
       />
-      <Button
-        className={styles.createButton}
-        onClick={onCreate}
-        iconStart={
-          <svg viewBox="0 0 16 16" width="16" height="16">
-            <path
-              d="M8 3v10M3 8h10"
-              stroke="currentColor"
-              strokeWidth="1.75"
-              strokeLinecap="round"
-            />
-          </svg>
-        }
-      >
-        Cadastrar Novo
-      </Button>
+      {canManage && (
+        <Button
+          className={styles.createButton}
+          onClick={onCreate}
+          iconStart={
+            <svg viewBox="0 0 16 16" width="16" height="16">
+              <path
+                d="M8 3v10M3 8h10"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              />
+            </svg>
+          }
+        >
+          Cadastrar Novo
+        </Button>
+      )}
     </search>
   )
 }

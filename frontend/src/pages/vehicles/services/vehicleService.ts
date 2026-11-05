@@ -4,7 +4,9 @@ import type { Vehicle, VehicleDetails, VehicleResponse, VehicleStatus } from '..
 
 const toVehicle = (row: VehicleResponse): Vehicle => ({
   id: row.id,
-  identification: '—',
+  identification: row.identificacao || '—',
+  brand: row.marca ?? '',
+  inspectionChecklist: row.checklist_vistoria ?? [],
   plate: row.placa,
   model: row.modelo,
   fuelType: row.tipo_combustivel,
@@ -22,7 +24,7 @@ const toVehicle = (row: VehicleResponse): Vehicle => ({
   monthlyCap: row.teto_gasto_mensal == null ? null : Number(row.teto_gasto_mensal),
   fleet: row.frota ?? 'Não informada',
   exclusiveSvo: row.exclusivo_svo ?? false,
-  nextInspection: '',
+  nextInspection: row.proxima_vistoria ?? '',
 })
 export async function getVehicles(): Promise<Vehicle[]> {
   return (await api<{ message: VehicleResponse[] }>('/vehicles')).message.map(toVehicle)
@@ -52,7 +54,7 @@ export async function getVehicleDetails(id: string): Promise<VehicleDetails> {
   interface MaintenanceRow {
     id: string
     veiculo_id: string
-    tipo_manutencao: 'preventiva' | 'impeditiva'
+    tipo_manutencao: 'preventiva' | 'impeditiva' | 'corretiva' | 'preditiva'
     descricao: string | null
     data_inicio: string
     km_realizado: number | null
@@ -72,10 +74,10 @@ export async function getVehicleDetails(id: string): Promise<VehicleDetails> {
       mileageEnd: trip.km_final,
     })),
     ...(tripsError ? { tripsError } : {}),
-    checklist: [],
+    checklist: row.checklist_vistoria ?? [],
     availability: {
       trips: !tripsError,
-      checklist: false,
+      checklist: true,
       maintenance: canReadMaintenance,
     },
     maintenances: history
@@ -89,4 +91,8 @@ export async function getVehicleDetails(id: string): Promise<VehicleDetails> {
         cost: Number(m.custo),
       })),
   }
+}
+
+export async function deleteVehicle(id: string): Promise<void> {
+  await api(`/vehicles/${encodeURIComponent(id)}`, { method: 'DELETE' })
 }

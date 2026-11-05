@@ -1,12 +1,16 @@
 .page {
-  padding: 2rem;
+  padding: clamp(0rem, 1vw, 1rem);
+  container-type: inline-size;
+  min-width: 0;
   background: #f8fafc;
-  min-height: 100vh;
-  font-family: sans-serif;
+  min-height: 0;
+  font-family: inherit;
 }
 .header {
   display: flex;
   justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
   align-items: center;
   margin-bottom: 2rem;
   h1 {
@@ -39,11 +43,12 @@
 }
 .kpiGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
   margin-bottom: 1.5rem;
 }
 .card {
+  min-width: 0;
   background: white;
   border-radius: 8px;
   padding: 1.5rem;
@@ -76,7 +81,7 @@
 }
 .filterGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -91,6 +96,8 @@
   }
   input,
   select {
+    width: 100%;
+    min-width: 0;
     padding: 0.6rem;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
@@ -118,4 +125,18 @@
 .subText {
   font-size: 0.75rem;
   color: #94a3b8;
+}
+
+.tableScroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@container (min-width: 700px) {
+  .kpiGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .filterGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
+  }
 }

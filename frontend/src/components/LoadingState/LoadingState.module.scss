@@ -1,0 +1,79 @@
+@use '../../styles/tokens' as *;
+
+.region {
+  display: block;
+  width: 100%;
+  padding: 1.5rem 0;
+}
+.fullPage {
+  min-height: 100dvh;
+  display: grid;
+  align-items: center;
+  padding: clamp(1.25rem, 6vw, 5rem);
+  background: $color-background;
+}
+.placeholder {
+  display: block;
+  width: min(100%, 72rem);
+  margin-inline: auto;
+  filter: blur(3px);
+  opacity: 0.65;
+  animation: breathe 1.6s ease-in-out infinite alternate;
+}
+.heading,
+.subtitle,
+.cards > span,
+.rows > span {
+  display: block;
+  background: $color-primary-soft;
+  border-radius: 0.75rem;
+}
+.heading {
+  width: 45%;
+  height: 1.75rem;
+  margin-bottom: 1rem;
+}
+.subtitle {
+  width: 65%;
+  height: 0.8rem;
+  margin-bottom: 2rem;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.cards > span {
+  height: clamp(4rem, 12vw, 7rem);
+}
+.rows {
+  display: grid;
+  gap: 0.9rem;
+}
+.rows > span {
+  height: 2.5rem;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@keyframes breathe {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 0.8;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .placeholder {
+    animation: none;
+    filter: none;
+  }
+}

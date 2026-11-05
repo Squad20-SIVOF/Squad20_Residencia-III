@@ -1,26 +1,35 @@
-import { useCallback, useEffect, useState } from "react";
-import { maintenanceService, vehicleService } from "../services/maintenanceService";
-import type { Maintenance } from "../types/maintenance";
-
-/** Reads maintenances on the client and re-syncs whenever the store changes. */
+import { useCallback, useEffect } from 'react'
+import { currentUser } from '@/service/authService'
+import { useAsync } from '@/hooks/useAsync'
+import { maintenanceService, vehicleService } from '../services/maintenanceService'
 export function useMaintenances() {
-  const [maintenances, setMaintenances] = useState<Maintenance[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const refresh = useCallback(() => {
-    setMaintenances(maintenanceService.list());
-    setLoading(false);
-  }, []);
-
+  const load = useCallback(async () => {
+    const [maintenances, vehicles, user] = await Promise.all([
+      maintenanceService.list(),
+      vehicleService.list(),
+      currentUser(),
+    ])
+    return {
+      maintenances,
+      vehicles,
+      canManage: user.permissoes.includes('manutencoes:gerenciar'),
+    }
+  }, [])
+  const request = useAsync(load)
   useEffect(() => {
-    refresh();
-    window.addEventListener(maintenanceService.CHANGE_EVENT, refresh);
-    window.addEventListener("storage", refresh);
-    return () => {
-      window.removeEventListener(maintenanceService.CHANGE_EVENT, refresh);
-      window.removeEventListener("storage", refresh);
-    };
-  }, [refresh]);
-
-  return { maintenances, vehicles: vehicleService.list(), loading, refresh };
+    window.addEventListener(maintenanceService.CHANGE_EVENT, request.reload)
+    return () =>
+      window.removeEventListener(maintenanceService.CHANGE_EVENT, request.reload)
+  }, [request.reload])
+  return {
+    canManage: request.status === 'success' && request.data.canManage,
+    maintenances: request.status === 'success' ? request.data.maintenances : [],
+    vehicles: request.status === 'success' ? request.data.vehicles : [],
+    loading: request.status === 'loading',
+    error:
+      request.status === 'error'
+        ? 'Não foi possível carregar as manutenções e os veículos.'
+        : null,
+    refresh: request.reload,
+  }
 }

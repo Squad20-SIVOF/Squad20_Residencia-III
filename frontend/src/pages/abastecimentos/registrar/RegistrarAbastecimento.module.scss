@@ -1,8 +1,10 @@
 .page {
-  padding: 2rem;
+  padding: clamp(0rem, 1vw, 1rem);
+  container-type: inline-size;
+  min-width: 0;
   background: #f8fafc;
-  min-height: 100vh;
-  font-family: sans-serif;
+  min-height: 0;
+  font-family: inherit;
 }
 .header {
   margin-bottom: 2rem;
@@ -18,7 +20,7 @@
 }
 .layoutGrid {
   display: grid;
-  grid-template-columns: 1fr 350px;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
 }
 .card {
@@ -44,6 +46,7 @@
   flex-direction: column;
   margin-bottom: 1rem;
   flex: 1;
+  min-width: 0;
   label {
     font-size: 0.8rem;
     font-weight: 600;
@@ -52,6 +55,8 @@
   }
   input,
   select {
+    width: 100%;
+    min-width: 0;
     padding: 0.6rem;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
@@ -60,7 +65,8 @@
   }
 }
 .row {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 }
 .totalBox {
@@ -84,6 +90,7 @@
 .actions {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 1rem;
   margin-top: 1rem;
 }
@@ -142,4 +149,28 @@
 .progressBarWarning div {
   height: 100%;
   background: #f59e0b;
+}
+
+.fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.formColumn,
+.summaryColumn {
+  min-width: 0;
+}
+@container (min-width: 520px) {
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container (min-width: 850px) {
+  .layoutGrid {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
 }

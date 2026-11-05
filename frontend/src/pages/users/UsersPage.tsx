@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { api } from '@/service/api'
 import { currentUser, type SessionUser } from '@/service/authService'
 import { Button } from '@/components/Button'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { TextField } from '@/components/TextField'
 
 interface Profile {
@@ -13,6 +14,7 @@ interface User {
   id: string
   nome: string
   email: string
+  motorista_id?: string | null
   perfis?: { id: string; nome: string }[]
   permissoes?: string[]
 }
@@ -21,6 +23,8 @@ interface Delegation {
   permissoesDisponiveis: string[]
 }
 const LABELS: Record<string, string> = {
+  'abastecimentos:ler': 'Consultar abastecimentos',
+  'abastecimentos:gerenciar': 'Criar, editar e excluir abastecimentos',
   'veiculos:ler': 'Consultar veículos',
   'veiculos:gerenciar': 'Criar, editar e excluir veículos',
   'motoristas:ler': 'Consultar motoristas',
@@ -37,10 +41,18 @@ export function UsersPage() {
     usuarios: [],
     permissoesDisponiveis: [],
   })
+  const [drivers, setDrivers] = useState<{ id: string; nome: string }[]>([])
+  const [driverLink, setDriverLink] = useState({ usuario_id: '', motorista_id: '' })
   const [selected, setSelected] = useState('')
   const [membership, setMembership] = useState({ usuario_id: '', perfil_id: '' })
   const [permissions, setPermissions] = useState<string[]>([])
-  const [form, setForm] = useState({ nome: '', email: '', password: '', perfil_id: '' })
+  const [form, setForm] = useState({
+    nome: '',
+    email: '',
+    password: '',
+    perfil_id: '',
+    motorista_id: '',
+  })
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
@@ -50,11 +62,13 @@ export function UsersPage() {
     const me = await currentUser()
     setActor(me)
     if (me.permissoes.includes('usuarios:gerenciar')) {
-      const [allUsers, allProfiles] = await Promise.all([
+      const [allUsers, allProfiles, allDrivers] = await Promise.all([
         api<User[]>('/usuarios'),
         api<{ message: Profile[] }>('/perfis'),
+        api<{ id: string; nome: string }[]>('/usuarios/motoristas-opcoes'),
       ])
       setUsers(allUsers)
+      setDrivers(allDrivers)
       setProfiles(
         allProfiles.message.filter(
           (p) => !['gestor_svo', 'atendente_svo'].includes(p.codigo ?? ''),
@@ -78,8 +92,11 @@ export function UsersPage() {
     setError('')
     setMessage('')
     try {
-      await api('/usuarios', { method: 'POST', body: JSON.stringify(form) })
-      setForm({ nome: '', email: '', password: '', perfil_id: '' })
+      await api('/usuarios', {
+        method: 'POST',
+        body: JSON.stringify({ ...form, motorista_id: form.motorista_id || null }),
+      })
+      setForm({ nome: '', email: '', password: '', perfil_id: '', motorista_id: '' })
       await load()
       setMessage('Usuário criado.')
     } catch (cause) {
@@ -107,6 +124,26 @@ export function UsersPage() {
     }
   }
 
+  async function saveDriverLink(event: FormEvent) {
+    event.preventDefault()
+    if (saving) return
+    setSaving(true)
+    setError('')
+    setMessage('')
+    try {
+      await api(`/usuarios/${driverLink.usuario_id}/motorista`, {
+        method: 'PUT',
+        body: JSON.stringify({ motorista_id: driverLink.motorista_id || null }),
+      })
+      await load()
+      setMessage('Vínculo do motorista atualizado.')
+    } catch (cause) {
+      setError((cause as Error).message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function savePermissions(event: FormEvent) {
     event.preventDefault()
     setSaving(true)
@@ -126,7 +163,7 @@ export function UsersPage() {
     }
   }
 
-  if (loading) return <output>Carregando usuários…</output>
+  if (loading) return <LoadingState label="Carregando usuários" />
   const canCreate = actor?.permissoes.includes('usuarios:gerenciar')
   const canDelegate = actor?.permissoes.includes('usuarios:delegar-permissoes')
 
@@ -180,8 +217,70 @@ export function UsersPage() {
                 </option>
               ))}
             </select>
+            <label htmlFor="new-user-driver">Motorista vinculado (opcional)</label>
+            <select
+              id="new-user-driver"
+              value={form.motorista_id}
+              disabled={saving}
+              onChange={(event) => setForm({ ...form, motorista_id: event.target.value })}
+            >
+              <option value="">Sem vínculo</option>
+              {drivers.map((driver) => (
+                <option key={driver.id} value={driver.id}>
+                  {driver.nome}
+                </option>
+              ))}
+            </select>
+            <p>
+              Para abastecer pelo app mobile, atribua o perfil Motorista e vincule o
+              cadastro correspondente.
+            </p>
             <Button type="submit" isLoading={saving}>
               Criar usuário
+            </Button>
+          </form>
+          <h2>Vincular conta a motorista</h2>
+          <form onSubmit={saveDriverLink}>
+            <label htmlFor="driver-link-user">Conta de usuário</label>
+            <select
+              id="driver-link-user"
+              required
+              disabled={saving}
+              value={driverLink.usuario_id}
+              onChange={(event) =>
+                setDriverLink({
+                  usuario_id: event.target.value,
+                  motorista_id:
+                    users.find((user) => user.id === event.target.value)?.motorista_id ??
+                    '',
+                })
+              }
+            >
+              <option value="">Selecione</option>
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.nome} — {user.email}
+                </option>
+              ))}
+            </select>
+            <label htmlFor="driver-link-driver">Cadastro de motorista</label>
+            <select
+              id="driver-link-driver"
+              disabled={saving}
+              value={driverLink.motorista_id}
+              onChange={(event) =>
+                setDriverLink({ ...driverLink, motorista_id: event.target.value })
+              }
+            >
+              <option value="">Sem vínculo</option>
+              {drivers.map((driver) => (
+                <option key={driver.id} value={driver.id}>
+                  {driver.nome}
+                </option>
+              ))}
+            </select>
+            <Button type="submit" isLoading={saving} disabled={!driverLink.usuario_id}>
+              Salvar vínculo
             </Button>
           </form>
           <h2>Alterar perfis de um usuário</h2>

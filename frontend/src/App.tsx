@@ -51,6 +51,7 @@ export function AppRoutes() {
           <Route path="usuarios" element={<UsersPage />} />
           <Route path="abastecimentos" element={<AbastecimentosPage />} />
           <Route path="abastecimentos/registrar" element={<RegistrarAbastecimento />} />
+          <Route path="abastecimentos/editar/:id" element={<RegistrarAbastecimento />} />
           {COMING_SOON_ROUTES.map(({ path, title }) => (
             <Route key={path} path={path} element={<ComingSoonPage title={title} />} />
           ))}
