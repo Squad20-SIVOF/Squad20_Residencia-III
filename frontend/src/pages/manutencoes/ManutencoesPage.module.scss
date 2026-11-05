@@ -11,23 +11,3 @@
   flex-wrap: wrap;
   gap: 1rem;
 }
-.overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1050;
-  background: rgb(0 0 0 / 55%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-.dialog {
-  background: var(--bs-body-bg, white);
-  color: var(--bs-body-color, #222);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  width: min(100%, 640px);
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 15px 50px rgb(0 0 0 / 20%);
-}

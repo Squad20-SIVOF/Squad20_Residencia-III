@@ -6,6 +6,12 @@ export interface SessionUser {
   nome: string
   email: string
   permissoes: string[]
+  telefone?: string | null
+  departamento?: string | null
+  cargo?: string | null
+  matricula?: string | null
+  foto?: string | null
+  senha_alterada_em?: string | null
 }
 
 export async function login(values: LoginFormValues): Promise<void> {

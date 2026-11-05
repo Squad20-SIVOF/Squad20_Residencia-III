@@ -1,3 +1,7 @@
+import { currentUser } from '@/service/authService'
+import { deleteVehicle } from './services/vehicleService'
+import { Alert } from '@/components/Alert'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { VehicleForm } from './VehicleForm'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/Button'
@@ -24,7 +28,39 @@ export function VehiclesPage() {
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null | undefined>(
     undefined,
   )
+  const [canManage, setCanManage] = useState(false)
+  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+  useEffect(() => {
+    let active = true
+    currentUser()
+      .then((user) => {
+        if (active) setCanManage(user.permissoes.includes('veiculos:gerenciar'))
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [])
   const vehiclesRequest = useVehicles()
+  async function confirmDelete() {
+    if (!vehicleToDelete || deleting) return
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      await deleteVehicle(vehicleToDelete.id)
+      setVehicleToDelete(null)
+      vehiclesRequest.reload()
+    } catch (cause) {
+      setDeleteError(
+        cause instanceof Error ? cause.message : 'Não foi possível excluir o veículo.',
+      )
+      setVehicleToDelete(null)
+    } finally {
+      setDeleting(false)
+    }
+  }
   const vehicles =
     vehiclesRequest.status === 'success' ? vehiclesRequest.data : NO_VEHICLES
   const filters = useVehicleFilters(vehicles)
@@ -124,6 +160,8 @@ export function VehiclesPage() {
           vehicles={filters.pageVehicles}
           onView={(vehicle) => setSelectedVehicleId(vehicle.id)}
           onEdit={handleEdit}
+          onDelete={setVehicleToDelete}
+          canManage={canManage}
         />
         <VehiclePagination
           shownCount={filters.pageVehicles.length}
@@ -156,11 +194,24 @@ export function VehiclesPage() {
         onStatusChange={filters.setStatus}
         onFleetChange={filters.setFleet}
         onCreate={handleCreate}
+        canManage={canManage}
       />
 
+      {deleteError && <Alert variant="danger">{deleteError}</Alert>}
       <section className={styles.list} aria-label="Veículos">
         {renderList()}
       </section>
+      <ConfirmDialog
+        isOpen={vehicleToDelete !== null}
+        title="Excluir veículo?"
+        description={`Confirma a exclusão do veículo ${vehicleToDelete?.plate ?? ''}? O cadastro será removido da frota.`}
+        confirmLabel={deleting ? 'Excluindo…' : 'Excluir'}
+        isDestructive
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          if (!deleting) setVehicleToDelete(null)
+        }}
+      />
     </div>
   )
 }

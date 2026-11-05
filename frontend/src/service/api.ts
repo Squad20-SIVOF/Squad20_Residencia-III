@@ -13,7 +13,11 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   if (options.body) headers.set('Content-Type', 'application/json')
   const token = getSessionToken()
   if (token) headers.set('Authorization', `Bearer ${token}`)
-  const response = await fetch(`${API_URL}${path}`, { ...options, headers })
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers,
+    signal: options.signal ?? AbortSignal.timeout(20_000),
+  })
   if (response.status === 401) clearSession()
   if (!response.ok) {
     const error = (await response.json().catch(() => null)) as {

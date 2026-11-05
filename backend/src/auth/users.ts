@@ -20,13 +20,14 @@ const userSchema = z
       .transform((s) => s.toLowerCase()),
     password: z.string().min(12).max(256),
     perfil_id: idSchema,
+    motorista_id: idSchema.nullable().optional(),
   })
   .strict();
 
 router.get("/", authorize("usuarios:gerenciar"), async (_req, res) => {
   try {
     const { rows } = await pool.query(
-      `SELECT u.id, u.nome, u.email, u.ativo, COALESCE((SELECT json_agg(json_build_object('id',p.id,'nome',p.nome)) FROM usuarios_perfis up JOIN perfis p ON p.id=up.perfil_id WHERE up.usuario_id=u.id), '[]') AS perfis FROM usuarios u WHERE u.deletado_em IS NULL ORDER BY u.nome, u.id`,
+      `SELECT u.id, u.nome, u.email, u.ativo, u.motorista_id, COALESCE((SELECT json_agg(json_build_object('id',p.id,'nome',p.nome)) FROM usuarios_perfis up JOIN perfis p ON p.id=up.perfil_id WHERE up.usuario_id=u.id), '[]') AS perfis FROM usuarios u WHERE u.deletado_em IS NULL ORDER BY u.nome, u.id`,
     );
     res.json(rows);
   } catch {
@@ -49,8 +50,13 @@ router.post("/", authorize("usuarios:gerenciar"), async (req, res) => {
     try {
       await client.query("BEGIN");
       const { rows } = await client.query(
-        "INSERT INTO usuarios (nome, email, password_hash) VALUES ($1, $2, $3) RETURNING id, nome, email",
-        [parsed.data.nome, parsed.data.email, hash],
+        "INSERT INTO usuarios (nome, email, password_hash, motorista_id) VALUES ($1, $2, $3, $4) RETURNING id, nome, email, motorista_id",
+        [
+          parsed.data.nome,
+          parsed.data.email,
+          hash,
+          parsed.data.motorista_id ?? null,
+        ],
       );
       await client.query(
         "INSERT INTO usuarios_perfis (usuario_id, perfil_id) VALUES ($1, $2)",
@@ -69,13 +75,66 @@ router.post("/", authorize("usuarios:gerenciar"), async (req, res) => {
     res.status(code === "23505" ? 409 : code === "23503" ? 400 : 500).json({
       message:
         code === "23505"
-          ? "E-mail já cadastrado"
+          ? "E-mail ou motorista já vinculado a outra conta"
           : code === "23503"
             ? "Perfil não encontrado"
             : "Não foi possível criar usuário",
     });
   }
 });
+
+router.get(
+  "/motoristas-opcoes",
+  authorize("usuarios:gerenciar"),
+  async (_req, res) => {
+    try {
+      const { rows } = await pool.query(
+        "SELECT id,nome FROM motoristas WHERE ativo AND deletado_em IS NULL ORDER BY nome",
+      );
+      res.json(rows);
+    } catch {
+      res
+        .status(500)
+        .json({ message: "Não foi possível consultar motoristas" });
+    }
+  },
+);
+router.put(
+  "/:id/motorista",
+  authorize("usuarios:gerenciar"),
+  async (req, res) => {
+    const id = idSchema.safeParse(req.params.id);
+    const input = z
+      .object({ motorista_id: idSchema.nullable() })
+      .strict()
+      .safeParse(req.body);
+    if (!id.success || !input.success) {
+      res.status(400).json({ message: "Informe usuário e motorista válidos" });
+      return;
+    }
+    try {
+      const { rows } = await pool.query(
+        "UPDATE usuarios SET motorista_id=$2,atualizado_em=NOW() WHERE id=$1 AND deletado_em IS NULL RETURNING id,motorista_id",
+        [id.data, input.data.motorista_id],
+      );
+      if (!rows.length) {
+        res.status(404).json({ message: "Usuário não encontrado" });
+        return;
+      }
+      res.json(rows[0]);
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+      res.status(code === "23505" ? 409 : code === "23503" ? 400 : 500).json({
+        message:
+          code === "23505"
+            ? "Motorista já vinculado a outra conta"
+            : code === "23503"
+              ? "Motorista não encontrado"
+              : "Não foi possível vincular motorista",
+      });
+    }
+  },
+);
 
 router.get(
   "/auxiliares",

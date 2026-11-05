@@ -1,106 +1,176 @@
-@use '../../../styles/tokens' as *;
-
 .page {
-  display: flex;
-  flex-direction: column;
-  gap: $space-4;
+  padding: clamp(0rem, 1vw, 1rem);
+  container-type: inline-size;
+  min-width: 0;
+  background: #f8fafc;
+  min-height: 0;
+  font-family: inherit;
 }
-
+.header {
+  margin-bottom: 2rem;
+  h1 {
+    font-size: 1.5rem;
+    color: #1e293b;
+    margin-bottom: 0.2rem;
+  }
+  p {
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+}
 .layoutGrid {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: $space-4;
-  align-items: start;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
 }
-
-.formColumn,
-.summaryColumn {
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+}
+.card h2,
+.card h3 {
+  font-size: 1.1rem;
+  color: #334155;
+  margin-bottom: 0.5rem;
+}
+.subtitle {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 1rem;
+}
+.formGroup {
   display: flex;
   flex-direction: column;
-  gap: $space-4;
-}
-
-.card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: $space-4;
-  // AQUI ESTÁ A MÁGICA DA SOMBRA (idêntica à tela de motoristas)
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.1),
-    0 1px 2px rgba(0, 0, 0, 0.06);
-}
-
-.cardTitle {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: $space-3;
-}
-
-.fieldsGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: $space-4;
-
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
+  margin-bottom: 1rem;
+  flex: 1;
+  min-width: 0;
+  label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.4rem;
+  }
+  input,
+  select {
+    width: 100%;
+    min-width: 0;
+    padding: 0.6rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #1e293b;
   }
 }
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: $space-3;
-  margin-top: $space-4;
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
 }
-
 .totalBox {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8fafc;
-  padding: $space-3;
+  background: #eff6ff;
+  padding: 1rem;
   border-radius: 6px;
-  margin-top: $space-4;
-  border: 1px solid #e2e8f0;
-  // Um leve sombreado interno apenas para destacar o total
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-
-  strong {
-    font-size: 1.4rem;
-    color: #2563eb;
+  margin-top: 1rem;
+  span:first-child {
+    color: #1e40af;
+    font-size: 0.9rem;
   }
 }
-
-.subtitle {
-  font-size: 0.85rem;
-  color: #64748b;
-  margin-bottom: 0.5rem;
+.totalValue {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1e40af;
 }
-
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.btnSecondary {
+  padding: 0.6rem 1.2rem;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #475569;
+}
+.btnPrimary {
+  padding: 0.6rem 1.2rem;
+  background: #2563eb;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: white;
+}
+.plate {
+  font-size: 1.2rem;
+  font-weight: bold;
+  border: 2px solid #94a3b8;
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+}
+.vehicleInfo {
+  font-size: 0.8rem;
+  color: #64748b;
+}
 .progressInfo {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: bold;
   color: #334155;
   margin-bottom: 0.5rem;
 }
-
-.progressBar {
+.progressBar,
+.progressBarWarning {
   width: 100%;
   height: 8px;
   background: #e2e8f0;
   border-radius: 4px;
   overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+.progressBar div {
+  height: 100%;
+  background: #2563eb;
+}
+.progressBarWarning div {
+  height: 100%;
+  background: #f59e0b;
+}
 
-  div {
-    height: 100%;
-    background: #2563eb;
+.fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.formColumn,
+.summaryColumn {
+  min-width: 0;
+}
+@container (min-width: 520px) {
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container (min-width: 850px) {
+  .layoutGrid {
+    grid-template-columns: minmax(0, 1fr) 300px;
   }
 }

@@ -1,4 +1,9 @@
-export const MAINTENANCE_TYPES = ['Preventiva', 'Corretiva', 'Preditiva'] as const
+export const MAINTENANCE_TYPES = [
+  'Preventiva',
+  'Corretiva',
+  'Preditiva',
+  'Impeditiva',
+] as const
 export const MAINTENANCE_STATUSES = [
   'Agendada',
   'Em andamento',

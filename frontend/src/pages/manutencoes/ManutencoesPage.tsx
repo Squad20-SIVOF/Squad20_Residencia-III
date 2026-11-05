@@ -1,4 +1,7 @@
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import type { Vehicle } from './types/vehicle'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -38,12 +41,21 @@ const emptyFilters: MaintenanceFiltersValue = {
 const PAGE_SIZE = 6
 
 export function ManutencoesPage() {
-  const { maintenances, vehicles, loading } = useMaintenances()
+  const {
+    maintenances,
+    vehicles,
+    loading,
+    error: loadError,
+    refresh,
+    canManage,
+  } = useMaintenances()
   const [draft, setDraft] = useState<MaintenanceFiltersValue>(emptyFilters)
   const [filters, setFilters] = useState<MaintenanceFiltersValue>(emptyFilters)
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<Maintenance | null>(null)
   const [notice, setNotice] = useState('')
+  const [mutationError, setMutationError] = useState('')
+  const [deleting, setDeleting] = useState(false)
   const filtered = useMemo(
     () => sortByDateDesc(filterMaintenances(maintenances, vehicles, filters)),
     [maintenances, vehicles, filters],
@@ -53,12 +65,26 @@ export function ManutencoesPage() {
   const currentPage = Math.min(page, pageCount)
   const rows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
-  function removeSelected() {
-    if (!selected || !window.confirm(`Excluir a manutenção "${selected.descricao}"?`))
+  async function removeSelected() {
+    if (
+      !selected ||
+      deleting ||
+      !window.confirm(`Excluir a manutenção "${selected.descricao}"?`)
+    )
       return
-    maintenanceService.remove(selected.id)
-    setSelected(null)
-    setNotice('Manutenção excluída com sucesso.')
+    setDeleting(true)
+    setMutationError('')
+    try {
+      await maintenanceService.remove(selected.id)
+      setSelected(null)
+      setNotice('Manutenção excluída com sucesso.')
+    } catch (cause) {
+      setMutationError(
+        cause instanceof Error ? cause.message : 'Não foi possível excluir a manutenção.',
+      )
+    } finally {
+      setDeleting(false)
+    }
   }
 
   return (
@@ -70,12 +96,25 @@ export function ManutencoesPage() {
             Monitore e gerencie as manutenções da frota em um só lugar.
           </p>
         </div>
-        <Link className="btn btn-primary" to="/manutencoes/nova">
-          + Registrar manutenção
-        </Link>
+        {canManage && (
+          <Link className="btn btn-primary" to="/manutencoes/nova">
+            + Registrar manutenção
+          </Link>
+        )}
       </header>
-
-      {/* CORRIGIDO AQUI: div role=status para output */}
+      {loadError && (
+        <div className="alert alert-danger" role="alert">
+          {loadError}{' '}
+          <button type="button" onClick={refresh}>
+            Tentar novamente
+          </button>
+        </div>
+      )}
+      {mutationError && !selected && (
+        <div className="alert alert-danger" role="alert">
+          {mutationError}
+        </div>
+      )}
       {notice && (
         <output className="alert alert-success d-flex justify-content-between">
           {notice}
@@ -87,7 +126,6 @@ export function ManutencoesPage() {
           />
         </output>
       )}
-
       <div className="row g-3">
         {(
           [
@@ -257,7 +295,11 @@ export function ManutencoesPage() {
                 {!rows.length && (
                   <tr>
                     <td colSpan={7} className="text-center py-4 text-secondary">
-                      {loading ? 'Carregando...' : 'Nenhuma manutenção encontrada.'}
+                      {loading ? (
+                        <LoadingState label="Carregando manutenções" />
+                      ) : (
+                        'Nenhuma manutenção encontrada.'
+                      )}
                     </td>
                   </tr>
                 )}
@@ -289,77 +331,67 @@ export function ManutencoesPage() {
           </div>
         </div>
       </section>
-
-      {/* CORRIGIDO AQUI: section role=dialog para dialog, e adicionado o 'open' */}
       {selected && (
-        <div
-          className={styles.overlay}
-          role="presentation"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) setSelected(null)
-          }}
+        <ConfirmDialog
+          isOpen
+          title="Detalhes da manutenção"
+          description={vehicleLabel(vehicles.find((v) => v.id === selected.vehicleId))}
+          confirmLabel="Fechar"
+          cancelLabel={null}
+          onConfirm={() => setSelected(null)}
+          onCancel={() => setSelected(null)}
         >
-          <dialog
-            open
-            className={styles.dialog}
-            aria-modal="true"
-            aria-labelledby="maintenance-dialog-title"
-          >
-            <div className="d-flex justify-content-between align-items-start">
-              <h2 id="maintenance-dialog-title" className="h4">
-                Detalhes da manutenção
-              </h2>
-              <button
-                type="button"
-                className="btn-close"
-                aria-label="Fechar"
-                onClick={() => setSelected(null)}
-              />
+          {mutationError && (
+            <div className="alert alert-danger" role="alert">
+              {mutationError}
             </div>
-            <dl className="row mt-3">
-              <dt className="col-5">Veículo</dt>
-              <dd className="col-7">
-                {vehicleLabel(vehicles.find((v) => v.id === selected.vehicleId))}
-              </dd>
-              <dt className="col-5">Serviço</dt>
-              <dd className="col-7">{selected.descricao}</dd>
-              <dt className="col-5">Data</dt>
-              <dd className="col-7">
-                {date(selected.dataServico)} {selected.horaServico}
-              </dd>
-              <dt className="col-5">Oficina</dt>
-              <dd className="col-7">{selected.oficina}</dd>
-              <dt className="col-5">Quilometragem</dt>
-              <dd className="col-7">{km(selected.quilometragem)}</dd>
-              <dt className="col-5">Status</dt>
-              <dd className="col-7">{selected.status}</dd>
-              <dt className="col-5">Valor</dt>
-              <dd className="col-7">{money(selected.valorEstimado)}</dd>
-              <dt className="col-5">Próxima revisão</dt>
-              <dd className="col-7">
-                {selected.tipoProximaRevisao}
-                {selected.proximaRevisaoKm ? ` · ${km(selected.proximaRevisaoKm)}` : ''}
-                {selected.proximaRevisaoData
-                  ? ` · ${date(selected.proximaRevisaoData)}`
-                  : ''}
-              </dd>
-              <dt className="col-5">Comprovante</dt>
-              <dd className="col-7">{selected.comprovanteNome ?? 'Não informado'}</dd>
-            </dl>
+          )}
+          <dl className="row mt-3">
+            <dt className="col-5">Veículo</dt>
+            <dd className="col-7">
+              {vehicleLabel(vehicles.find((v) => v.id === selected.vehicleId))}
+            </dd>
+            <dt className="col-5">Serviço</dt>
+            <dd className="col-7">{selected.descricao}</dd>
+            <dt className="col-5">Data</dt>
+            <dd className="col-7">
+              {date(selected.dataServico)} {selected.horaServico}
+            </dd>
+            <dt className="col-5">Oficina</dt>
+            <dd className="col-7">{selected.oficina}</dd>
+            <dt className="col-5">Quilometragem</dt>
+            <dd className="col-7">{km(selected.quilometragem)}</dd>
+            <dt className="col-5">Status</dt>
+            <dd className="col-7">{selected.status}</dd>
+            <dt className="col-5">Valor</dt>
+            <dd className="col-7">{money(selected.valorEstimado)}</dd>
+            <dt className="col-5">Próxima revisão</dt>
+            <dd className="col-7">
+              {selected.tipoProximaRevisao}
+              {selected.proximaRevisaoKm ? ` · ${km(selected.proximaRevisaoKm)}` : ''}
+              {selected.proximaRevisaoData
+                ? ` · ${date(selected.proximaRevisaoData)}`
+                : ''}
+            </dd>
+            <dt className="col-5">Comprovante</dt>
+            <dd className="col-7">{selected.comprovanteNome ?? 'Não informado'}</dd>
+          </dl>
+          {canManage && (
             <div className="d-flex gap-2 justify-content-end">
               <button
                 type="button"
                 className="btn btn-outline-danger"
+                disabled={deleting}
                 onClick={removeSelected}
               >
-                Excluir
+                {deleting ? 'Excluindo...' : 'Excluir'}
               </button>
               <Link className="btn btn-primary" to={`/manutencoes/editar/${selected.id}`}>
                 Editar
               </Link>
             </div>
-          </dialog>
-        </div>
+          )}
+        </ConfirmDialog>
       )}
     </main>
   )
@@ -380,10 +412,56 @@ const emptyForm: MaintenanceInput = {
 }
 
 export function RegistrarManutencaoPage() {
-  const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const { maintenances, vehicles } = useMaintenances()
-  const editing = id ? maintenanceService.getById(id) : undefined
+  const { maintenances, vehicles, loading, error, refresh, canManage } = useMaintenances()
+  if (loading)
+    return (
+      <main className={styles.page}>
+        <LoadingState label="Carregando manutenção" />
+      </main>
+    )
+  if (error)
+    return (
+      <main className={styles.page}>
+        <p role="alert">{error}</p>
+        <button onClick={refresh}>Tentar novamente</button>
+      </main>
+    )
+  if (!canManage)
+    return (
+      <main className={styles.page}>
+        <p role="alert">Você não tem permissão para gerenciar manutenções.</p>
+        <Link to="/manutencoes">Voltar à listagem</Link>
+      </main>
+    )
+  const editing = id ? maintenances.find((item) => item.id === id) : undefined
+  if (id && !editing)
+    return (
+      <main className={styles.page}>
+        <h1>Manutenção não encontrada</h1>
+        <Link to="/manutencoes">Voltar à listagem</Link>
+      </main>
+    )
+  return (
+    <MaintenanceForm
+      key={id ?? 'nova'}
+      editing={editing}
+      maintenances={maintenances}
+      vehicles={vehicles}
+    />
+  )
+}
+function MaintenanceForm({
+  editing,
+  maintenances,
+  vehicles,
+}: {
+  editing: Maintenance | undefined
+  maintenances: Maintenance[]
+  vehicles: Vehicle[]
+}) {
+  const navigate = useNavigate()
+  const [saving, setSaving] = useState(false)
   const [form, setForm] = useState<MaintenanceInput>(() =>
     editing ? { ...editing } : { ...emptyForm },
   )
@@ -403,7 +481,7 @@ export function RegistrarManutencaoPage() {
   const change = <K extends keyof MaintenanceInput>(key: K, value: MaintenanceInput[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }))
 
-  function save(e: React.FormEvent<HTMLFormElement>) {
+  async function save(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (
       !form.vehicleId ||
@@ -432,6 +510,10 @@ export function RegistrarManutencaoPage() {
       setError('A próxima revisão deve ter data posterior à do serviço.')
       return
     }
+    if (form.notificarRevisao && !needsKm && !needsDate) {
+      setError('Defina a próxima revisão para ativar o lembrete.')
+      return
+    }
     const input: MaintenanceInput = {
       ...form,
       descricao: form.descricao.trim(),
@@ -440,21 +522,31 @@ export function RegistrarManutencaoPage() {
       proximaRevisaoKm: needsKm ? form.proximaRevisaoKm : undefined,
       proximaRevisaoData: needsDate ? form.proximaRevisaoData : undefined,
     }
-    if (editing) maintenanceService.update(editing.id, input)
-    else maintenanceService.create(input)
-    navigate('/manutencoes')
+    if (saving) return
+    setSaving(true)
+    setError('')
+    try {
+      if (editing) await maintenanceService.update(editing.id, input)
+      else await maintenanceService.create(input)
+      navigate('/manutencoes')
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : 'Não foi possível salvar a manutenção.',
+      )
+    } finally {
+      setSaving(false)
+    }
   }
 
-  if (id && !editing)
-    return (
-      <main className={styles.page}>
-        <h1>Manutenção não encontrada</h1>
-        <Link to="/manutencoes">Voltar à listagem</Link>
-      </main>
-    )
   return (
     <main className={styles.page}>
       <header>
+        <Breadcrumb
+          items={[
+            { label: 'Manutenções', to: '/manutencoes' },
+            { label: editing ? 'Editar cadastro' : 'Novo cadastro' },
+          ]}
+        />
         <h1>{editing ? 'Editar manutenção' : 'Registrar manutenção'}</h1>
         <p className="text-secondary">
           Registre um serviço ou agende uma manutenção da frota.
@@ -465,312 +557,317 @@ export function RegistrarManutencaoPage() {
           {error}
         </div>
       )}
-      <form onSubmit={save}>
-        <div className="row g-4">
-          <div className="col-lg-8">
-            <section className="card">
-              <div className="card-body">
-                <h2 className="h5 mb-3">Dados da manutenção</h2>
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label htmlFor="form-vehicle" className="form-label">
-                      Veículo *
-                    </label>
-                    <select
-                      required
-                      id="form-vehicle"
-                      className="form-select"
-                      value={form.vehicleId}
-                      onChange={(e) => change('vehicleId', e.target.value)}
-                    >
-                      <option value="">Selecione</option>
-                      {vehicles.map((v) => (
-                        <option key={v.id} value={v.id}>
-                          {vehicleLabel(v)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-md-6">
-                    <label htmlFor="form-type" className="form-label">
-                      Tipo *
-                    </label>
-                    <select
-                      id="form-type"
-                      className="form-select"
-                      value={form.tipo}
-                      onChange={(e) =>
-                        change('tipo', e.target.value as MaintenanceInput['tipo'])
-                      }
-                    >
-                      {MAINTENANCE_TYPES.map((v) => (
-                        <option key={v}>{v}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-12">
-                    <label htmlFor="form-description" className="form-label">
-                      Descrição do serviço *
-                    </label>
-                    <textarea
-                      id="form-description"
-                      className="form-control"
-                      minLength={3}
-                      maxLength={200}
-                      required
-                      rows={3}
-                      value={form.descricao}
-                      onChange={(e) => change('descricao', e.target.value)}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label htmlFor="form-date" className="form-label">
-                      Data do serviço *
-                    </label>
-                    <input
-                      id="form-date"
-                      className="form-control"
-                      type="date"
-                      required
-                      value={form.dataServico}
-                      onChange={(e) => change('dataServico', e.target.value)}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label htmlFor="form-time" className="form-label">
-                      Horário
-                    </label>
-                    <input
-                      id="form-time"
-                      className="form-control"
-                      type="time"
-                      value={form.horaServico ?? ''}
-                      onChange={(e) => change('horaServico', e.target.value)}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label htmlFor="form-km" className="form-label">
-                      Quilometragem *
-                    </label>
-                    <input
-                      id="form-km"
-                      className="form-control"
-                      type="number"
-                      min={1}
-                      step={1}
-                      required
-                      value={form.quilometragem || ''}
-                      onChange={(e) => change('quilometragem', Number(e.target.value))}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label htmlFor="form-workshop" className="form-label">
-                      Oficina / fornecedor *
-                    </label>
-                    <input
-                      id="form-workshop"
-                      className="form-control"
-                      minLength={2}
-                      maxLength={120}
-                      required
-                      value={form.oficina}
-                      onChange={(e) => change('oficina', e.target.value)}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label htmlFor="form-value" className="form-label">
-                      Valor estimado (R$) *
-                    </label>
-                    <input
-                      id="form-value"
-                      className="form-control"
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      required
-                      value={form.valorEstimado || ''}
-                      onChange={(e) => change('valorEstimado', Number(e.target.value))}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label htmlFor="form-status" className="form-label">
-                      Status *
-                    </label>
-                    <select
-                      id="form-status"
-                      className="form-select"
-                      value={form.status}
-                      onChange={(e) =>
-                        change('status', e.target.value as MaintenanceInput['status'])
-                      }
-                    >
-                      {MAINTENANCE_STATUSES.map((v) => (
-                        <option key={v}>{v}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </section>
-            <section className="card mt-3">
-              <div className="card-body">
-                <h2 className="h5">Próxima revisão</h2>
-                <div className="row g-3">
-                  <div className="col-12">
-                    <label htmlFor="form-revision-type" className="form-label">
-                      Programar por
-                    </label>
-                    <select
-                      id="form-revision-type"
-                      className="form-select"
-                      value={form.tipoProximaRevisao}
-                      onChange={(e) =>
-                        change(
-                          'tipoProximaRevisao',
-                          e.target.value as MaintenanceInput['tipoProximaRevisao'],
-                        )
-                      }
-                    >
-                      {NEXT_REVISION_TYPES.map((v) => (
-                        <option key={v}>{v}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {needsKm && (
+      <form onSubmit={save} aria-busy={saving}>
+        <fieldset disabled={saving}>
+          <div className="row g-4">
+            <div className="col-lg-8">
+              <section className="card">
+                <div className="card-body">
+                  <h2 className="h5 mb-3">Dados da manutenção</h2>
+                  <div className="row g-3">
                     <div className="col-md-6">
-                      <label htmlFor="form-next-km" className="form-label">
-                        Próxima revisão (km) *
+                      <label htmlFor="form-vehicle" className="form-label">
+                        Veículo *
                       </label>
-                      <input
-                        id="form-next-km"
-                        className="form-control"
-                        type="number"
-                        min={form.quilometragem + 1}
+                      <select
                         required
-                        value={form.proximaRevisaoKm || ''}
+                        id="form-vehicle"
+                        className="form-select"
+                        value={form.vehicleId}
+                        onChange={(e) => change('vehicleId', e.target.value)}
+                      >
+                        <option value="">Selecione</option>
+                        {vehicles.map((v) => (
+                          <option key={v.id} value={v.id}>
+                            {vehicleLabel(v)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-md-6">
+                      <label htmlFor="form-type" className="form-label">
+                        Tipo *
+                      </label>
+                      <select
+                        id="form-type"
+                        className="form-select"
+                        value={form.tipo}
                         onChange={(e) =>
-                          change('proximaRevisaoKm', Number(e.target.value))
+                          change('tipo', e.target.value as MaintenanceInput['tipo'])
                         }
+                      >
+                        {MAINTENANCE_TYPES.map((v) => (
+                          <option key={v}>{v}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-12">
+                      <label htmlFor="form-description" className="form-label">
+                        Descrição do serviço *
+                      </label>
+                      <textarea
+                        id="form-description"
+                        className="form-control"
+                        minLength={3}
+                        maxLength={200}
+                        required
+                        rows={3}
+                        value={form.descricao}
+                        onChange={(e) => change('descricao', e.target.value)}
                       />
                     </div>
-                  )}
-                  {needsDate && (
                     <div className="col-md-6">
-                      <label htmlFor="form-next-date" className="form-label">
-                        Próxima revisão (data) *
+                      <label htmlFor="form-date" className="form-label">
+                        Data do serviço *
                       </label>
                       <input
-                        id="form-next-date"
+                        id="form-date"
                         className="form-control"
                         type="date"
-                        min={form.dataServico || undefined}
                         required
-                        value={form.proximaRevisaoData ?? ''}
-                        onChange={(e) => change('proximaRevisaoData', e.target.value)}
+                        value={form.dataServico}
+                        onChange={(e) => change('dataServico', e.target.value)}
                       />
                     </div>
-                  )}
-                  <div className="col-12">
-                    <div className="form-check">
-                      <input
-                        id="form-notify"
-                        className="form-check-input"
-                        type="checkbox"
-                        checked={form.notificarRevisao}
-                        onChange={(e) => change('notificarRevisao', e.target.checked)}
-                      />
-                      <label className="form-check-label" htmlFor="form-notify">
-                        Solicitar lembrete de revisão (preferência salva; notificações não
-                        implementadas)
+                    <div className="col-md-6">
+                      <label htmlFor="form-time" className="form-label">
+                        Horário
                       </label>
+                      <input
+                        id="form-time"
+                        className="form-control"
+                        type="time"
+                        value={form.horaServico ?? ''}
+                        onChange={(e) => change('horaServico', e.target.value)}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label htmlFor="form-km" className="form-label">
+                        Quilometragem *
+                      </label>
+                      <input
+                        id="form-km"
+                        className="form-control"
+                        type="number"
+                        min={1}
+                        step={1}
+                        required
+                        value={form.quilometragem || ''}
+                        onChange={(e) => change('quilometragem', Number(e.target.value))}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label htmlFor="form-workshop" className="form-label">
+                        Oficina / fornecedor *
+                      </label>
+                      <input
+                        id="form-workshop"
+                        className="form-control"
+                        minLength={2}
+                        maxLength={120}
+                        required
+                        value={form.oficina}
+                        onChange={(e) => change('oficina', e.target.value)}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label htmlFor="form-value" className="form-label">
+                        Valor estimado (R$) *
+                      </label>
+                      <input
+                        id="form-value"
+                        className="form-control"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        required
+                        value={form.valorEstimado || ''}
+                        onChange={(e) => change('valorEstimado', Number(e.target.value))}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label htmlFor="form-status" className="form-label">
+                        Status *
+                      </label>
+                      <select
+                        id="form-status"
+                        className="form-select"
+                        value={form.status}
+                        onChange={(e) =>
+                          change('status', e.target.value as MaintenanceInput['status'])
+                        }
+                      >
+                        {MAINTENANCE_STATUSES.map((v) => (
+                          <option key={v}>{v}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 </div>
-              </div>
-            </section>
-            <section className="card mt-3">
-              <div className="card-body">
-                <h2 className="h5">Comprovante</h2>
-                <label htmlFor="form-receipt" className="form-label">
-                  Anexar arquivo (opcional)
-                </label>
-                <input
-                  id="form-receipt"
-                  type="file"
-                  className="form-control"
-                  accept=".pdf,image/*"
-                  onChange={(e) => setReceipt(e.target.files?.[0] ?? null)}
-                />
-                <p className="text-secondary small mt-2 mb-0">
-                  Nesta versão demonstrativa, somente o nome do arquivo é salvo; o
-                  conteúdo não é enviado.
-                </p>
-                {form.comprovanteNome && !receipt && (
-                  <p className="small mt-2">Atual: {form.comprovanteNome}</p>
-                )}
-              </div>
-            </section>
-            <div className="d-flex gap-2 justify-content-end mt-3">
-              <button
-                className="btn btn-outline-secondary"
-                type="button"
-                onClick={() => navigate('/manutencoes')}
-              >
-                Cancelar
-              </button>
-              <button className="btn btn-primary" type="submit">
-                {editing ? 'Salvar alterações' : 'Salvar manutenção'}
-              </button>
-            </div>
-          </div>
-          <aside className="col-lg-4">
-            <div className="card">
-              <div className="card-body">
-                <h2 className="h5">Resumo</h2>
-                <p className="mb-1">
-                  <strong>Veículo:</strong> {vehicleLabel(vehicle)}
-                </p>
-                <p className="mb-1">
-                  <strong>Serviço:</strong> {form.descricao || 'Não informado'}
-                </p>
-                <p className="mb-1">
-                  <strong>Valor:</strong> {money(form.valorEstimado)}
-                </p>
-                <p className="mb-1">
-                  <strong>Status:</strong> {form.status}
-                </p>
-                <p className="mb-0">
-                  <strong>Data:</strong> {date(form.dataServico)}
-                </p>
-              </div>
-            </div>
-            {vehicle && (
-              <div className="card mt-3">
+              </section>
+              <section className="card mt-3">
                 <div className="card-body">
-                  <h2 className="h6">Veículo selecionado</h2>
-                  <p className="mb-1">{vehicleLabel(vehicle)}</p>
-                  <p className="mb-0">Última quilometragem conhecida: {km(lastKm)}</p>
+                  <h2 className="h5">Próxima revisão</h2>
+                  <div className="row g-3">
+                    <div className="col-12">
+                      <label htmlFor="form-revision-type" className="form-label">
+                        Programar por
+                      </label>
+                      <select
+                        id="form-revision-type"
+                        className="form-select"
+                        value={form.tipoProximaRevisao}
+                        onChange={(e) =>
+                          change(
+                            'tipoProximaRevisao',
+                            e.target.value as MaintenanceInput['tipoProximaRevisao'],
+                          )
+                        }
+                      >
+                        {NEXT_REVISION_TYPES.map((v) => (
+                          <option key={v}>{v}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {needsKm && (
+                      <div className="col-md-6">
+                        <label htmlFor="form-next-km" className="form-label">
+                          Próxima revisão (km) *
+                        </label>
+                        <input
+                          id="form-next-km"
+                          className="form-control"
+                          type="number"
+                          min={form.quilometragem + 1}
+                          required
+                          value={form.proximaRevisaoKm || ''}
+                          onChange={(e) =>
+                            change('proximaRevisaoKm', Number(e.target.value))
+                          }
+                        />
+                      </div>
+                    )}
+                    {needsDate && (
+                      <div className="col-md-6">
+                        <label htmlFor="form-next-date" className="form-label">
+                          Próxima revisão (data) *
+                        </label>
+                        <input
+                          id="form-next-date"
+                          className="form-control"
+                          type="date"
+                          min={form.dataServico || undefined}
+                          required
+                          value={form.proximaRevisaoData ?? ''}
+                          onChange={(e) => change('proximaRevisaoData', e.target.value)}
+                        />
+                      </div>
+                    )}
+                    <div className="col-12">
+                      <div className="form-check">
+                        <input
+                          id="form-notify"
+                          className="form-check-input"
+                          type="checkbox"
+                          checked={form.notificarRevisao}
+                          onChange={(e) => change('notificarRevisao', e.target.checked)}
+                        />
+                        <label className="form-check-label" htmlFor="form-notify">
+                          Receber lembrete da próxima revisão por e-mail
+                        </label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
-            {vehicle && form.quilometragem > 0 && form.quilometragem < lastKm && (
-              <div className="alert alert-warning mt-3">
-                A quilometragem informada é inferior à última registrada ({km(lastKm)}).
-              </div>
-            )}
-            {last && (
-              <div className="card mt-3">
+              </section>
+              <section className="card mt-3">
                 <div className="card-body">
-                  <h2 className="h6">Última manutenção</h2>
-                  <p className="mb-1">{last.descricao}</p>
-                  <p className="mb-0 text-secondary">
-                    {date(last.dataServico)} · {km(last.quilometragem)}
+                  <h2 className="h5">Comprovante</h2>
+                  <label htmlFor="form-receipt" className="form-label">
+                    Anexar arquivo (opcional)
+                  </label>
+                  <input
+                    id="form-receipt"
+                    type="file"
+                    className="form-control"
+                    accept=".pdf,image/*"
+                    onChange={(e) => setReceipt(e.target.files?.[0] ?? null)}
+                  />
+                  <p className="text-secondary small mt-2 mb-0">
+                    Nesta versão demonstrativa, somente o nome do arquivo é salvo; o
+                    conteúdo não é enviado.
+                  </p>
+                  {form.comprovanteNome && !receipt && (
+                    <p className="small mt-2">Atual: {form.comprovanteNome}</p>
+                  )}
+                </div>
+              </section>
+              <div className="d-flex gap-2 justify-content-end mt-3">
+                <button
+                  className="btn btn-outline-secondary"
+                  type="button"
+                  onClick={() => navigate('/manutencoes')}
+                >
+                  Cancelar
+                </button>
+                <button className="btn btn-primary" type="submit">
+                  {saving
+                    ? 'Salvando...'
+                    : editing
+                      ? 'Salvar alterações'
+                      : 'Salvar manutenção'}
+                </button>
+              </div>
+            </div>
+            <aside className="col-lg-4">
+              <div className="card">
+                <div className="card-body">
+                  <h2 className="h5">Resumo</h2>
+                  <p className="mb-1">
+                    <strong>Veículo:</strong> {vehicleLabel(vehicle)}
+                  </p>
+                  <p className="mb-1">
+                    <strong>Serviço:</strong> {form.descricao || 'Não informado'}
+                  </p>
+                  <p className="mb-1">
+                    <strong>Valor:</strong> {money(form.valorEstimado)}
+                  </p>
+                  <p className="mb-1">
+                    <strong>Status:</strong> {form.status}
+                  </p>
+                  <p className="mb-0">
+                    <strong>Data:</strong> {date(form.dataServico)}
                   </p>
                 </div>
               </div>
-            )}
-          </aside>
-        </div>
+              {vehicle && (
+                <div className="card mt-3">
+                  <div className="card-body">
+                    <h2 className="h6">Veículo selecionado</h2>
+                    <p className="mb-1">{vehicleLabel(vehicle)}</p>
+                    <p className="mb-0">Última quilometragem conhecida: {km(lastKm)}</p>
+                  </div>
+                </div>
+              )}
+              {vehicle && form.quilometragem > 0 && form.quilometragem < lastKm && (
+                <div className="alert alert-warning mt-3">
+                  A quilometragem informada é inferior à última registrada ({km(lastKm)}).
+                </div>
+              )}
+              {last && (
+                <div className="card mt-3">
+                  <div className="card-body">
+                    <h2 className="h6">Última manutenção</h2>
+                    <p className="mb-1">{last.descricao}</p>
+                    <p className="mb-0 text-secondary">
+                      {date(last.dataServico)} · {km(last.quilometragem)}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </aside>
+          </div>
+        </fieldset>
       </form>
     </main>
   )

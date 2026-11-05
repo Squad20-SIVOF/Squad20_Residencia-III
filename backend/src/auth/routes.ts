@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { z } from "zod";
 import { pool } from "../db";
+import {
+  phoneSchema,
+  photoSchema,
+  optionalText,
+} from "../middleware/validations/schemas/contactSchema";
 import profileModel from "../models/profileModel";
 import { hashPassword, verifyPassword } from "./password";
 import {
@@ -76,12 +81,63 @@ router.get("/me", authenticate, async (req, res) => {
   try {
     const id = (req as AuthenticatedRequest).user!.id;
     const { rows } = await pool.query(
-      "SELECT id, nome, email FROM usuarios WHERE id = $1",
+      "SELECT id, nome, email, telefone, departamento, cargo, matricula, foto, senha_alterada_em, motorista_id FROM usuarios WHERE id = $1",
       [id],
     );
     res.json({ ...rows[0], permissoes: await profileModel.permissions(id) });
   } catch {
     res.status(500).json({ message: "Não foi possível consultar o usuário" });
+  }
+});
+
+const profileInput = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .email()
+      .max(150)
+      .transform((value) => value.toLowerCase()),
+    telefone: phoneSchema,
+    departamento: optionalText(150),
+    cargo: optionalText(150),
+    matricula: optionalText(50),
+    foto: photoSchema,
+  })
+  .strict();
+router.put("/profile", authenticate, async (req, res) => {
+  const parsed = profileInput.safeParse(req.body);
+  if (!parsed.success) {
+    res
+      .status(400)
+      .json({ message: parsed.error.issues.map((i) => i.message).join("; ") });
+    return;
+  }
+  try {
+    const input = parsed.data;
+    const { rows } = await pool.query(
+      `UPDATE usuarios SET email=$2,
+      telefone=CASE WHEN $3::jsonb ? 'telefone' THEN $3::jsonb->>'telefone' ELSE telefone END,
+      departamento=CASE WHEN $3::jsonb ? 'departamento' THEN $3::jsonb->>'departamento' ELSE departamento END,
+      cargo=CASE WHEN $3::jsonb ? 'cargo' THEN $3::jsonb->>'cargo' ELSE cargo END,
+      matricula=CASE WHEN $3::jsonb ? 'matricula' THEN $3::jsonb->>'matricula' ELSE matricula END,
+      foto=CASE WHEN $3::jsonb ? 'foto' THEN $3::jsonb->>'foto' ELSE foto END,
+      atualizado_em=NOW() WHERE id=$1
+      RETURNING id, nome, email, telefone, departamento, cargo, matricula, foto, senha_alterada_em`,
+      [
+        (req as AuthenticatedRequest).user!.id,
+        input.email,
+        JSON.stringify(input),
+      ],
+    );
+    res.json(rows[0]);
+  } catch (error) {
+    res.status((error as { code?: string }).code === "23505" ? 409 : 500).json({
+      message:
+        (error as { code?: string }).code === "23505"
+          ? "E-mail já cadastrado"
+          : "Não foi possível salvar o perfil",
+    });
   }
 });
 
@@ -120,7 +176,7 @@ router.post("/password", authenticate, async (req, res) => {
     try {
       await client.query("BEGIN");
       const updated = await client.query(
-        "UPDATE usuarios SET password_hash=$2, atualizado_em=NOW() WHERE id=$1 AND password_hash=$3",
+        "UPDATE usuarios SET password_hash=$2, senha_alterada_em=NOW(), atualizado_em=NOW() WHERE id=$1 AND password_hash=$3",
         [userId, hash, rows[0].password_hash],
       );
       if (!updated.rowCount) {

@@ -109,6 +109,9 @@ test('cadastro envia somente campos suportados pela API', async () => {
   })
   expect(JSON.parse(request.mock.calls[0]?.[1]?.body as string)).toEqual({
     nome: 'Maria Silva',
+    telefone: null,
+    email: null,
+    foto: null,
     cpf: '52998224725',
     cnh: '11122233344',
     categoria: 'D',

@@ -1,10 +1,14 @@
 import { z } from "zod";
+import { phoneSchema, emailSchema, photoSchema } from "./contactSchema";
 import { fleetSchema } from "./fleetSchema";
 import { cpfSchema } from "../cpf";
 import { date } from "../../../utils/dataUtils";
 // Schema do Motorista
 export const driverSchema = z
   .object({
+    telefone: phoneSchema,
+    email: emailSchema,
+    foto: photoSchema,
     nome: z.string().trim().min(3).max(150),
     cpf: cpfSchema,
     cnh: z

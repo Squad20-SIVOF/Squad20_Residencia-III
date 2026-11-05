@@ -4,6 +4,9 @@ import type { Driver, DriverInput, CnhCategory, DriverStatus } from '../types'
 interface DriverResponse {
   id: string
   nome: string
+  telefone?: string | null
+  email?: string | null
+  foto?: string | null
   cpf: string
   cnh: string
   categoria: CnhCategory
@@ -29,13 +32,17 @@ const toDriver = (row: DriverResponse): Driver => ({
     : ['ativo', 'em_viagem', 'ferias', 'bloqueado'].includes(row.status)
       ? (row.status as DriverStatus)
       : 'ativo',
-  phone: '',
-  email: '',
+  phone: row.telefone ?? '',
+  email: row.email ?? '',
+  ...(row.foto ? { photo: row.foto } : {}),
   fleet: row.frota ?? '',
   vehicles: row.veiculos ?? [],
 })
 const toBody = (input: DriverInput) => ({
   nome: input.name,
+  telefone: input.phone || null,
+  email: input.email || null,
+  foto: input.photo ?? null,
   cpf: input.cpf,
   cnh: input.cnh,
   categoria: input.cnhCategory,

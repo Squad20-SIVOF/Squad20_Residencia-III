@@ -12,6 +12,9 @@ import notifRoutes from "./routes/notifRoutes";
 import profileRoutes from "./routes/profileRoutes";
 import userProfileRoutes from "./routes/userProfileRoutes";
 import alertRoutes from "./routes/alertRoutes";
+import driverInspectionRoutes from "./routes/driverInspectionRoutes";
+import fuelRoutes from "./routes/fuelRoutes";
+import driverFuelRoutes from "./routes/driverFuelRoutes";
 import requestRoutes from "./routes/requestRoutes";
 
 export const app = express();
@@ -33,6 +36,9 @@ app.use("/notification", authenticate, notifRoutes);
 app.use("/perfis", authenticate, profileRoutes);
 app.use("/usuarios", authenticate, usersRoutes, userProfileRoutes);
 app.use("/alerts", authenticate, alertRoutes);
+app.use("/motorista/vistorias", authenticate, driverInspectionRoutes);
+app.use("/motorista/abastecimentos", authenticate, driverFuelRoutes);
+app.use("/abastecimentos", authenticate, fuelRoutes);
 app.use("/solicitacoes", authenticate, requestRoutes);
 
 export default app;

@@ -1,65 +1,142 @@
-@use '../../styles/tokens' as *;
-
 .page {
-  display: flex;
-  flex-direction: column;
-  gap: $space-4;
+  padding: clamp(0rem, 1vw, 1rem);
+  container-type: inline-size;
+  min-width: 0;
+  background: #f8fafc;
+  min-height: 0;
+  font-family: inherit;
 }
-
-.list {
+.header {
   display: flex;
-  flex-direction: column;
-  gap: $space-4;
-  // Sombra sutil na área da tabela para destacar do fundo
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.1),
-    0 1px 2px rgba(0, 0, 0, 0.06);
-  border-radius: 8px;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 2rem;
+  h1 {
+    font-size: 1.5rem;
+    color: #1e293b;
+    margin-bottom: 0.2rem;
+  }
+  p {
+    color: #64748b;
+    font-size: 0.875rem;
+  }
 }
-
-.statsGrid {
+.btnPrimary {
+  padding: 0.6rem 1.2rem;
+  background: #2563eb;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: white;
+}
+.btnSecondary {
+  padding: 0.6rem 1.2rem;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #475569;
+}
+.kpiGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: $space-4;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
-
-.statCard {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+.card {
+  min-width: 0;
+  background: white;
   border-radius: 8px;
-  padding: $space-4;
-  // AQUI ESTÁ O SOMBREADO IGUAL AO DA TELA DE MOTORISTAS
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.1),
-    0 1px 2px rgba(0, 0, 0, 0.06);
-  // O detalhe da borda colorida na esquerda (igual ao da tela de motoristas)
-  border-left-width: 4px;
-
-  // Vamos colorir as bordas esquerdas de cada card (igual ao print)
-  &:nth-child(1) {
-    border-left-color: #10b981;
-  } // Verde
-  &:nth-child(2) {
-    border-left-color: #f59e0b;
-  } // Amarelo
-  &:nth-child(3) {
-    border-left-color: #ef4444;
-  } // Vermelho
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  h2 {
+    font-size: 1.8rem;
+    color: #1e293b;
+    margin: 0.5rem 0;
+  }
 }
-
-.statLabel {
+.kpiTitle {
   font-size: 0.85rem;
   color: #64748b;
   font-weight: 600;
 }
-
-.statValue {
-  font-size: 1.8rem;
-  color: #1e293b;
-  margin: 0.5rem 0;
-}
-
-.statDesc {
+.kpiSub {
   font-size: 0.8rem;
   color: #94a3b8;
+}
+.progressBarWarning {
+  width: 100%;
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.progressBarWarning div {
+  height: 100%;
+  background: #f59e0b;
+}
+.filterGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.4rem;
+  }
+  input,
+  select {
+    width: 100%;
+    min-width: 0;
+    padding: 0.6rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  text-align: left;
+  th {
+    padding: 1rem;
+    background: #eff6ff;
+    color: #1e40af;
+    font-weight: 600;
+    border-bottom: 2px solid #bfdbfe;
+  }
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+  }
+}
+.subText {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.tableScroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@container (min-width: 700px) {
+  .kpiGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .filterGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
+  }
 }

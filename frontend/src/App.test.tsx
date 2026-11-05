@@ -33,10 +33,12 @@ test('renderiza o início dentro do menu lateral', async () => {
   expect(await screen.findByText(/motoristas ativos/i)).toBeInTheDocument()
 })
 
-test('renderiza a página de perfil em /perfil', () => {
+test('renderiza a página de perfil em /perfil', async () => {
   renderAt('/perfil')
 
-  expect(screen.getByRole('heading', { name: 'Perfil de Usuário' })).toBeInTheDocument()
+  expect(
+    await screen.findByRole('heading', { name: 'Perfil de Usuário' }),
+  ).toBeInTheDocument()
   expect(screen.queryByText(/módulo em construção/i)).not.toBeInTheDocument()
 })
 

@@ -1,4 +1,4 @@
-import type { DriverHomeData, FuelEntryInput } from '../types'
+import type { DriverHomeData } from '../types'
 
 /*
  * Dados mockados enquanto a API do app do motorista não existe.
@@ -74,14 +74,4 @@ export function fetchDriverHome(): Promise<DriverHomeData> {
       { id: 'c6', label: 'Limpeza interna' },
     ],
   })
-}
-
-export function submitChecklist(checkedIds: string[]): Promise<void> {
-  void checkedIds
-  return respondWith(undefined)
-}
-
-export function submitFuelEntry(entry: FuelEntryInput): Promise<void> {
-  void entry
-  return respondWith(undefined)
 }
