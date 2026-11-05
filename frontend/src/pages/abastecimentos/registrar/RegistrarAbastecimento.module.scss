@@ -1,168 +1,109 @@
+@use '../../../styles/tokens' as *;
+
 .page {
-  padding: clamp(0rem, 1vw, 1rem);
-  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
   min-width: 0;
-  background: #f8fafc;
-  min-height: 0;
-  font-family: inherit;
-}
-.header {
-  margin-bottom: 2rem;
-  h1 {
-    font-size: 1.5rem;
-    color: #1e293b;
-    margin-bottom: 0.2rem;
-  }
-  p {
-    color: #64748b;
-    font-size: 0.875rem;
-  }
+  container-type: inline-size;
 }
 .layoutGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1.5rem;
+  gap: $space-4;
 }
-.card {
-  background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 1.5rem;
+.formColumn,
+.summaryColumn {
+  min-width: 0;
 }
-.card h2,
-.card h3 {
-  font-size: 1.1rem;
-  color: #334155;
-  margin-bottom: 0.5rem;
-}
-.subtitle {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  margin-bottom: 1rem;
-}
-.formGroup {
+.summaryColumn,
+.fieldset {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1rem;
-  flex: 1;
-  min-width: 0;
-  label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #475569;
-    margin-bottom: 0.4rem;
-  }
-  input,
-  select {
-    width: 100%;
-    min-width: 0;
-    padding: 0.6rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    color: #1e293b;
-  }
+  gap: $space-4;
 }
-.row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
-}
-.totalBox {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #eff6ff;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-top: 1rem;
-  span:first-child {
-    color: #1e40af;
-    font-size: 0.9rem;
-  }
-}
-.totalValue {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #1e40af;
-}
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-.btnSecondary {
-  padding: 0.6rem 1.2rem;
-  background: white;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  color: #475569;
-}
-.btnPrimary {
-  padding: 0.6rem 1.2rem;
-  background: #2563eb;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  color: white;
-}
-.plate {
-  font-size: 1.2rem;
-  font-weight: bold;
-  border: 2px solid #94a3b8;
-  display: inline-block;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  margin: 0.5rem 0;
-}
-.vehicleInfo {
-  font-size: 0.8rem;
-  color: #64748b;
-}
-.progressInfo {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: #334155;
-  margin-bottom: 0.5rem;
-}
-.progressBar,
-.progressBarWarning {
-  width: 100%;
-  height: 8px;
-  background: #e2e8f0;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 0.5rem;
-}
-.progressBar div {
-  height: 100%;
-  background: #2563eb;
-}
-.progressBarWarning div {
-  height: 100%;
-  background: #f59e0b;
-}
-
 .fieldset {
   border: 0;
   padding: 0;
   margin: 0;
   min-width: 0;
-  display: grid;
-  gap: 1.5rem;
 }
-
-.formColumn,
-.summaryColumn {
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
   min-width: 0;
+  padding: $space-4;
+  background: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  h2,
+  h3 {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: $color-primary;
+  }
+}
+.subtitle,
+.vehicleInfo {
+  color: $color-text-muted;
+  font-size: $font-size-small;
+}
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  min-width: 0;
+  label {
+    font-size: $font-size-small;
+    font-weight: 500;
+  }
+  input,
+  select {
+    width: 100%;
+    min-width: 0;
+    min-height: $touch-target;
+    padding: $space-2 $space-3;
+    font: inherit;
+    font-size: $font-size-body;
+    color: $color-text;
+    background: $color-card;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    &:focus-visible {
+      border-color: $color-primary;
+    }
+    &:disabled {
+      color: $color-text-muted;
+      background: $color-surface;
+      opacity: 0.7;
+    }
+  }
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
+}
+.totalBox {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $space-2;
+  padding: $space-3;
+  color: $color-primary;
+  background: $color-primary-soft;
+  border-radius: $radius-md;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: $space-2;
+  padding-top: $space-3;
+  border-top: 1px solid $color-border;
 }
 @container (min-width: 520px) {
   .row {
@@ -171,6 +112,15 @@
 }
 @container (min-width: 850px) {
   .layoutGrid {
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   }
+}
+
+.formGroup select {
+  appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%235b6575' stroke-width='1.5' stroke-linecap='round' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  background-size: 1rem;
 }

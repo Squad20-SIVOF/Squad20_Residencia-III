@@ -1,5 +1,7 @@
+import { PageHeader } from '@/components/PageHeader'
+import { ButtonLink } from '@/components/ButtonLink'
 import { useCallback, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { currentUser } from '@/service/authService'
 import { useAsync } from '@/hooks/useAsync'
 import { StateMessage } from '@/components/StateMessage'
@@ -176,12 +178,10 @@ function FuelForm({
   }
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1>{id ? 'Editar abastecimento' : 'Registrar abastecimento'}</h1>
-          <p>Registre a despesa e mantenha o histórico do veículo atualizado.</p>
-        </div>
-      </header>
+      <PageHeader
+        title={id ? 'Editar abastecimento' : 'Registrar abastecimento'}
+        subtitle="Registre a despesa e mantenha o histórico do veículo atualizado."
+      />
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">Abastecimento registrado com sucesso.</Alert>}
       {!options.veiculos.length && (
@@ -258,12 +258,12 @@ function FuelForm({
               {field('posto', 'Posto')}
             </section>
             <div className={styles.actions}>
-              <Link
+              <ButtonLink
+                variant="secondary"
                 to={mode === 'driver' ? '/' : '/abastecimentos'}
-                className={styles.btnSecondary}
               >
                 Cancelar
-              </Link>
+              </ButtonLink>
               <Button type="submit" isLoading={saving}>
                 {id ? 'Salvar alterações' : 'Salvar abastecimento'}
               </Button>
