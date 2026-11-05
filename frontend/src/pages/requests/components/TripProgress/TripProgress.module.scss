@@ -1,0 +1,93 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+// Cada etapa desenha a metade esquerda e a direita da linha que a liga às vizinhas.
+.step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-1;
+  text-align: center;
+
+  &::before,
+  &::after {
+    position: absolute;
+    top: calc(#{$status-dot-size} / 2);
+    width: 50%;
+    height: 2px;
+    content: '';
+    background-color: $color-border;
+  }
+
+  &::before {
+    left: 0;
+  }
+
+  &::after {
+    right: 0;
+  }
+
+  &:first-child::before,
+  &:last-child::after {
+    display: none;
+  }
+}
+
+.marker {
+  position: relative;
+  z-index: 1;
+  width: $status-dot-size;
+  height: $status-dot-size;
+  background-color: $color-card;
+  border: 2px solid $color-border;
+  border-radius: $radius-full;
+}
+
+.label {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.stepDone,
+.stepCurrent {
+  &::before {
+    background-color: $color-primary;
+  }
+
+  .marker {
+    background-color: $color-primary;
+    border-color: $color-primary;
+  }
+
+  .label {
+    color: $color-primary;
+  }
+}
+
+.stepDone::after {
+  background-color: $color-primary;
+}
+
+// Etapa atual: marcador maior e texto em negrito, além da cor.
+.stepCurrent {
+  .marker {
+    transform: scale(1.5);
+  }
+
+  .label {
+    font-weight: 700;
+  }
+}
+
+.hidden {
+  @include visually-hidden;
+}

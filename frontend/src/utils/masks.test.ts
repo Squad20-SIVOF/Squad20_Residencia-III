@@ -1,5 +1,13 @@
 import { expect, test } from 'vitest'
-import { maskCpf, maskDate, maskPhone, onlyDigits, parseBrDate } from './masks'
+import {
+  maskCpf,
+  maskDate,
+  maskPhone,
+  maskTime,
+  onlyDigits,
+  parseBrDate,
+  parseTime,
+} from './masks'
 
 test('onlyDigits remove tudo que não é número', () => {
   expect(onlyDigits('529.982-A47/25')).toBe('5299824725')
@@ -27,4 +35,18 @@ test('parseBrDate converte para ISO e rejeita datas inexistentes', () => {
   expect(parseBrDate('31/12/2027')).toBe('2027-12-31')
   expect(parseBrDate('31/02/2027')).toBeNull()
   expect(parseBrDate('2027-12-31')).toBeNull()
+})
+
+test('maskTime insere os dois-pontos e limita a 4 dígitos', () => {
+  expect(maskTime('9')).toBe('9')
+  expect(maskTime('093')).toBe('09:3')
+  expect(maskTime('093045')).toBe('09:30')
+})
+
+test('parseTime converte em minutos e recusa horários inexistentes', () => {
+  expect(parseTime('09:30')).toBe(570)
+  expect(parseTime('00:00')).toBe(0)
+  expect(parseTime('24:00')).toBeNull()
+  expect(parseTime('12:60')).toBeNull()
+  expect(parseTime('9:30')).toBeNull()
 })

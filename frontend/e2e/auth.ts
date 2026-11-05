@@ -13,7 +13,7 @@ export async function mockApi(page: Page) {
   }
   await page.route('**/auth/**', async (route) => {
     const request = route.request()
-    const path = new URL(request.url()).pathname
+    const path = new URL(request.url()).pathname.replace(/^\/api(?=\/|$)/, '')
     if (request.method() === 'OPTIONS') {
       await route.fulfill({
         status: 204,

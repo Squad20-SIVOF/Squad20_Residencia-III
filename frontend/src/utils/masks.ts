@@ -47,3 +47,20 @@ export function parseBrDate(value: string): string | null {
 
   return isRealDate ? `${year}-${month}-${day}` : null
 }
+
+/** "0930" → "09:30" */
+export function maskTime(value: string): string {
+  return onlyDigits(value)
+    .slice(0, 4)
+    .replace(/(\d{2})(\d)/, '$1:$2')
+}
+
+/** "09:30" → 570 (minutos desde 00:00); devolve null se o horário não existir. */
+export function parseTime(value: string): number | null {
+  const match = /^(\d{2}):(\d{2})$/.exec(value)
+  if (!match) return null
+
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  return hours < 24 && minutes < 60 ? hours * 60 + minutes : null
+}

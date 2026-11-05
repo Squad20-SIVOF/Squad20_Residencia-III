@@ -255,3 +255,7 @@ Regra dos vínculos: motorista comum só vincula veículos da mesma frota; corin
 - [Render: deploys e auto-deploy após CI](https://render.com/docs/deploys)
 - [Vercel: integração Git](https://vercel.com/docs/git)
 - [Vercel CLI: deploy](https://vercel.com/docs/cli/deploy)
+
+## Alertas por e-mail
+
+A configuração do Brevo, os secrets do GitHub Actions e as regras de destinatários estão em [EMAIL-ALERTS.md](EMAIL-ALERTS.md).

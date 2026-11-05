@@ -1,0 +1,45 @@
+@use '../../styles/tokens' as *;
+@use '../../styles/breakpoints' as *;
+
+// Mobile: título, rota e campos em coluna única.
+// A partir de lg: mapa grande à esquerda, título e formulário à direita (como no Figma desktop).
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'header'
+    'route'
+    'form';
+  gap: $space-3;
+
+  @include up(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'route header'
+      'route form';
+    column-gap: $space-4;
+  }
+
+  @include up(xl) {
+    grid-template-columns: minmax(0, 1fr) $panel-width;
+  }
+}
+
+.header {
+  grid-area: header;
+}
+
+.route {
+  grid-area: route;
+
+  @include up(lg) {
+    position: sticky;
+    top: $space-4;
+    align-self: start;
+  }
+}
+
+.form {
+  grid-area: form;
+}

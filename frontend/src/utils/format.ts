@@ -59,3 +59,9 @@ export function formatMonthYear(yearMonth: string): string {
 export function normalizeText(value: string): string {
   return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
 }
+
+/** "2026-10-26T09:47:00" → "09:47" (horário local) */
+export function formatTime(isoDateTime: string): string {
+  const date = new Date(isoDateTime)
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`
+}

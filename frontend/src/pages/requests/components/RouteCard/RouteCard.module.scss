@@ -1,0 +1,98 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/breakpoints' as *;
+
+// Mobile: mapa pequeno ao fundo e o card por cima. A partir de lg, mapa da altura da tela.
+.route {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: $map-preview-height;
+  padding: $space-3;
+  border-radius: $radius-lg;
+
+  @include up(lg) {
+    min-height: calc(100dvh - 2 * #{$space-4});
+    padding: $space-2;
+  }
+}
+
+.map {
+  position: absolute;
+  inset: 0;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  padding: $space-3;
+  background-color: $color-card;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+
+  @include up(lg) {
+    width: 100%;
+    max-width: $map-overlay-width;
+  }
+}
+
+.title {
+  font-size: $font-size-body;
+  font-weight: 500;
+  color: $color-text;
+}
+
+// Marcadores e linha da linha do tempo à esquerda dos campos.
+.stops {
+  display: grid;
+  grid-template-columns: $space-3 minmax(0, 1fr);
+  column-gap: $space-2;
+  align-items: center;
+}
+
+.field {
+  grid-column: 2;
+}
+
+.originMarker,
+.destinationMarker {
+  grid-column: 1;
+  justify-self: center;
+  width: $route-marker-size;
+  height: $route-marker-size;
+  margin-top: $space-4; // alinha com a caixa do campo, abaixo do rótulo
+  border: 2px solid $color-navy;
+}
+
+.originMarker {
+  border-radius: $radius-full;
+}
+
+.line {
+  grid-column: 1;
+  justify-self: center;
+  width: 2px;
+  height: $space-2;
+  background-color: $color-border;
+}
+
+.badge {
+  display: none;
+
+  @include up(lg) {
+    position: absolute;
+    bottom: $space-4;
+    left: 50%;
+    display: block;
+    padding: $space-1 $space-3;
+    font-size: $font-size-small;
+    font-weight: 600;
+    color: $color-on-navy;
+    white-space: nowrap;
+    background-color: $color-navy-mid;
+    border-radius: $radius-pill;
+    transform: translateX(-50%);
+  }
+}

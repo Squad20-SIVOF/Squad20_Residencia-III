@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
+import { readPhoto } from '@/utils/photo'
 import { Button } from '@/components/Button'
 import { TextField } from '@/components/TextField'
 import { currentUser, type SessionUser } from '@/service/authService'
@@ -93,6 +95,7 @@ function PasswordDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const [saving, setSaving] = useState(false)
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
   const [confirmation, setConfirmation] = useState('')
@@ -125,10 +128,11 @@ function PasswordDialog({
 
   const submit = async () => {
     const validationErrors: typeof errors = {}
+    if (saving) return
     if (!current) validationErrors.current = 'Informe a senha atual.'
     if (!next) validationErrors.next = 'Informe a nova senha.'
-    else if (next.length < 8)
-      validationErrors.next = 'A nova senha deve ter ao menos 8 caracteres.'
+    else if (next.length < 12 || next.length > 256)
+      validationErrors.next = 'A nova senha deve ter de 12 a 256 caracteres.'
     if (!confirmation) validationErrors.confirmation = 'Confirme a nova senha.'
     else if (next && confirmation !== next)
       validationErrors.confirmation = 'As senhas não coincidem.'
@@ -136,6 +140,7 @@ function PasswordDialog({
     setErrors(validationErrors)
     if (Object.keys(validationErrors).length > 0) return
 
+    setSaving(true)
     try {
       await api('/auth/password', {
         method: 'POST',
@@ -150,6 +155,8 @@ function PasswordDialog({
       const message =
         cause instanceof Error ? cause.message : 'Não foi possível alterar a senha.'
       toast.error(message)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -191,10 +198,12 @@ function PasswordDialog({
           />
         </div>
         <div className={styles.dialogActions}>
-          <Button variant="secondary" onClick={close}>
+          <Button variant="secondary" onClick={close} disabled={saving}>
             Cancelar
           </Button>
-          <Button onClick={submit}>Salvar senha</Button>
+          <Button onClick={submit} isLoading={saving}>
+            Salvar senha
+          </Button>
         </div>
       </div>
     </dialog>
@@ -202,19 +211,29 @@ function PasswordDialog({
 }
 
 const initialProfile = {
-  email: 'Digite seu e-mail',
-  telefone: 'Digite seu telefone',
-  departamento: 'Digite seu departamento',
-  cargo: 'Digite seu cargo',
-  matricula: 'Digite sua matrícula',
+  email: '',
+  telefone: '',
+  departamento: '',
+  cargo: '',
+  matricula: '',
 }
 
+function profileData(user: SessionUser) {
+  return {
+    email: user.email,
+    telefone: user.telefone ?? '',
+    departamento: user.departamento ?? '',
+    cargo: user.cargo ?? '',
+    matricula: user.matricula ?? '',
+  }
+}
 export default function ProfilePage() {
   const [user, setUser] = useState<SessionUser | null>(null)
   const [error, setError] = useState('')
   const [photo, setPhoto] = useState<string | null>(null)
   const [data, setData] = useState(initialProfile)
-  const [editing, setEditing] = useState(true)
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -222,33 +241,52 @@ export default function ProfilePage() {
     currentUser()
       .then((sessionUser) => {
         setUser(sessionUser)
-        setData((current) => ({ ...current, email: sessionUser.email || current.email }))
+        setData(profileData(sessionUser))
+        setPhoto(sessionUser.foto ?? null)
       })
       .catch((cause: Error) => setError(cause.message))
   }, [])
 
-  const onFile = (file?: File) => {
+  const onFile = async (file?: File) => {
     if (!file) return
-    if (!file.type.startsWith('image/')) {
-      toast.error('Selecione um arquivo de imagem válido.')
-      return
+    try {
+      setPhoto(await readPhoto(file))
+      setEditing(true)
+    } catch (cause) {
+      setError((cause as Error).message)
     }
-    setPhoto(URL.createObjectURL(file))
-    toast.success('Foto atualizada.')
   }
 
   const setField = (key: keyof typeof initialProfile) => (value: string) =>
     setData((currentData) => ({ ...currentData, [key]: value }))
 
-  const save = () => {
+  const save = async () => {
+    if (saving) return
     if (!/^\S+@\S+\.\S+$/.test(data.email)) {
       toast.error('Informe um e-mail válido.')
       return
     }
-    setEditing(false)
-    toast.success('Dados salvos com sucesso.')
+    setSaving(true)
+    setError('')
+    try {
+      await api('/auth/profile', {
+        method: 'PUT',
+        body: JSON.stringify({ ...data, foto: photo }),
+      })
+      const saved = await currentUser()
+      setUser(saved)
+      setData(profileData(saved))
+      setPhoto(saved.foto ?? null)
+      setEditing(false)
+      toast.success('Dados salvos com sucesso.')
+    } catch (cause) {
+      setError((cause as Error).message)
+    } finally {
+      setSaving(false)
+    }
   }
 
+  if (!user && !error) return <LoadingState label="Carregando perfil" />
   return (
     <div className={styles.page}>
       <div>
@@ -284,6 +322,7 @@ export default function ProfilePage() {
           <Button
             variant="secondary"
             className={styles.smallButton}
+            disabled={saving}
             onClick={() => fileRef.current?.click()}
           >
             <Camera className={styles.smallIcon} /> Alterar foto
@@ -298,22 +337,16 @@ export default function ProfilePage() {
               label="E-mail"
               value={data.email}
               onChange={setField('email')}
-              readOnly={!editing}
+              readOnly={!editing || saving}
               className={styles.profileField}
             />
 
-            {/*
-              Campos abaixo NÃO existem no contrato atual do backend.
-              O SessionUser do frontend só expõe `id`, `nome`, `email` e `permissoes`.
-              Não há coluna correspondente na tabela `usuarios` nem no payload no `/auth/me`.
-              Só faz sentido mexer no banco se quisermos persistir dados extras do perfil.
-            */}
             <TextField
               id="telefone"
               label="Telefone"
               value={data.telefone}
               onChange={setField('telefone')}
-              readOnly={!editing}
+              readOnly={!editing || saving}
               className={styles.profileField}
             />
             <TextField
@@ -321,7 +354,7 @@ export default function ProfilePage() {
               label="Departamento"
               value={data.departamento}
               onChange={setField('departamento')}
-              readOnly={!editing}
+              readOnly={!editing || saving}
               className={`${styles.profileField} ${styles.fieldWide}`}
             />
             <TextField
@@ -329,7 +362,7 @@ export default function ProfilePage() {
               label="Cargo"
               value={data.cargo}
               onChange={setField('cargo')}
-              readOnly={!editing}
+              readOnly={!editing || saving}
               className={styles.profileField}
             />
             <TextField
@@ -337,7 +370,7 @@ export default function ProfilePage() {
               label="Matrícula"
               value={data.matricula}
               onChange={setField('matricula')}
-              readOnly={!editing}
+              readOnly={!editing || saving}
               className={styles.profileField}
             />
           </div>
@@ -346,7 +379,9 @@ export default function ProfilePage() {
             <div>
               <p className={styles.passwordSummaryTitle}>Senha de acesso</p>
               <p className={styles.passwordSummaryDescription}>
-                Última alteração há 48 dias
+                {user?.senha_alterada_em
+                  ? `Última alteração em ${new Date(user.senha_alterada_em).toLocaleDateString('pt-BR')}`
+                  : 'Data da última alteração não registrada'}
               </p>
             </div>
             <Button
@@ -362,14 +397,24 @@ export default function ProfilePage() {
             <Button
               variant="secondary"
               className={styles.smallButton}
+              disabled={saving}
               onClick={() => {
-                if (editing) setData(initialProfile)
+                if (editing && user) {
+                  setData(profileData(user))
+                  setPhoto(user.foto ?? null)
+                  setError('')
+                }
                 setEditing(!editing)
               }}
             >
               {editing ? 'Cancelar' : 'Editar'}
             </Button>
-            <Button className={styles.smallButton} onClick={save} disabled={!editing}>
+            <Button
+              className={styles.smallButton}
+              onClick={save}
+              disabled={!editing || !user}
+              isLoading={saving}
+            >
               Salvar
             </Button>
           </div>

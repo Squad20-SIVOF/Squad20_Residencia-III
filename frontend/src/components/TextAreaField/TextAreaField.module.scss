@@ -1,0 +1,50 @@
+@use '../../styles/tokens' as *;
+@use '../../styles/mixins' as *;
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  min-width: 0;
+}
+
+.label {
+  font-size: $font-size-small;
+  font-weight: 500;
+}
+
+.labelHidden {
+  @include visually-hidden;
+}
+
+.textArea {
+  width: 100%;
+  min-height: $input-height;
+  padding: $space-2 $space-3;
+  font: inherit;
+  font-size: $font-size-body; // mínimo de 16 px: evita o zoom automático no iOS
+  line-height: $line-height-body;
+  resize: vertical;
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+
+  &::placeholder {
+    color: $color-text-muted;
+  }
+
+  &:focus-visible {
+    border-color: $color-primary;
+  }
+}
+
+.textAreaInvalid {
+  border-color: $color-error;
+  background-color: rgba($color-error, 0.02);
+}
+
+.errorMessage {
+  font-size: $font-size-small;
+  line-height: $line-height-small;
+  color: $color-error;
+}

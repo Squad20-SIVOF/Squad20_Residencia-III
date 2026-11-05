@@ -1,0 +1,99 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.map {
+  position: relative;
+  overflow: hidden;
+  background-color: $color-map-background;
+  border-radius: $radius-lg;
+}
+
+.svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// O desenho é decorativo; quem usa leitor de tela recebe a descrição em texto.
+.label {
+  @include visually-hidden;
+}
+
+.block {
+  fill: $color-map-block;
+}
+
+.street {
+  fill: none;
+  stroke: $color-map-street;
+  stroke-width: 12;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+}
+
+.route,
+.routeTracking {
+  fill: none;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.route {
+  stroke: $color-map-route;
+}
+
+.routeTracking {
+  stroke: $color-primary;
+  stroke-dasharray: 2 8;
+}
+
+.originMarker {
+  fill: $color-card;
+  stroke: $color-map-route;
+  stroke-width: 3;
+}
+
+.destinationMarker {
+  fill: $color-card;
+  stroke: $color-map-route;
+  stroke-width: 3;
+}
+
+.pinHalo {
+  fill: rgba($color-primary, 0.15);
+}
+
+.pin {
+  fill: $color-card;
+  stroke: $color-primary;
+  stroke-width: 2.5;
+}
+
+.pinCenter {
+  fill: $color-primary;
+}
+
+.car {
+  transition: transform $transition-fast;
+}
+
+.carHalo {
+  fill: rgba($color-primary, 0.18);
+}
+
+.carBody {
+  fill: $color-primary;
+  stroke: $color-card;
+  stroke-width: 2;
+}
+
+.carGlyph {
+  fill: $color-card;
+}
+
+.carWheel {
+  fill: $color-primary;
+}

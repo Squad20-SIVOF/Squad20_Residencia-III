@@ -1,0 +1,54 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/breakpoints' as *;
+
+.form {
+  min-width: 0;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+// Os pares de campos ficam lado a lado já no celular, como no Figma.
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-3;
+}
+
+.helper {
+  display: block;
+  margin-top: -$space-2;
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.flag {
+  width: $space-3;
+  height: $space-3;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-2 $space-3;
+  font-size: $font-size-small;
+  color: $color-text-label;
+  background-color: $color-table-header;
+  border-radius: $radius-md;
+}
+
+.statusDot {
+  flex-shrink: 0;
+  width: $status-dot-size;
+  height: $status-dot-size;
+  background-color: $color-warning;
+  border-radius: $radius-full;
+}

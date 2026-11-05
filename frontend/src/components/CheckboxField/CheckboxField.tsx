@@ -1,6 +1,9 @@
 import { useId } from 'react'
+import type { ReactNode } from 'react'
 import { classNames } from '@/utils/classNames'
 import styles from './CheckboxField.module.scss'
+
+export type CheckboxFieldVariant = 'highlight' | 'plain'
 
 export interface CheckboxFieldProps {
   label: string
@@ -8,6 +11,10 @@ export interface CheckboxFieldProps {
   disabled?: boolean
   checked: boolean
   onChange: (checked: boolean) => void
+  /** "highlight" (padrão) destaca a opção em amarelo; "plain" é só a caixa e o texto. */
+  variant?: CheckboxFieldVariant
+  /** Ícone decorativo antes do texto. */
+  iconStart?: ReactNode
   id?: string
   className?: string
 }
@@ -18,6 +25,8 @@ export function CheckboxField({
   disabled,
   checked,
   onChange,
+  variant = 'highlight',
+  iconStart,
   id,
   className,
 }: CheckboxFieldProps) {
@@ -25,7 +34,10 @@ export function CheckboxField({
   const inputId = id ?? generatedId
 
   return (
-    <label htmlFor={inputId} className={classNames(styles.field, className)}>
+    <label
+      htmlFor={inputId}
+      className={classNames(styles.field, styles[variant], className)}
+    >
       <input
         id={inputId}
         type="checkbox"
@@ -35,6 +47,11 @@ export function CheckboxField({
         aria-describedby={description ? `${inputId}-description` : undefined}
         onChange={(event) => onChange(event.target.checked)}
       />
+      {iconStart && (
+        <span className={styles.icon} aria-hidden="true">
+          {iconStart}
+        </span>
+      )}
       <span className={styles.text}>
         <span className={styles.label}>{label}</span>
         {description && (

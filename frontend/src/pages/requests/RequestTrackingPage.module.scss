@@ -1,0 +1,113 @@
+@use '../../styles/tokens' as *;
+@use '../../styles/breakpoints' as *;
+@use '../../styles/mixins' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+// "Voltar" | SIVOF / Acompanhar rota | #1842
+.topBar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: $space-2;
+}
+
+.back {
+  justify-self: start;
+}
+
+.header {
+  align-items: center;
+  text-align: center;
+}
+
+.code {
+  justify-self: end;
+}
+
+.hidden {
+  @include visually-hidden;
+}
+
+// Mobile: mapa em cima e painel embaixo. A partir de lg: mapa à esquerda, painel à direita.
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
+
+  @include up(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: $space-4;
+  }
+
+  @include up(xl) {
+    grid-template-columns: minmax(0, 1fr) $panel-width;
+  }
+}
+
+.map {
+  min-height: $map-tracking-height;
+
+  @include up(lg) {
+    position: sticky;
+    top: $space-4;
+    min-height: calc(100dvh - 2 * #{$space-4} - #{$space-5});
+  }
+}
+
+.mapBadge {
+  position: absolute;
+  top: $space-3;
+  left: $space-3;
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-2 $space-3;
+  font-size: $font-size-small;
+  font-weight: 600;
+  color: $color-text;
+  background-color: $color-card;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+}
+
+.mapBadgeIcon {
+  width: $space-3;
+  height: $space-3;
+  color: $color-primary;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  min-width: 0;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-2;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: $space-2 $space-3;
+  margin: 0;
+  font-size: $font-size-small;
+
+  dt {
+    color: $color-text-muted;
+  }
+
+  dd {
+    margin: 0;
+    color: $color-text;
+  }
+}

@@ -11,6 +11,7 @@ export interface VehicleSummaryCardProps {
 
 export function VehicleSummaryCard({ vehicle, onEdit }: VehicleSummaryCardProps) {
   const rows = [
+    { label: 'Marca', value: vehicle.brand || 'Não informada' },
     { label: 'Placa', value: vehicle.plate },
     { label: 'Modelo', value: vehicle.model },
     { label: 'Quilometragem', value: formatKm(vehicle.mileageKm) },

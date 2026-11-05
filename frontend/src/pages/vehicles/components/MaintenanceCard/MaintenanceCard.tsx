@@ -6,6 +6,7 @@ import styles from './MaintenanceCard.module.scss'
 
 const MAINTENANCE_TYPE_LABEL: Record<MaintenanceType, string> = {
   preventiva: 'Preventiva',
+  preditiva: 'Preditiva',
   corretiva: 'Corretiva',
   impeditiva: 'Impeditiva',
 }

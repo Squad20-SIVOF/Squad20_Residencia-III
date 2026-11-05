@@ -8,13 +8,21 @@ export interface VehicleTableProps {
   vehicles: Vehicle[]
   onView: (vehicle: Vehicle) => void
   onEdit: (vehicle: Vehicle) => void
+  onDelete?: (vehicle: Vehicle) => void
+  canManage?: boolean
 }
 
 /*
  * Uma única tabela: no xs cada linha é reestruturada como card via CSS (sem duplicar o markup);
  * a partir do md ela volta a ser uma tabela.
  */
-export function VehicleTable({ vehicles, onView, onEdit }: VehicleTableProps) {
+export function VehicleTable({
+  vehicles,
+  onView,
+  onEdit,
+  onDelete,
+  canManage = true,
+}: VehicleTableProps) {
   return (
     <div className={styles.wrapper}>
       <table className={styles.table}>
@@ -62,13 +70,24 @@ export function VehicleTable({ vehicles, onView, onEdit }: VehicleTableProps) {
                 >
                   Ver
                 </Button>
-                <Button
-                  variant="secondary"
-                  aria-label={`Editar veículo ${vehicle.identification}`}
-                  onClick={() => onEdit(vehicle)}
-                >
-                  Editar
-                </Button>
+                {canManage && (
+                  <Button
+                    variant="secondary"
+                    aria-label={`Editar veículo ${vehicle.identification}`}
+                    onClick={() => onEdit(vehicle)}
+                  >
+                    Editar
+                  </Button>
+                )}
+                {canManage && onDelete && (
+                  <Button
+                    variant="danger"
+                    aria-label={`Excluir veículo ${vehicle.plate}`}
+                    onClick={() => onDelete(vehicle)}
+                  >
+                    Excluir
+                  </Button>
+                )}
               </td>
             </tr>
           ))}

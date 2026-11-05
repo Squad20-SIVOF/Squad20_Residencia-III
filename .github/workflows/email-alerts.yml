@@ -1,0 +1,39 @@
+name: Alertas por e-mail
+on:
+  schedule:
+    - cron: '11,26,41,56 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: production-email-alerts
+  cancel-in-progress: false
+jobs:
+  alerts:
+    if: vars.ENABLE_EMAIL_ALERT_JOB == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: backend/.nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Instalar dependências
+        run: npm ci
+        env:
+          HUSKY: '0'
+      - name: Processar fila e enviar pelo Brevo
+        run: npm run alerts:run
+        env:
+          EMAIL_ALERTS_ENABLED: 'true'
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+          EMAIL_FROM_NAME: ${{ vars.EMAIL_FROM_NAME || 'FrotaManager' }}
+          MAINTENANCE_INTERVAL_KM: ${{ vars.MAINTENANCE_INTERVAL_KM || '10000' }}
+          MAINTENANCE_WARN_KM: ${{ vars.MAINTENANCE_WARN_KM || '500' }}

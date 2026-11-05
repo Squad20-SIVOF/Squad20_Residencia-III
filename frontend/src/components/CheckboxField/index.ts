@@ -1,2 +1,2 @@
 export { CheckboxField } from './CheckboxField'
-export type { CheckboxFieldProps } from './CheckboxField'
+export type { CheckboxFieldProps, CheckboxFieldVariant } from './CheckboxField'

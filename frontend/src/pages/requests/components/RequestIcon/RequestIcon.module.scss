@@ -1,0 +1,12 @@
+@use '../../../../styles/tokens' as *;
+
+.icon {
+  flex-shrink: 0;
+  width: $icon-size;
+  height: $icon-size;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
