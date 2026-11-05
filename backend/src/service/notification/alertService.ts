@@ -1,6 +1,5 @@
 import { getLicenseAlerts, getMaintanceAlerts } from "./alertRules";
-import { sendEmail } from "../email/mailerService";
-import { buildAlertDigest } from "../email/templates/alertDigest";
+import { runEmailAlerts } from "./emailAlertJob";
 
 const success = (message: unknown, status: 200) => ({
   type: "success",
@@ -25,28 +24,7 @@ const getSummary = async () => {
   );
 };
 
-const sendDigest = async () => {
-  const [cnh, manutencao] = await Promise.all([
-    getLicenseAlerts(),
-    getMaintanceAlerts(),
-  ]);
-  if (!cnh.length && !manutencao.length)
-    return { sent: false, reason: "sem alertas" };
-
-  const { subject, html, text } = buildAlertDigest(cnh, manutencao);
-  const result = await sendEmail({
-    to: process.env.ALERT_EMAIL_TO!,
-    subject,
-    html,
-    text,
-  });
-
-  // Só atualize ultimo_km_alertado / marque como notificado se result.success for true
-  return {
-    sent: result.success,
-    reason: result.success ? undefined : "falha no envio",
-  };
-};
+const sendDigest = runEmailAlerts;
 
 export default {
   getSummary,

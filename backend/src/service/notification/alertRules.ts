@@ -1,9 +1,8 @@
 import driverModel from "../../models/driverModel";
 import vehicleModel from "../../models/vehicleModel";
 
+import { alertIntervals } from "../../config/emailAlerts";
 const LICENSE_WARN_DAYS = 30;
-const MAINTANCE_INTERVAL_KM = 10000;
-const MAINTANCE_WARN_KM = 500;
 
 export const getLicenseAlerts = async () => {
   const drivers = await driverModel.getDriverWLicenseExp(LICENSE_WARN_DAYS);
@@ -19,10 +18,8 @@ export const getLicenseAlerts = async () => {
 };
 
 export const getMaintanceAlerts = async () => {
-  const vehicles = await vehicleModel.getNearMaintance(
-    MAINTANCE_INTERVAL_KM,
-    MAINTANCE_WARN_KM,
-  );
+  const { interval, warning } = alertIntervals();
+  const vehicles = await vehicleModel.getNearMaintance(interval, warning);
   return vehicles.map((v) => ({
     ...v,
     severity: v.km_restantes <= 0 ? "critica" : "aviso",

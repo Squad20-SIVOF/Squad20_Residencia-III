@@ -24,7 +24,8 @@
     "typecheck": "tsc --noEmit",
     "ci": "npm run format:check && npm run lint && npm run typecheck && npm run test:push",
     "admin:create": "tsx scripts/create-admin.ts",
-    "seed:svo-demo": "tsx scripts/seed-svo-demo.ts"
+    "seed:svo-demo": "tsx scripts/seed-svo-demo.ts",
+    "alerts:run": "tsx scripts/run-email-alerts.ts"
   },
   "keywords": [],
   "author": "",
