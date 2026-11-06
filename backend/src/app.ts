@@ -16,6 +16,7 @@ import driverInspectionRoutes from "./routes/driverInspectionRoutes";
 import fuelRoutes from "./routes/fuelRoutes";
 import driverFuelRoutes from "./routes/driverFuelRoutes";
 import requestRoutes from "./routes/requestRoutes";
+import svoRoutes from "./routes/svoRoutes";
 import deathRoutes from "./routes/deathRoutes";
 import deathController from "./controller/deathController";
 import { authorize } from "./middleware/authorization";
@@ -43,6 +44,7 @@ app.use("/motorista/vistorias", authenticate, driverInspectionRoutes);
 app.use("/motorista/abastecimentos", authenticate, driverFuelRoutes);
 app.use("/abastecimentos", authenticate, fuelRoutes);
 app.use("/solicitacoes", authenticate, requestRoutes);
+app.use("/svo", authenticate, svoRoutes);
 app.use("/obitos", authenticate, deathRoutes);
 app.get(
   "/viagens/:id/obitos",
