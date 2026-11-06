@@ -1,3 +1,4 @@
+import * as authService from '@/service/authService'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
@@ -37,12 +38,18 @@ test('navega para as viagens pela barra de abas', async () => {
 })
 
 test('valida o formulário de abastecimento', async () => {
+  vi.spyOn(authService, 'currentUser').mockResolvedValueOnce({
+    id: 'user',
+    nome: 'Motorista',
+    email: 'motorista@example.com',
+    permissoes: ['abastecimentos:criar-proprio'],
+  })
   const user = userEvent.setup()
   renderAt('/abastecimento')
 
-  await user.click(await screen.findByRole('button', { name: 'Registrar' }))
+  await user.click(await screen.findByRole('button', { name: 'Salvar abastecimento' }))
 
-  expect(screen.getByText('Informe os litros.')).toBeInTheDocument()
+  expect(screen.getByLabelText('Volume abastecido (L) *')).toBeInvalid()
 })
 
 test('avisa quando o aparelho fica sem internet', async () => {
@@ -60,4 +67,19 @@ test('avisa quando o aparelho fica sem internet', async () => {
 vi.mock('@/components/RequireAuth/RequireAuth', async () => {
   const { Outlet } = await import('react-router-dom')
   return { RequireAuth: () => <Outlet /> }
+})
+
+vi.mock('@/pages/abastecimentos/services/fuelService', async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import('@/pages/abastecimentos/services/fuelService')>()
+  return {
+    ...original,
+    fuelService: {
+      ...original.fuelService,
+      ownOptions: async () => ({
+        veiculos: [],
+        motoristas: [{ id: 'driver', nome: 'Motorista de teste' }],
+      }),
+    },
+  }
 })

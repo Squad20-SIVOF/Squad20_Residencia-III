@@ -1,65 +1,48 @@
 @use '../../styles/tokens' as *;
-
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: $space-4;
-}
-
+@use '../../styles/breakpoints' as *;
+.page,
 .list {
   display: flex;
   flex-direction: column;
   gap: $space-4;
-  // Sombra sutil na área da tabela para destacar do fundo
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.1),
-    0 1px 2px rgba(0, 0, 0, 0.06);
-  border-radius: 8px;
+  min-width: 0;
 }
-
-.statsGrid {
+.statsGrid,
+.filterGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: $space-4;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
 }
-
-.statCard {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: $space-4;
-  // AQUI ESTÁ O SOMBREADO IGUAL AO DA TELA DE MOTORISTAS
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.1),
-    0 1px 2px rgba(0, 0, 0, 0.06);
-  // O detalhe da borda colorida na esquerda (igual ao da tela de motoristas)
-  border-left-width: 4px;
-
-  // Vamos colorir as bordas esquerdas de cada card (igual ao print)
-  &:nth-child(1) {
-    border-left-color: #10b981;
-  } // Verde
-  &:nth-child(2) {
-    border-left-color: #f59e0b;
-  } // Amarelo
-  &:nth-child(3) {
-    border-left-color: #ef4444;
-  } // Vermelho
+.filterGrid {
+  align-items: end;
 }
-
-.statLabel {
-  font-size: 0.85rem;
-  color: #64748b;
-  font-weight: 600;
+.sectionTitle {
+  font-size: $font-size-h3;
+  font-weight: 500;
+  color: $color-primary;
 }
-
-.statValue {
-  font-size: 1.8rem;
-  color: #1e293b;
-  margin: 0.5rem 0;
+.muted,
+.secondary {
+  color: $color-text-muted;
+  font-size: $font-size-small;
 }
-
-.statDesc {
-  font-size: 0.8rem;
-  color: #94a3b8;
+.secondary {
+  display: block;
+  font-weight: 400;
+}
+@include up(md) {
+  .statsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .filterGrid {
+    grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  }
+  .filterGrid > :last-child {
+    justify-self: start;
+  }
+}
+@include up(xl) {
+  .filterGrid {
+    grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)) auto;
+  }
 }

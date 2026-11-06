@@ -19,7 +19,7 @@ export interface DriverLicenseRow {
 }
 
 // Keep PostgreSQL DATE as a calendar date, independent of the host timezone.
-const columns = `id, nome, cpf, cnh, categoria,
+const columns = `id, nome, cpf, cnh, categoria, telefone, email, foto,
   to_char(validade_cnh, 'YYYY-MM-DD') AS validade_cnh,
   motorista_coringa, frota, status, ativo, deletado_em, criado_em, atualizado_em,
   ARRAY(SELECT v.placa FROM motoristas_veiculos mv JOIN veiculos v ON v.id = mv.veiculo_id
@@ -100,6 +100,19 @@ const saveDriver = async (
       await client.query("ROLLBACK");
       return undefined;
     }
+    const contact = JSON.stringify({
+      telefone: driver.telefone,
+      email: driver.email,
+      foto: driver.foto,
+    });
+    await client.query(
+      `UPDATE motoristas SET
+      telefone=CASE WHEN $2::jsonb ? 'telefone' THEN $2::jsonb->>'telefone' ELSE telefone END,
+      email=CASE WHEN $2::jsonb ? 'email' THEN $2::jsonb->>'email' ELSE email END,
+      foto=CASE WHEN $2::jsonb ? 'foto' THEN $2::jsonb->>'foto' ELSE foto END
+      WHERE id=$1`,
+      [savedId, contact],
+    );
     if (driver.veiculos !== undefined) {
       const vehicles = await client.query(
         `SELECT id FROM veiculos WHERE placa = ANY($1::text[]) AND ativo AND deletado_em IS NULL`,

@@ -1,4 +1,8 @@
 export const PERMISSIONS = [
+  "veiculos:vistoriar-proprios",
+  "abastecimentos:criar-proprio",
+  "abastecimentos:ler",
+  "abastecimentos:gerenciar",
   "perfis:ler",
   "perfis:gerenciar",
   "usuarios:gerenciar-perfis",
@@ -17,8 +21,12 @@ export const PERMISSIONS = [
   "solicitacoes:criar",
   "solicitacoes:ler-proprias",
   "viagens:ler-proprias",
+  "obitos:ler",
+  "obitos:gerenciar",
 ] as const;
 export const DELEGABLE_PERMISSIONS = [
+  "abastecimentos:ler",
+  "abastecimentos:gerenciar",
   "veiculos:ler",
   "veiculos:gerenciar",
   "motoristas:ler",

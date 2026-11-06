@@ -1,33 +1,35 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
+import { currentUser } from '@/service/authService'
+import { useAsync } from '@/hooks/useAsync'
 import { maintenanceService, vehicleService } from '../services/maintenanceService'
-import type { Maintenance } from '../types/maintenance'
-
-/** Reads maintenances on the client and re-syncs whenever the store changes. */
 export function useMaintenances() {
-  // 1. Inicializa o estado com os dados atuais (Lazy Initialization)
-  const [maintenances, setMaintenances] = useState<Maintenance[]>(() =>
-    maintenanceService.list(),
-  )
-
-  // 2. Como os dados são síncronos, não precisamos começar com loading=true
-  const [loading] = useState(false)
-
-  const refresh = useCallback(() => {
-    setMaintenances(maintenanceService.list())
-  }, [])
-
-  useEffect(() => {
-    // 3. O refresh() inicial foi removido daqui, pois já foi feito no useState
-
-    // Apenas configuramos os "ouvintes" para quando os dados mudarem
-    window.addEventListener(maintenanceService.CHANGE_EVENT, refresh)
-    window.addEventListener('storage', refresh)
-
-    return () => {
-      window.removeEventListener(maintenanceService.CHANGE_EVENT, refresh)
-      window.removeEventListener('storage', refresh)
+  const load = useCallback(async () => {
+    const [maintenances, vehicles, user] = await Promise.all([
+      maintenanceService.list(),
+      vehicleService.list(),
+      currentUser(),
+    ])
+    return {
+      maintenances,
+      vehicles,
+      canManage: user.permissoes.includes('manutencoes:gerenciar'),
     }
-  }, [refresh])
-
-  return { maintenances, vehicles: vehicleService.list(), loading, refresh }
+  }, [])
+  const request = useAsync(load)
+  useEffect(() => {
+    window.addEventListener(maintenanceService.CHANGE_EVENT, request.reload)
+    return () =>
+      window.removeEventListener(maintenanceService.CHANGE_EVENT, request.reload)
+  }, [request.reload])
+  return {
+    canManage: request.status === 'success' && request.data.canManage,
+    maintenances: request.status === 'success' ? request.data.maintenances : [],
+    vehicles: request.status === 'success' ? request.data.vehicles : [],
+    loading: request.status === 'loading',
+    error:
+      request.status === 'error'
+        ? 'Não foi possível carregar as manutenções e os veículos.'
+        : null,
+    refresh: request.reload,
+  }
 }

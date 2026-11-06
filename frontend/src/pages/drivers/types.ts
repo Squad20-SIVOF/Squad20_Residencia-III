@@ -9,7 +9,18 @@ export const DRIVER_FLEETS = [
 ] as const
 export type DriverFleet = (typeof DRIVER_FLEETS)[number]
 
-export const CNH_CATEGORIES = ['A', 'B', 'C', 'D', 'E', 'AB', 'AC', 'AD', 'AE'] as const
+export const CNH_CATEGORIES = [
+  'ACC',
+  'A',
+  'B',
+  'C',
+  'D',
+  'E',
+  'AB',
+  'AC',
+  'AD',
+  'AE',
+] as const
 export type CnhCategory = (typeof CNH_CATEGORIES)[number]
 
 export interface Driver {

@@ -18,6 +18,9 @@ const notFound = () => error("Manutenção não encontrada", 404);
 
 const handleDuplicateKeyError = (cause: unknown) => {
   const dbError = cause as { code?: string; constraint?: string };
+  if (dbError?.code === "23503") return error("Veículo não encontrado", 400);
+  if (dbError?.code === "23514")
+    return error("Dados de manutenção inválidos", 400);
   if (dbError?.code !== "23505") throw cause;
   if (dbError.constraint === "veiculos_key")
     return error("Veiculo já vinculado", 409);

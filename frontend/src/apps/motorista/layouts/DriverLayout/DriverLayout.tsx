@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { classNames } from '@/utils/classNames'
 import { useOnlineStatus } from '../../pwa/useOnlineStatus'
 import styles from './DriverLayout.module.scss'
@@ -68,6 +68,7 @@ const TABS: TabItem[] = [
 /** Casca do app do motorista: conteúdo em coluna única + barra de abas fixa embaixo. */
 export function DriverLayout() {
   const isOnline = useOnlineStatus()
+  const { pathname } = useLocation()
 
   return (
     <div className={styles.layout}>
@@ -84,7 +85,7 @@ export function DriverLayout() {
         </p>
       )}
 
-      <main className={styles.main}>
+      <main key={pathname} className={styles.main}>
         <Outlet />
       </main>
 

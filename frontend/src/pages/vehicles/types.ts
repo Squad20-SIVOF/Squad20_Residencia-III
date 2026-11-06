@@ -1,6 +1,10 @@
 /** Formato retornado pelo backend em GET /vehicle. */
 export interface VehicleResponse {
   id: string
+  identificacao?: string | null
+  marca?: string | null
+  proxima_vistoria?: string | null
+  checklist_vistoria?: InspectionItem[]
   placa: string
   modelo: string
   tipo_combustivel: string
@@ -30,6 +34,8 @@ export type Fleet =
 export interface Vehicle {
   id: string
   identification: string
+  brand?: string
+  inspectionChecklist?: InspectionItem[]
   plate: string
   model: string
   fuelType: string
@@ -54,7 +60,7 @@ export interface Trip {
   mileageEnd?: number | null
 }
 
-export type MaintenanceType = 'preventiva' | 'corretiva' | 'impeditiva'
+export type MaintenanceType = 'preventiva' | 'corretiva' | 'impeditiva' | 'preditiva'
 
 export interface Maintenance {
   id: string

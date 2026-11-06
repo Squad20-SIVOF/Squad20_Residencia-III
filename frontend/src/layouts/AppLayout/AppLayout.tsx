@@ -1,7 +1,13 @@
 import { currentUser, logout, type SessionUser } from '@/service/authService'
 import { useEffect, useId, useState } from 'react'
 import type { ReactNode } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import {
+  NavLink,
+  Outlet,
+  useNavigate,
+  useLocation,
+  useOutletContext,
+} from 'react-router-dom'
 import { classNames } from '@/utils/classNames'
 import styles from './AppLayout.module.scss'
 
@@ -9,13 +15,14 @@ interface NavItem {
   to: string
   label: string
   permission?: string
+  anyPermission?: string[]
 }
 
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Início' },
   { to: '/veiculos', label: 'Veículos', permission: 'veiculos:ler' },
   { to: '/motoristas', label: 'Motoristas', permission: 'motoristas:ler' },
-  { to: '/abastecimentos', label: 'Abastecimentos' },
+  { to: '/abastecimentos', label: 'Abastecimentos', permission: 'abastecimentos:ler' },
   { to: '/manutencoes', label: 'Manutenções' },
   { to: '/viagens', label: 'Viagens' },
   { to: '/relatorios', label: 'Relatórios' },
@@ -23,7 +30,7 @@ const NAV_ITEMS: NavItem[] = [
   {
     to: '/usuarios',
     label: 'Usuários e permissões',
-    permission: 'usuarios:delegar-permissoes',
+    anyPermission: ['usuarios:delegar-permissoes', 'usuarios:gerenciar'],
   },
 ]
 
@@ -33,15 +40,18 @@ export interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const [user, setUser] = useState<SessionUser | null>(null)
+  const session = useOutletContext<SessionUser | undefined>()
+  const [user, setUser] = useState<SessionUser | null>(session ?? null)
   useEffect(() => {
+    if (session) return
     currentUser()
       .then(setUser)
       .catch(() => {})
-  }, [])
+  }, [session])
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const panelId = useId()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
 
   useEffect(() => {
     if (!isMenuOpen) return
@@ -112,7 +122,10 @@ export function AppLayout({ children }: AppLayoutProps) {
           <nav aria-label="Menu principal">
             <ul className={styles.navList}>
               {NAV_ITEMS.filter(
-                (item) => !item.permission || user?.permissoes.includes(item.permission),
+                (item) =>
+                  (!item.permission || user?.permissoes.includes(item.permission)) &&
+                  (!item.anyPermission ||
+                    item.anyPermission.some((p) => user?.permissoes.includes(p))),
               ).map((item) => (
                 <li key={item.to}>
                   <NavLink
@@ -143,7 +156,9 @@ export function AppLayout({ children }: AppLayoutProps) {
       </aside>
 
       <main className={styles.main}>
-        <div className={styles.content}>{children ?? <Outlet />}</div>
+        <div key={pathname} className={styles.content}>
+          {children ?? <Outlet />}
+        </div>
       </main>
     </div>
   )

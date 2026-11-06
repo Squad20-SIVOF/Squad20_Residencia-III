@@ -110,3 +110,22 @@ $driver-max-width: 32rem;
   font-weight: 600;
   color: $color-primary;
 }
+
+.main > * {
+  animation: content-reveal 0.32s ease-out both;
+}
+@keyframes content-reveal {
+  from {
+    opacity: 0.45;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main > * {
+    animation: none;
+  }
+}

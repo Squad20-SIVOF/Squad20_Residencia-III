@@ -1,11 +1,9 @@
 name: Backend CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, dev]
-    paths:
-      - "backend/**"
-      - ".github/workflows/backend-ci.yml"
   pull_request:
     paths:
       - "backend/**"
@@ -13,7 +11,7 @@ on:
 
 concurrency:
   group: backend-ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -48,6 +46,9 @@ jobs:
       - name: Checagem de Tipos (TypeScript)
         run: npm run typecheck
 
+      - name: Build
+        run: npm run build
+
       - name: Testes Unitários e Cobertura
         run: npm run test:push
 
@@ -59,3 +60,28 @@ jobs:
           path: backend/coverage
           if-no-files-found: ignore
           retention-days: 7
+
+  deploy:
+    name: Deploy no Render
+    needs: quality
+    if: github.repository == 'Squad20-SIVOF/Squad20_Residencia-III' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: render-production
+      cancel-in-progress: false
+    steps:
+      - name: Publicar commit validado
+        working-directory: .
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          DEPLOY_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$RENDER_DEPLOY_HOOK_URL" ]]; then
+            echo "::error::Configure o secret RENDER_DEPLOY_HOOK_URL com o Deploy Hook do serviço frotamanager-api."
+            exit 1
+          fi
+          curl --fail --silent --output /dev/null --max-time 120 \
+            --request POST "${RENDER_DEPLOY_HOOK_URL}&ref=${DEPLOY_SHA}"
+          echo "Deploy solicitado ao Render para o commit ${DEPLOY_SHA}." >> "$GITHUB_STEP_SUMMARY"

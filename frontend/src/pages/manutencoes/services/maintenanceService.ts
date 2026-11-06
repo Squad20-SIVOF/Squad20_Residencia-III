@@ -1,88 +1,122 @@
-import { mockMaintenances } from '../data/mockMaintenances'
-import { mockVehicles } from '../data/mockVehicles'
+import { api } from '@/service/api'
+import { getVehicles } from '@/pages/vehicles/services/vehicleService'
 import type { Maintenance, MaintenanceInput } from '../types/maintenance'
 import type { Vehicle } from '../types/vehicle'
-
-/**
- * Data access layer for the Manutenções module.
- * Currently backed by localStorage. To integrate with the team backend,
- * replace the bodies of these functions with API calls keeping the same signatures.
- */
-
-const STORAGE_KEY = 'frotamanager:manutencoes'
+interface Row {
+  id: string
+  veiculo_id: string
+  tipo_manutencao: 'preventiva' | 'impeditiva' | 'corretiva' | 'preditiva'
+  data_inicio: string
+  data_servico?: string | null
+  hora_servico?: string | null
+  custo: number | string
+  descricao: string | null
+  status: 'Agendada' | 'Em Andamento' | 'Concluída' | 'Cancelada'
+  km_realizado: number | null
+  km_proxima: number | null
+  oficina?: string
+  proxima_revisao_data?: string | null
+  notificar_revisao?: boolean
+  comprovante_nome?: string | null
+  criado_em: string
+  atualizado_em: string
+}
+const types = {
+  preventiva: 'Preventiva',
+  impeditiva: 'Impeditiva',
+  corretiva: 'Corretiva',
+  preditiva: 'Preditiva',
+} as const
+const fromRow = (row: Row): Maintenance => ({
+  id: row.id,
+  vehicleId: row.veiculo_id,
+  tipo: types[row.tipo_manutencao],
+  descricao: row.descricao ?? '',
+  dataServico: row.data_servico ?? row.data_inicio.slice(0, 10),
+  horaServico: row.hora_servico ?? '',
+  quilometragem: row.km_realizado ?? 0,
+  oficina: row.oficina ?? '',
+  valorEstimado: Number(row.custo),
+  status: row.status === 'Em Andamento' ? 'Em andamento' : row.status,
+  tipoProximaRevisao:
+    row.km_proxima != null && row.proxima_revisao_data
+      ? 'Data e quilometragem'
+      : row.km_proxima != null
+        ? 'Quilometragem'
+        : row.proxima_revisao_data
+          ? 'Data'
+          : 'Não definida',
+  ...(row.km_proxima != null ? { proximaRevisaoKm: row.km_proxima } : {}),
+  ...(row.proxima_revisao_data ? { proximaRevisaoData: row.proxima_revisao_data } : {}),
+  notificarRevisao: row.notificar_revisao ?? false,
+  ...(row.comprovante_nome ? { comprovanteNome: row.comprovante_nome } : {}),
+  criadoEm: row.criado_em,
+  atualizadoEm: row.atualizado_em,
+})
+const toBody = (input: MaintenanceInput) => ({
+  veiculo_id: input.vehicleId,
+  tipo_manutencao: input.tipo.toLowerCase(),
+  descricao: input.descricao,
+  data_servico: input.dataServico,
+  hora_servico: input.horaServico || null,
+  data_inicio: new Date(
+    `${input.dataServico}T${input.horaServico || '12:00'}:00-03:00`,
+  ).toISOString(),
+  custo: input.valorEstimado,
+  status: input.status === 'Em andamento' ? 'Em Andamento' : input.status,
+  km_realizado: input.quilometragem,
+  km_proxima: input.proximaRevisaoKm ?? null,
+  oficina: input.oficina,
+  proxima_revisao_data: input.proximaRevisaoData ?? null,
+  notificar_revisao: input.notificarRevisao,
+  comprovante_nome: input.comprovanteNome ?? null,
+})
 const CHANGE_EVENT = 'frotamanager:manutencoes-changed'
-
-const hasStorage = () => typeof window !== 'undefined' && !!window.localStorage
-
-function read(): Maintenance[] {
-  if (!hasStorage()) return []
-  const raw = window.localStorage.getItem(STORAGE_KEY)
-  if (raw === null) {
-    // Seed only on first run — never overwrite user data.
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(mockMaintenances))
-    return [...mockMaintenances]
-  }
-  try {
-    return JSON.parse(raw) as Maintenance[]
-  } catch {
-    return []
-  }
-}
-
-function write(list: Maintenance[]) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+async function save(path: string, method: string, input: MaintenanceInput) {
+  const row = (
+    await api<{ message: Row }>(path, { method, body: JSON.stringify(toBody(input)) })
+  ).message
   window.dispatchEvent(new Event(CHANGE_EVENT))
+  return fromRow(row)
 }
-
-const newId = () =>
-  typeof crypto !== 'undefined' && 'randomUUID' in crypto
-    ? crypto.randomUUID()
-    : `m_${Date.now()}_${Math.random().toString(36).slice(2)}`
-
 export const maintenanceService = {
   CHANGE_EVENT,
-  list(): Maintenance[] {
-    return read()
+  async list() {
+    return (await api<{ message: Row[] }>('/maintance')).message.map(fromRow)
   },
-  getById(id: string) {
-    return read().find((m) => m.id === id)
+  async getById(id: string) {
+    return fromRow(
+      (await api<{ message: Row }>(`/maintance/${encodeURIComponent(id)}`)).message,
+    )
   },
-  create(input: MaintenanceInput): Maintenance {
-    const now = new Date().toISOString()
-    const record: Maintenance = {
-      ...input,
-      id: newId(),
-      criadoEm: now,
-      atualizadoEm: now,
-    }
-    write([record, ...read()])
-    return record
+  create(input: MaintenanceInput) {
+    return save('/maintance', 'POST', input)
   },
-  update(id: string, input: MaintenanceInput): Maintenance | undefined {
-    const list = read()
-    const idx = list.findIndex((m) => m.id === id)
-    if (idx < 0) return undefined
-    const previous = list[idx]
-    if (!previous) return undefined
-    const updated: Maintenance = {
-      ...previous,
-      ...input,
-      id,
-      criadoEm: previous.criadoEm,
-      atualizadoEm: new Date().toISOString(),
-    }
-    list[idx] = updated
-    write(list)
-    return updated
+  update(id: string, input: MaintenanceInput) {
+    return save(`/maintance/${encodeURIComponent(id)}`, 'PUT', input)
   },
-  remove(id: string) {
-    write(read().filter((m) => m.id !== id))
+  async remove(id: string) {
+    await api(`/maintance/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    window.dispatchEvent(new Event(CHANGE_EVENT))
   },
 }
-
 export const vehicleService = {
-  /** Replace with the existing vehicles API on integration. */
-  list(): Vehicle[] {
-    return mockVehicles
+  async list(): Promise<Vehicle[]> {
+    return (await getVehicles()).map((v) => ({
+      id: v.id,
+      codigo: v.identification,
+      placa: v.plate,
+      marca: '',
+      modelo: v.model,
+      quilometragem: v.mileageKm,
+      status: (
+        {
+          ativo: 'Disponível',
+          inativo: 'Inativo',
+          manutencao: 'Em manutenção',
+          em_viagem: 'Em uso',
+        } as const
+      )[v.status],
+    }))
   },
 }

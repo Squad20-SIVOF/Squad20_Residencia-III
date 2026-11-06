@@ -122,8 +122,8 @@ export function validateDriverForm(
 
   if (values.name.trim().split(/\s+/).length < 2) errors.name = 'Informe o nome completo.'
   if (!isValidCpf(values.cpf)) errors.cpf = 'CPF inválido.'
-  if (!isValidPhone(values.phone)) errors.phone = 'Telefone inválido.'
-  if (!isValidEmail(values.email)) errors.email = 'E-mail inválido.'
+  if (values.phone && !isValidPhone(values.phone)) errors.phone = 'Telefone inválido.'
+  if (values.email && !isValidEmail(values.email)) errors.email = 'E-mail inválido.'
   if (onlyDigits(values.cnh).length !== 11) errors.cnh = 'A CNH deve ter 11 dígitos.'
   if (!values.cnhCategory) errors.cnhCategory = 'Selecione a categoria.'
 
