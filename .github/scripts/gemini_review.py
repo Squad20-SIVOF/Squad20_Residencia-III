@@ -22,7 +22,8 @@ def request(url, headers, data=None, method=None):
         # Never print request headers, secrets, or provider response bodies.
         hint = {401: 'credencial inválida', 403: 'permissão ou acesso negado',
                 404: 'recurso ou modelo indisponível', 429: 'cota/limite excedido; tente mais tarde'}.get(error.code, 'verifique a configuração e o serviço')
-        raise RuntimeError(f'HTTP {error.code}: {hint}') from None
+        service = 'Gemini' if url.startswith('https://generativelanguage.googleapis.com/') else 'GitHub'
+        raise RuntimeError(f'{service} HTTP {error.code}: {hint}') from None
 
 
 def select_patches(files):
