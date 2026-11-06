@@ -1,5 +1,6 @@
 @use '../../styles/tokens' as *;
 @use '../../styles/breakpoints' as *;
+@use '../../styles/mixins' as *;
 
 // Mobile: título, rota e campos em coluna única.
 // A partir de lg: mapa grande à esquerda, título e formulário à direita (como no Figma desktop).
@@ -28,6 +29,22 @@
 
 .header {
   grid-area: header;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+  align-self: flex-start;
+  min-height: $touch-target;
+  font-size: $font-size-small;
+  font-weight: 600;
+  color: $color-primary;
+  text-decoration: none;
+
+  @include hover {
+    text-decoration: underline;
+  }
 }
 
 .route {
