@@ -32,6 +32,39 @@
   stroke-linecap: round;
 }
 
+.streetThin {
+  fill: none;
+  stroke: $color-map-street;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+}
+
+.routeOutline,
+.routeOutlineInner {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.routeOutline {
+  stroke: $color-map-route-outline;
+  stroke-width: 14;
+}
+
+.routeOutlineInner {
+  stroke: $color-map-background;
+  stroke-width: 10;
+}
+
+.endOutline {
+  fill: $color-map-background;
+  stroke: $color-map-route-outline;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
 .route,
 .routeTracking {
   fill: none;

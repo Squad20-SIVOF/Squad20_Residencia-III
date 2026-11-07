@@ -33,9 +33,13 @@ const BLOCKS = [
   { x: 480, y: 160, width: 80, height: 50 },
 ]
 
+/** `minimal`: só ruas finas e a rota em contorno azul, como no Figma da solicitação. */
+export type RouteMapVariant = 'detailed' | 'minimal'
+
 export interface RouteMapProps {
   /** Texto alternativo do mapa. */
   label: string
+  variant?: RouteMapVariant
   /** Fração do trajeto já percorrida (0 a 1). Sem ela, o mapa mostra só a rota. */
   progress?: number | undefined
   /** Selos e cards exibidos por cima do mapa. */
@@ -44,8 +48,16 @@ export interface RouteMapProps {
 }
 
 /** Mapa ilustrativo em SVG; a altura é definida pelo pai via `className`. */
-export function RouteMap({ label, progress, children, className }: RouteMapProps) {
+export function RouteMap({
+  label,
+  variant = 'detailed',
+  progress,
+  children,
+  className,
+}: RouteMapProps) {
   const isTracking = progress !== undefined
+  const isMinimal = variant === 'minimal'
+  const routePoints = toPolylinePoints(ROUTE_POINTS)
   const start = ROUTE_POINTS[0] ?? { x: 0, y: 0 }
   const end = ROUTE_POINTS[ROUTE_POINTS.length - 1] ?? start
   const car = getPointAlongRoute(ROUTE_POINTS, progress ?? 0)
@@ -59,23 +71,53 @@ export function RouteMap({ label, progress, children, className }: RouteMapProps
         aria-hidden="true"
         focusable="false"
       >
-        {BLOCKS.map((block) => (
-          <rect
-            key={`${block.x}-${block.y}`}
-            className={styles.block}
-            rx="6"
-            {...block}
+        {!isMinimal &&
+          BLOCKS.map((block) => (
+            <rect
+              key={`${block.x}-${block.y}`}
+              className={styles.block}
+              rx="6"
+              {...block}
+            />
+          ))}
+        {STREETS.map((street) => (
+          <path
+            key={street}
+            className={isMinimal ? styles.streetThin : styles.street}
+            d={street}
           />
         ))}
-        {STREETS.map((street) => (
-          <path key={street} className={styles.street} d={street} />
-        ))}
-        <polyline
-          className={isTracking ? styles.routeTracking : styles.route}
-          points={toPolylinePoints(ROUTE_POINTS)}
-        />
+        {isMinimal ? (
+          // Contorno: traço azul largo com o miolo na cor do fundo por cima.
+          <>
+            <polyline className={styles.routeOutline} points={routePoints} />
+            <polyline className={styles.routeOutlineInner} points={routePoints} />
+          </>
+        ) : (
+          <polyline
+            className={isTracking ? styles.routeTracking : styles.route}
+            points={routePoints}
+          />
+        )}
 
-        {isTracking ? (
+        {isMinimal ? (
+          <>
+            <ellipse
+              className={styles.endOutline}
+              cx={start.x}
+              cy={start.y}
+              rx="14"
+              ry="10"
+            />
+            <ellipse
+              className={styles.endOutline}
+              cx={end.x}
+              cy={end.y}
+              rx="14"
+              ry="10"
+            />
+          </>
+        ) : isTracking ? (
           <>
             <g transform={`translate(${end.x} ${end.y})`}>
               <circle className={styles.pinHalo} r="18" />
