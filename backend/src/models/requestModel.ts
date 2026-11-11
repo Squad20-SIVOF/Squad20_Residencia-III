@@ -124,15 +124,16 @@ const cancel = (id: string, motivo: string, scope: RequestScope) =>
     );
     if (
       trips.rows.some(
-        (trip) => !["Agendada", "Cancelada"].includes(trip.status),
+        (trip) =>
+          !["Agendada", "Em deslocamento", "Cancelada"].includes(trip.status),
       )
     )
       throw new RequestError(
         409,
-        "Solicitação possui viagem iniciada ou finalizada",
+        "Solicitação possui viagem em andamento ou finalizada",
       );
-    for (const trip of trips.rows.filter(
-      (trip) => trip.status === "Agendada",
+    for (const trip of trips.rows.filter((trip) =>
+      ["Agendada", "Em deslocamento"].includes(trip.status),
     )) {
       await transitionInTransaction(
         client,

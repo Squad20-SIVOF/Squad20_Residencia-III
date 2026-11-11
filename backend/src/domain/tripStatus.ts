@@ -11,7 +11,7 @@ export type TripStatus = (typeof TRIP_STATUSES)[number];
 
 const transitions: Record<TripStatus, readonly TripStatus[]> = {
   Agendada: ["Em deslocamento", "Cancelada"],
-  "Em deslocamento": ["Em andamento"],
+  "Em deslocamento": ["Em andamento", "Cancelada"],
   "Em andamento": ["Finalizada"],
   Finalizada: [],
   Cancelada: [],

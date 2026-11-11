@@ -135,3 +135,43 @@ test("falha na outbox também desfaz cancelamento da solicitação", async () =>
   expect(query).toHaveBeenCalledWith("ROLLBACK");
   expect(query).not.toHaveBeenCalledWith("COMMIT");
 });
+
+test("gestor cancela viagem em deslocamento com histórico e evento", async () => {
+  status = "Em deslocamento";
+  await model.transition(
+    id,
+    { status: "Cancelada", motivo: "Retorno solicitado" },
+    scope,
+  );
+  expect(query).toHaveBeenCalledWith(
+    expect.stringContaining("INSERT INTO historico_status_viagem"),
+    [id, "Em deslocamento", "Cancelada", scope.userId, "Retorno solicitado"],
+  );
+  const event = query.mock.calls.find(([sql]) =>
+    sql.includes("INSERT INTO outbox_events"),
+  );
+  expect(event?.[1][2]).toBe("ViagemCancelada");
+  expect(query).toHaveBeenCalledWith("COMMIT");
+});
+
+test("cancelamento da solicitação também cancela viagem em deslocamento", async () => {
+  status = "Em deslocamento";
+  await requestModel.cancel(id, "Retorno solicitado", scope);
+  expect(query).toHaveBeenCalledWith(
+    expect.stringContaining("INSERT INTO historico_status_viagem"),
+    [id, "Em deslocamento", "Cancelada", scope.userId, "Retorno solicitado"],
+  );
+  expect(query).toHaveBeenCalledWith("COMMIT");
+});
+
+test("motorista não cancela viagem em deslocamento", async () => {
+  status = "Em deslocamento";
+  await expect(
+    model.transition(
+      id,
+      { status: "Cancelada", motivo: "Teste" },
+      { ...scope, manager: false },
+    ),
+  ).rejects.toMatchObject({ status: 403 });
+  expect(query).toHaveBeenCalledWith("ROLLBACK");
+});

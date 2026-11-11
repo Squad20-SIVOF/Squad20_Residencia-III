@@ -212,16 +212,24 @@ describeDatabase("viagens com PostgreSQL real e migrations", () => {
     },
   );
 
-  it("cancelamento da solicitação grava evento e histórico na mesma transação", async () => {
-    await requests.cancel(requestId, "Teste", scope);
-    expect(await snapshot()).toEqual({
-      status: "Cancelada",
-      historicos: 1,
-      eventos: 1,
-    });
-    const { rows } = await pool.query("SELECT event_type FROM outbox_events");
-    expect(rows[0].event_type).toBe("ViagemCancelada");
-  });
+  it.each(["Agendada", "Em deslocamento"] as const)(
+    "cancelamento da solicitação cancela viagem %s atomicamente",
+    async (initial) => {
+      if (initial === "Em deslocamento")
+        await trips.transition(tripId, { status: initial }, scope);
+      await requests.cancel(requestId, "Teste", scope);
+      const count = initial === "Agendada" ? 1 : 2;
+      expect(await snapshot()).toEqual({
+        status: "Cancelada",
+        historicos: count,
+        eventos: count,
+      });
+      const { rows } = await pool.query(
+        "SELECT event_type FROM outbox_events WHERE event_type='ViagemCancelada'",
+      );
+      expect(rows).toHaveLength(1);
+    },
+  );
 
   it("duas coletas concorrentes do mesmo óbito emitem apenas um evento", async () => {
     const input = {
@@ -296,5 +304,36 @@ describeDatabase("viagens com PostgreSQL real e migrations", () => {
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect((await response.json()).message.status).toBe("Em deslocamento");
     expect((await snapshot()).eventos).toBe(1);
+  });
+  it("Gestor de Frota cancela viagem em deslocamento pela API", async () => {
+    await pool.query(
+      "INSERT INTO usuarios_perfis (usuario_id,perfil_id) SELECT $1,id FROM perfis WHERE codigo='gestor_frota'",
+      [manager],
+    );
+    await trips.transition(tripId, { status: "Em deslocamento" }, scope);
+    const token = (
+      await (await import("../auth/session")).createSession(manager)
+    ).token;
+    const response = await fetch(base, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status: "Cancelada",
+        motivo: "Retorno solicitado",
+      }),
+    });
+    expect(response.status).toBe(200);
+    expect(await snapshot()).toEqual({
+      status: "Cancelada",
+      historicos: 2,
+      eventos: 2,
+    });
+    const { rows } = await pool.query(
+      "SELECT motivo FROM historico_status_viagem WHERE status_novo='Cancelada'",
+    );
+    expect(rows[0].motivo).toBe("Retorno solicitado");
   });
 });

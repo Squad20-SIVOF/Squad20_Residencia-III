@@ -5,6 +5,7 @@ const allowed = [
   ["Agendada", "Em deslocamento"],
   ["Agendada", "Cancelada"],
   ["Em deslocamento", "Em andamento"],
+  ["Em deslocamento", "Cancelada"],
   ["Em andamento", "Finalizada"],
 ];
 describe("transições de viagem", () => {
