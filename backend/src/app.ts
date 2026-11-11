@@ -18,6 +18,7 @@ import driverFuelRoutes from "./routes/driverFuelRoutes";
 import requestRoutes from "./routes/requestRoutes";
 import svoRoutes from "./routes/svoRoutes";
 import deathRoutes from "./routes/deathRoutes";
+import tripRoutes from "./routes/tripRoutes";
 import deathController from "./controller/deathController";
 import { authorize } from "./middleware/authorization";
 
@@ -46,6 +47,7 @@ app.use("/abastecimentos", authenticate, fuelRoutes);
 app.use("/solicitacoes", authenticate, requestRoutes);
 app.use("/svo", authenticate, svoRoutes);
 app.use("/obitos", authenticate, deathRoutes);
+app.use("/viagens", authenticate, tripRoutes);
 app.get(
   "/viagens/:id/obitos",
   authenticate,

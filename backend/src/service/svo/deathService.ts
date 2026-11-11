@@ -1,3 +1,4 @@
+import { execute } from "../../utils/serviceUtils";
 import model, { DeathError } from "../../models/deathModel";
 import {
   deathCancelSchema,
@@ -5,16 +6,6 @@ import {
   deathInputSchema,
   deathQuerySchema,
 } from "../../middleware/validations/schemas/deathSchema";
-
-const execute = async (operation: () => Promise<unknown>, status = 200) => {
-  try {
-    return { message: await operation(), status };
-  } catch (error) {
-    if (error instanceof DeathError)
-      return { status: error.status, message: error.message };
-    throw error;
-  }
-};
 
 const parseId = (id: string) => {
   const parsed = deathIdSchema.safeParse(id);
@@ -39,9 +30,11 @@ const get = (id: string) =>
     return row;
   });
 
-const save = (body: unknown, id?: string) =>
+const save = (body: unknown, id?: string, userId?: string) =>
   execute(
     async () => {
+      if (!deathIdSchema.safeParse(userId).success)
+        throw new DeathError(401, "Autenticação necessária");
       const parsed = deathInputSchema.safeParse(body);
       if (!parsed.success)
         throw new DeathError(
@@ -50,6 +43,7 @@ const save = (body: unknown, id?: string) =>
         );
       return model.save(
         parsed.data,
+        userId as string,
         id === undefined ? undefined : parseId(id),
       );
     },

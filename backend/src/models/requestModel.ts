@@ -1,18 +1,14 @@
 import { pool } from "../db";
+import { DomainError } from "../utils/serviceUtils";
+import { transaction } from "../utils/transaction";
+import { transitionInTransaction } from "./tripModel";
 import type { PoolClient } from "pg";
 import type {
   RequestInput,
   RequestQuery,
 } from "../middleware/validations/schemas/requestSchema";
 
-export class RequestError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
+export class RequestError extends DomainError {}
 export type RequestScope = { userId: string; manager: boolean };
 type RequestRow = {
   id: string;
@@ -83,22 +79,6 @@ const get = async (id: string, scope: RequestScope) => {
   if (!rows[0]) throw new RequestError(404, "Solicitação não encontrada");
   return rows[0];
 };
-const transaction = async <T>(
-  operation: (client: PoolClient) => Promise<T>,
-): Promise<T> => {
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
-    const result = await operation(client);
-    await client.query("COMMIT");
-    return result;
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
-  }
-};
 const lock = async (
   client: PoolClient,
   id: string,
@@ -154,14 +134,11 @@ const cancel = (id: string, motivo: string, scope: RequestScope) =>
     for (const trip of trips.rows.filter(
       (trip) => trip.status === "Agendada",
     )) {
-      await client.query(
-        "UPDATE viagens SET status = 'Cancelada', atualizado_em = NOW() WHERE id = $1",
-        [trip.id],
-      );
-      await client.query(
-        `INSERT INTO historico_status_viagem (viagem_id, status_anterior, status_novo, usuario_id)
-         VALUES ($1, $2, 'Cancelada', $3)`,
-        [trip.id, trip.status, scope.userId],
+      await transitionInTransaction(
+        client,
+        trip.id,
+        { status: "Cancelada", motivo },
+        { userId: scope.userId, manager: true },
       );
     }
     const { rows } = await client.query(

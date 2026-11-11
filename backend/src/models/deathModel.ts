@@ -1,18 +1,14 @@
 import type { PoolClient } from "pg";
 import { pool } from "../db";
+import { DomainError } from "../utils/serviceUtils";
+import { transaction } from "../utils/transaction";
+import { appendEvent } from "./outboxModel";
 import type {
   DeathInput,
   DeathQuery,
 } from "../middleware/validations/schemas/deathSchema";
 
-export class DeathError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
+export class DeathError extends DomainError {}
 
 const detailColumns = `id, viagem_id, identificacao, local_recolhimento, documentacao,
   status_coleta, data_hora_recolhimento, motivo_cancelamento, cancelado_em`;
@@ -55,8 +51,8 @@ const checkCapacity = async (client: PoolClient, tripId: string) => {
     )
   ).rows[0];
   if (!trip) throw new DeathError(404, "Viagem não encontrada");
-  if (trip.status === "Cancelada")
-    throw new DeathError(409, "A viagem foi cancelada");
+  if (["Cancelada", "Finalizada"].includes(trip.status ?? ""))
+    throw new DeathError(409, "A viagem está encerrada");
   if (!trip.veiculo_id)
     throw new DeathError(409, "A viagem precisa ter uma viatura do SVO");
 
@@ -81,10 +77,9 @@ const checkCapacity = async (client: PoolClient, tripId: string) => {
     throw new DeathError(409, "Capacidade da viatura atingida nesta viagem");
 };
 
-const save = async (input: DeathInput, id?: string) => {
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
+const save = (input: DeathInput, userId: string, id?: string) =>
+  transaction(async (client) => {
+    let previousStatus: string | undefined;
     if (id) {
       const current = (
         await client.query<{ viagem_id: string | null; status_coleta: string }>(
@@ -93,10 +88,32 @@ const save = async (input: DeathInput, id?: string) => {
         )
       ).rows[0];
       if (!current) throw new DeathError(404, "Óbito não encontrado");
+      previousStatus = current.status_coleta;
       if (current.status_coleta === "Cancelado")
         throw new DeathError(409, "Óbito cancelado não pode ser editado");
+      const allowed =
+        current.status_coleta === input.status_coleta ||
+        current.status_coleta === "Pendente" ||
+        (current.status_coleta === "Recolhido" &&
+          input.status_coleta === "Concluído");
+      if (!allowed)
+        throw new DeathError(
+          409,
+          "A coleta não pode retornar a um status anterior",
+        );
       if (current.viagem_id !== input.viagem_id)
         await checkCapacity(client, input.viagem_id);
+      else {
+        const trip = (
+          await client.query<{ status: string }>(
+            "SELECT status FROM viagens WHERE id = $1 FOR UPDATE",
+            [input.viagem_id],
+          )
+        ).rows[0];
+        if (!trip) throw new DeathError(404, "Viagem não encontrada");
+        if (["Cancelada", "Finalizada"].includes(trip.status))
+          throw new DeathError(409, "A viagem está encerrada");
+      }
     } else {
       await checkCapacity(client, input.viagem_id);
     }
@@ -123,15 +140,20 @@ const save = async (input: DeathInput, id?: string) => {
           values,
         );
 
-    await client.query("COMMIT");
-    return result.rows[0];
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
-  }
-};
+    const row = result.rows[0];
+    if (
+      input.status_coleta !== "Pendente" &&
+      (previousStatus === undefined || previousStatus === "Pendente")
+    ) {
+      await appendEvent(client, "Obito", row.id, "ObitoColetado", {
+        obito_id: row.id,
+        viagem_id: input.viagem_id,
+        usuario_id: userId,
+        ocorrido_em: input.data_hora_recolhimento,
+      });
+    }
+    return row;
+  });
 
 const cancel = async (id: string, motivo: string) => {
   const { rows } = await pool.query(
