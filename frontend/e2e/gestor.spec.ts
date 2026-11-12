@@ -102,7 +102,7 @@ test('solicitações consultam a API e cancelamento aguarda confirmação do ser
         ]
       : [],
   })
-  await page.route('**/solicitacoes**', async (route) => {
+  await page.route('**/api/solicitacoes**', async (route) => {
     const request = route.request()
     const url = new URL(request.url())
     if (request.method() === 'PATCH') {
