@@ -3,7 +3,7 @@ import RegistrarAbastecimento from '@/pages/abastecimentos/registrar/RegistrarAb
 import SolicitacoesPendentesPage from '@/pages/solicitacoes/SolicitacoesPendentesPage'
 import { UsersPage } from '@/pages/users/UsersPage'
 import { RequireAuth } from '@/components/RequireAuth/RequireAuth'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from '@/layouts/AppLayout'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { DriverDetailsPage } from '@/pages/drivers/DriverDetailsPage'
@@ -24,7 +24,6 @@ import {
 // Módulos ainda sem tela própria: mesma página provisória, só muda o título.
 const COMING_SOON_ROUTES = [
   { path: 'abastecimentos', title: 'Abastecimentos' },
-  { path: 'viagens', title: 'Viagens' },
   { path: 'manutencoes', title: 'Manutenções' },
   { path: 'relatorios', title: 'Relatórios' },
 ]
@@ -47,7 +46,9 @@ export function AppRoutes() {
           <Route path="motoristas/novo" element={<DriverFormPage />} />
           <Route path="motoristas/editar/:id" element={<DriverFormPage />} />
           <Route path="motoristas/:id" element={<DriverDetailsPage />} />
-          <Route path="viagens" element={<RequestFormPage />} />
+          {/* Enquanto o Painel de Viagens não existe, a entrada do módulo abre a solicitação. */}
+          <Route path="viagens" element={<Navigate to="/viagens/solicitar" replace />} />
+          <Route path="viagens/solicitar" element={<RequestFormPage />} />
           <Route path="viagens/:id" element={<RequestTrackingPage />} />
           <Route path="perfil" element={<ProfilePage />} />
           <Route path="usuarios" element={<UsersPage />} />

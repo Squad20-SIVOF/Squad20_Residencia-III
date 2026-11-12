@@ -1,8 +1,13 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import { beforeEach, expect, test, vi } from 'vitest'
 import { AppRoutes } from './App'
+
+// Expõe a URL atual para conferir redirecionamentos.
+function CurrentPath() {
+  return <output aria-label="URL atual">{useLocation().pathname}</output>
+}
 
 function renderAt(path: string) {
   return render(
@@ -70,6 +75,28 @@ test('mantém a página provisória nos módulos ainda não implementados', asyn
 
   expect(screen.getByRole('heading', { name: 'Relatórios' })).toBeInTheDocument()
   expect(screen.getByText(/módulo em construção/i)).toBeInTheDocument()
+})
+
+test('/viagens redireciona para a solicitação enquanto o Painel não existe', async () => {
+  const user = userEvent.setup()
+  render(
+    <MemoryRouter initialEntries={['/', '/viagens']} initialIndex={1}>
+      <AppRoutes />
+      <CurrentPath />
+    </MemoryRouter>,
+  )
+
+  expect(
+    screen.getByRole('heading', { level: 1, name: 'Solicitar Veículo' }),
+  ).toBeInTheDocument()
+  expect(screen.getByRole('status', { name: 'URL atual' })).toHaveTextContent(
+    '/viagens/solicitar',
+  )
+  await user.click(screen.getByRole('button', { name: /abrir menu/i }))
+  expect(screen.getByRole('link', { name: 'Viagens' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
 })
 
 test('o acompanhamento da rota também marca Viagens no menu', async () => {

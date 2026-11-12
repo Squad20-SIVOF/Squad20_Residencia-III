@@ -1,5 +1,6 @@
 @use '../../../../styles/tokens' as *;
 @use '../../../../styles/breakpoints' as *;
+@use '../../requestFields' as *;
 
 // Mobile: mapa pequeno ao fundo e o card por cima. A partir de lg, mapa da altura da tela.
 .route {
@@ -31,6 +32,7 @@
   border: 1px solid $color-border-subtle;
   border-radius: $radius-lg;
   box-shadow: $shadow-card;
+  @include request-fields;
 
   @include up(lg) {
     width: 100%;
@@ -40,7 +42,7 @@
 
 .title {
   font-size: $font-size-body;
-  font-weight: 500;
+  font-weight: 400;
   color: $color-text;
 }
 
@@ -63,7 +65,7 @@
   width: $route-marker-size;
   height: $route-marker-size;
   margin-top: $space-4; // alinha com a caixa do campo, abaixo do rótulo
-  border: 2px solid $color-navy;
+  border: 1px solid $color-text-muted;
 }
 
 .originMarker {
@@ -91,7 +93,7 @@
     font-weight: 600;
     color: $color-on-navy;
     white-space: nowrap;
-    background-color: $color-navy-mid;
+    background-color: $color-map-badge;
     border-radius: $radius-pill;
     transform: translateX(-50%);
   }
