@@ -148,4 +148,12 @@ describe("solicitações: validação e acesso", () => {
     ).toBe(false);
     expect(requestUpdateSchema.safeParse(body).success).toBe(true);
   });
+  it("rejeita motivo maior que o limite do histórico de viagens", async () => {
+    jest.mocked(model.isManager).mockResolvedValue(true);
+    expect(
+      (await service.cancel(requestId, { motivo: "x".repeat(501) }, userId))
+        .status,
+    ).toBe(400);
+    expect(model.cancel).not.toHaveBeenCalled();
+  });
 });

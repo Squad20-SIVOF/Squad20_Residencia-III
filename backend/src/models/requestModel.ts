@@ -81,7 +81,14 @@ const get = async (id: string, scope: RequestScope) => {
     [id, scope.manager, scope.userId],
   );
   if (!rows[0]) throw new RequestError(404, "Solicitação não encontrada");
-  return rows[0];
+  return {
+    ...rows[0],
+    pode_editar:
+      rows[0].solicitante_id === scope.userId && rows[0].status === "Pendente",
+    pode_cancelar:
+      scope.manager &&
+      ["Pendente", "Aprovada", "Agendada"].includes(rows[0].status),
+  };
 };
 const lock = async (
   client: PoolClient,
