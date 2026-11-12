@@ -46,10 +46,7 @@ export function RequestDetailsPage() {
       </header>
 
       <section className={styles.mapSection} aria-label="Mapa da rota">
-        <RouteMap
-          className={styles.map}
-          label="Mapa ilustrativo da rota planejada"
-        >
+        <RouteMap className={styles.map} label="Mapa ilustrativo da rota planejada">
           <span className={styles.routeBadge}>
             {exemplo.origem} → {exemplo.destino}
           </span>

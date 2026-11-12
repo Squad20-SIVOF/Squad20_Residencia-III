@@ -39,6 +39,7 @@ export function RouteCard({
     <section className={classNames(styles.route, className)} aria-labelledby={titleId}>
       <RouteMap
         className={styles.map}
+        variant="minimal"
         label="Mapa ilustrativo da rota entre a origem e o destino"
       />
 

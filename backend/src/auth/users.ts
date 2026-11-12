@@ -137,7 +137,7 @@ router.put(
 );
 
 router.get(
-  "/auxiliares",
+  ["/permissoes", "/auxiliares"],
   authorize("usuarios:delegar-permissoes"),
   async (req, res) => {
     try {
@@ -145,11 +145,11 @@ router.get(
         (req as AuthenticatedRequest).user!.id,
       );
       const { rows } =
-        await pool.query(`SELECT u.id, u.nome, u.email, COALESCE(extra.permissoes, '{}') AS permissoes
+        await pool.query(`SELECT u.id, u.nome, u.email, COALESCE(extra.permissoes, '{}') AS permissoes,
+      COALESCE((SELECT json_agg(json_build_object('id',p.id,'nome',p.nome)) FROM usuarios_perfis up JOIN perfis p ON p.id=up.perfil_id WHERE up.usuario_id=u.id), '[]') AS perfis,
+      ARRAY(SELECT DISTINCT unnest(p.permissoes) FROM usuarios_perfis up JOIN perfis p ON p.id=up.perfil_id WHERE up.usuario_id=u.id) AS "permissoesHerdadas"
       FROM usuarios u LEFT JOIN usuarios_permissoes extra ON extra.usuario_id = u.id
-      WHERE u.ativo AND u.deletado_em IS NULL
-      AND EXISTS (SELECT 1 FROM usuarios_perfis up JOIN perfis p ON p.id=up.perfil_id WHERE up.usuario_id=u.id AND p.codigo='auxiliar_gestor')
-      AND NOT EXISTS (SELECT 1 FROM usuarios_perfis up JOIN perfis p ON p.id=up.perfil_id WHERE up.usuario_id=u.id AND p.codigo IS DISTINCT FROM 'auxiliar_gestor') ORDER BY u.nome, u.id`);
+      WHERE u.ativo AND u.deletado_em IS NULL ORDER BY u.nome, u.id`);
       res.json({
         usuarios: rows,
         permissoesDisponiveis: DELEGABLE_PERMISSIONS.filter((p) =>
@@ -157,9 +157,9 @@ router.get(
         ),
       });
     } catch {
-      res
-        .status(500)
-        .json({ message: "Não foi possível consultar auxiliares" });
+      res.status(500).json({
+        message: "Não foi possível consultar permissões dos usuários",
+      });
     }
   },
 );
@@ -210,16 +210,13 @@ router.put(
           return;
         }
         const { rows } = await client.query(
-          `SELECT u.id FROM usuarios u WHERE u.id=$1 AND u.ativo AND u.deletado_em IS NULL
-       AND EXISTS (SELECT 1 FROM usuarios_perfis up JOIN perfis p ON p.id=up.perfil_id WHERE up.usuario_id=u.id AND p.codigo='auxiliar_gestor')
-       AND NOT EXISTS (SELECT 1 FROM usuarios_perfis up JOIN perfis p ON p.id=up.perfil_id WHERE up.usuario_id=u.id AND p.codigo IS DISTINCT FROM 'auxiliar_gestor') FOR UPDATE`,
+          `SELECT u.id FROM usuarios u WHERE u.id=$1 AND u.ativo AND u.deletado_em IS NULL FOR UPDATE`,
           [id.data],
         );
         if (!rows.length) {
           await client.query("ROLLBACK");
           res.status(409).json({
-            message:
-              "A delegação exige um usuário ativo com somente o perfil Auxiliar de Gestor",
+            message: "A alteração exige um usuário ativo",
           });
           return;
         }

@@ -21,6 +21,8 @@ export const PERMISSIONS = [
   "solicitacoes:criar",
   "solicitacoes:ler-proprias",
   "viagens:ler-proprias",
+  "viagens:gerenciar",
+  "viagens:atualizar-proprias",
   "obitos:ler",
   "obitos:gerenciar",
 ] as const;
