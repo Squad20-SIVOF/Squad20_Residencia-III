@@ -31,11 +31,15 @@ export function CorrectMileagePage() {
     <section className={styles.content}>
       <h1>Corrigir leitura</h1>
       <p>Digite o valor exibido no hodômetro da foto.</p>
-      <img
-        src={draft.foto}
-        alt="Foto do painel para conferir a leitura"
-        className={styles.photo}
-      />
+      {draft.simulada ? (
+        <p>Painel simulado · Informe uma leitura de teste.</p>
+      ) : (
+        <img
+          src={draft.foto}
+          alt="Foto do painel para conferir a leitura"
+          className={styles.photo}
+        />
+      )}
       <TextField
         label="Quilometragem (km)"
         value={km}

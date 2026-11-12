@@ -70,12 +70,36 @@ export function CapturePanelPage() {
         </p>
       ) : (
         <>
-          {draft && (
+          {draft && !draft.simulada && (
             <img
               src={draft.foto}
               className={styles.photo}
               alt="Foto selecionada do painel"
             />
+          )}
+          {import.meta.env.DEV && (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                setCapture({
+                  tripId: trip.id,
+                  type,
+                  foto: '',
+                  simulada: true,
+                  km: '',
+                  capturedAt: new Date().toISOString(),
+                })
+              }
+            >
+              Usar painel simulado (desenvolvimento)
+            </Button>
+          )}
+          {draft?.simulada && (
+            <output>
+              Simulação ativa: nenhuma foto real será gravada. A leitura continua manual e
+              exige confirmação. A simulação precisa estar habilitada no ambiente de
+              desenvolvimento.
+            </output>
           )}
           <label htmlFor="panel-photo">Foto do painel (JPG ou PNG, até 5 MB)</label>
           <input

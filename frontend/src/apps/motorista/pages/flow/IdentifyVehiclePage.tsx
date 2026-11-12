@@ -1,3 +1,5 @@
+import { api } from '@/service/api'
+import { readVehicleQr } from '@/utils/vehicleQr'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/Button'
@@ -28,6 +30,11 @@ export function IdentifyVehiclePage() {
     )
   const trip = result.data
   function identify(value: string) {
+    try {
+      value = readVehicleQr(value)
+    } catch {
+      /* Códigos manuais legados continuam aceitos nesta etapa. */
+    }
     const expected = [trip.veiculo_id, trip.placa, trip.identificacao].filter(
       (v): v is string => Boolean(v),
     )
@@ -37,7 +44,17 @@ export function IdentifyVehiclePage() {
       )
       return
     }
-    navigate(`/viagens/${trip.id}/inicio/painel`)
+    setError('')
+    void api('/motorista/veiculo-sessao', {
+      method: 'POST',
+      body: JSON.stringify({ veiculo_id: trip.veiculo_id }),
+    })
+      .then(() => navigate(`/viagens/${trip.id}/inicio/painel`))
+      .catch((cause: unknown) =>
+        setError(
+          cause instanceof Error ? cause.message : 'Não foi possível vincular o veículo.',
+        ),
+      )
   }
   return (
     <section className={styles.content}>

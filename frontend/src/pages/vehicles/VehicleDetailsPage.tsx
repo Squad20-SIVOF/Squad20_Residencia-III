@@ -1,3 +1,4 @@
+import { VehicleQrPrintButton } from './components/VehicleQrPrintButton'
 import { Breadcrumb } from '@/components/Breadcrumb'
 import type { Vehicle } from './types'
 import { useEffect, useRef, useState } from 'react'
@@ -99,6 +100,11 @@ export function VehicleDetailsPage({
         <div className={styles.grid}>
           <div className={styles.hero}>
             <VehicleHeroCard vehicle={details.vehicle} />
+            <VehicleQrPrintButton
+              id={vehicleId}
+              plate={details.vehicle.plate}
+              model={details.vehicle.model}
+            />
           </div>
           <VehicleSummaryCard vehicle={details.vehicle} onEdit={handleEdit} />
           <TripHistoryCard

@@ -1,3 +1,4 @@
+import { SessionVehiclePage } from './pages/flow/SessionVehiclePage'
 import { RequireAuth } from '@/components/RequireAuth/RequireAuth'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { LoginMobile } from './pages/LoginMobile/LoginMobile'
@@ -32,6 +33,7 @@ export function DriverRoutes() {
             <Route path="*" element={<NotFoundPage />} />
           </Route>
           <Route element={<DriverFlowLayout />}>
+            <Route path="veiculo-sessao" element={<SessionVehiclePage />} />
             <Route path="viagens/:id" element={<MobileTripPage />} />
             <Route
               path="viagens/:id/inicio/identificar"

@@ -23,6 +23,7 @@ export function MobileHeader({ back, menu = true }: { back?: string; menu?: bool
           </summary>
           <nav aria-label="Opções do motorista">
             <Link to="/">Início</Link>
+            <Link to="/veiculo-sessao">Veículo da sessão</Link>
             <Link to="/viagens">Minhas viagens</Link>
             <Link to="/checklist">Vistoria</Link>
             <Link to="/abastecimento">Abastecer</Link>

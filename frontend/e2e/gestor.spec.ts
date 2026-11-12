@@ -56,6 +56,13 @@ test('detalhes de veículo mostram histórico e vistoria, e breadcrumb volta à 
   await expect(
     page.getByRole('heading', { name: 'Checklist de Vistorias', exact: true }),
   ).toBeVisible()
+  const popupPromise = page.waitForEvent('popup')
+  await page.getByRole('button', { name: 'Gerar QR Code para impressão' }).click()
+  const label = await popupPromise
+  await expect(label.getByRole('heading', { name: 'SIVOF · Veículo' })).toBeVisible()
+  await expect(label.getByRole('img')).toHaveAttribute('src', /^data:image\/png;base64,/)
+  await expect(label.getByText(vehicle.id, { exact: true })).toBeVisible()
+  await label.close()
   await page.getByRole('button', { name: 'Ver histórico completo', exact: true }).click()
   const dialog = page.getByRole('dialog', { name: 'Histórico de viagens', exact: true })
   await expect(dialog).toBeVisible()

@@ -18,11 +18,15 @@ export async function recordTripCapture(
   type: CaptureType,
   km: number,
   foto: string,
+  simulada = false,
 ): Promise<DriverTrip> {
   return (
     await api<{ message: DriverTrip }>(
       `/motorista/viagens/${encodeURIComponent(id)}/${type === 'inicio' ? 'iniciar' : 'finalizar'}`,
-      { method: 'POST', body: JSON.stringify({ km, foto }) },
+      {
+        method: 'POST',
+        body: JSON.stringify(simulada ? { km, simulada: true } : { km, foto }),
+      },
     )
   ).message
 }

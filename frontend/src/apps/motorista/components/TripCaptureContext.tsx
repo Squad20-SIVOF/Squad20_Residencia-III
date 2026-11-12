@@ -4,6 +4,7 @@ import type { CaptureType } from '../types'
 export interface TripCapture {
   tripId: string
   type: CaptureType
+  simulada?: boolean
   foto: string
   km: string
   capturedAt: string

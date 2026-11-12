@@ -37,6 +37,10 @@ beforeEach(() => {
     flag_urgencia: false,
   }
   vi.mocked(api).mockImplementation(async (path, options) => {
+    if (path === '/motorista/veiculo-sessao')
+      return {
+        message: { id: trip.veiculo_id, placa: trip.placa, modelo: trip.modelo },
+      } as never
     if (options?.method === 'POST') {
       if (fail) throw new Error('Falha de conexão. Tente novamente.')
       const body = JSON.parse(options.body as string) as { km: number }
@@ -140,4 +144,22 @@ test('estado final da viagem não mostra ações de início ou finalização', a
     screen.queryByRole('link', { name: 'Identificar veículo' }),
   ).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Finalizar viagem' })).not.toBeInTheDocument()
+})
+
+test('painel simulado envia marcação explícita sem inventar foto', async () => {
+  mount(`/viagens/${id}/inicio/painel`)
+  await userEvent.click(
+    await screen.findByRole('button', { name: 'Usar painel simulado (desenvolvimento)' }),
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Informar quilometragem' }))
+  await userEvent.type(await screen.findByLabelText('Quilometragem (km)'), '100')
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar leitura' }))
+  await userEvent.click(
+    await screen.findByRole('button', { name: 'Confirmar e iniciar viagem' }),
+  )
+  expect(await screen.findByText('Em deslocamento')).toBeVisible()
+  expect(api).toHaveBeenCalledWith(`/motorista/viagens/${id}/iniciar`, {
+    method: 'POST',
+    body: JSON.stringify({ km: 100, simulada: true }),
+  })
 })

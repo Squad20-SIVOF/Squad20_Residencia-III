@@ -43,7 +43,7 @@ export function ConfirmMileagePage() {
     setSaving(true)
     setError('')
     try {
-      await recordTripCapture(id, type, km, draft.foto)
+      await recordTripCapture(id, type, km, draft.foto, draft.simulada)
       setCapture(null)
       navigate(`/viagens/${id}`, { replace: true })
     } catch (cause) {
@@ -58,11 +58,19 @@ export function ConfirmMileagePage() {
     <section className={styles.content}>
       <h1>{type === 'inicio' ? 'Confirmar início' : 'Confirmar finalização'}</h1>
       <p className={styles.muted}>Confira a leitura com a foto antes de confirmar.</p>
-      <img
-        src={draft.foto}
-        alt="Foto do painel a ser registrada"
-        className={styles.photo}
-      />
+      {draft.simulada ? (
+        <output>
+          Painel simulado: este registro será marcado como simulação, sem foto. A
+          confirmação altera o status e a quilometragem reais desta base de
+          desenvolvimento.
+        </output>
+      ) : (
+        <img
+          src={draft.foto}
+          alt="Foto do painel a ser registrada"
+          className={styles.photo}
+        />
+      )}
       <Card>
         <p className={styles.reading}>{formatKm(km)}</p>
         <p>

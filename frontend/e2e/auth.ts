@@ -11,6 +11,7 @@ export async function mockApi(page: Page) {
     email: testCredentials.email,
     permissoes: [
       'veiculos:ler',
+      'veiculos:gerenciar',
       'motoristas:ler',
       'viagens:ler-proprias',
       'viagens:atualizar-proprias',

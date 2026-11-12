@@ -29,6 +29,14 @@ test.beforeEach(async ({ page }) => {
     const request = route.request()
     const url = new URL(request.url())
     expect(request.headers().authorization).toBe(`Bearer ${'a'.repeat(64)}`)
+    if (url.pathname.endsWith('/veiculo-sessao')) {
+      await route.fulfill({
+        json: {
+          message: { id: trip.veiculo_id, placa: trip.placa, modelo: trip.modelo },
+        },
+      })
+      return
+    }
     if (request.method() === 'POST') {
       const body = request.postDataJSON() as { km: number; foto: string }
       expect(Object.keys(body).sort()).toEqual(['foto', 'km'])
@@ -156,4 +164,38 @@ test('mobile não permite atalhar a confirmação sem foto', async ({ page }) =>
   await expect(
     page.getByRole('button', { name: 'Confirmar e iniciar viagem' }),
   ).toHaveCount(0)
+})
+
+test('QR seleciona veículo somente na sessão e permite remover a seleção', async ({
+  page,
+}) => {
+  let selected: unknown = null
+  await page.route('**/api/motorista/veiculo-sessao', async (route) => {
+    if (route.request().method() === 'POST') {
+      expect(route.request().postDataJSON()).toEqual({
+        veiculo_id: '30000000-0000-4000-8000-000000000001',
+      })
+      selected = {
+        id: '30000000-0000-4000-8000-000000000001',
+        placa: 'TEST001',
+        modelo: 'Viatura de teste',
+      }
+    }
+    if (route.request().method() === 'DELETE') selected = null
+    await route.fulfill({ json: { message: selected } })
+  })
+  await signIn(page)
+  await page.goto('/veiculo-sessao')
+  await expect(page.getByText('Nenhum veículo selecionado.')).toBeVisible()
+  await page
+    .getByLabel('Código da etiqueta')
+    .fill('sivof:veiculo:v1:30000000-0000-4000-8000-000000000001')
+  await page.getByRole('button', { name: 'Vincular nesta sessão' }).click()
+  await expect(page.getByText('Viatura de teste · TEST001')).toBeVisible()
+  await page.reload()
+  await expect(
+    page.getByRole('button', { name: 'Desvincular desta sessão' }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Desvincular desta sessão' }).click()
+  await expect(page.getByText('Nenhum veículo selecionado.')).toBeVisible()
 })
