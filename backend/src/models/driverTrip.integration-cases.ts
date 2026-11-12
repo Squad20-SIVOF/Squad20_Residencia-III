@@ -307,4 +307,87 @@ export function registerDriverTripCases(ctx: Context) {
       ).rows[0].total,
     ).toBe(1);
   });
+  it("seleção de veículo fica restrita à sessão e não altera vínculo permanente", async () => {
+    const { createSession, tokenHash } = await import("../auth/session");
+    const token = (await createSession(ctx.user)).token;
+    const token2 = (await createSession(ctx.user)).token;
+    const request = (token: string, method = "GET", body?: unknown) =>
+      fetch(`${ctx.base()}/motorista/veiculo-sessao`, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+    expect(
+      (await request(token, "POST", { veiculo_id: ctx.vehicle })).status,
+    ).toBe(200);
+    expect((await (await request(token)).json()).message.id).toBe(ctx.vehicle);
+    expect((await (await request(token2)).json()).message).toBeNull();
+    expect(
+      (
+        await ctx
+          .pool()
+          .query("SELECT COUNT(*)::int AS total FROM motoristas_veiculos")
+      ).rows[0].total,
+    ).toBe(0);
+    expect(
+      (
+        await request(token, "POST", {
+          veiculo_id: "30000000-0000-4000-8000-000000000099",
+        })
+      ).status,
+    ).toBe(404);
+    await request(token, "DELETE");
+    expect((await (await request(token)).json()).message).toBeNull();
+    await request(token, "POST", { veiculo_id: ctx.vehicle });
+    await ctx
+      .pool()
+      .query("DELETE FROM auth_sessions WHERE token_hash=$1", [
+        tokenHash(token),
+      ]);
+    expect((await request(token)).status).toBe(401);
+    expect(
+      (
+        await ctx
+          .pool()
+          .query("SELECT COUNT(*)::int AS total FROM motorista_veiculo_sessao")
+      ).rows[0].total,
+    ).toBe(0);
+  });
+  it("simulação exige configuração explícita e nunca grava foto fictícia", async () => {
+    const previous = process.env.ENABLE_PANEL_DEMO;
+    try {
+      delete process.env.ENABLE_PANEL_DEMO;
+      expect(
+        (
+          await call(`${endpoint()}/iniciar`, "POST", {
+            km: 10,
+            simulada: true,
+          })
+        ).status,
+      ).toBe(403);
+      expect((await counts()).fotos).toBe(0);
+      process.env.ENABLE_PANEL_DEMO = "true";
+      expect(
+        (
+          await call(`${endpoint()}/iniciar`, "POST", {
+            km: 10,
+            simulada: true,
+          })
+        ).status,
+      ).toBe(200);
+      expect(
+        (
+          await ctx
+            .pool()
+            .query("SELECT foto,simulada,km FROM viagens_registros_painel")
+        ).rows,
+      ).toEqual([{ foto: null, simulada: true, km: 10 }]);
+    } finally {
+      if (previous === undefined) delete process.env.ENABLE_PANEL_DEMO;
+      else process.env.ENABLE_PANEL_DEMO = previous;
+    }
+  });
 }

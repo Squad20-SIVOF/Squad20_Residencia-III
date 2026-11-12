@@ -30,3 +30,15 @@ O frontend reutiliza o cliente HTTP, a autenticação, componentes e tokens visu
 A leitura do hodômetro é manual, acompanhada da foto; não foi implementado OCR. O QR aceita o identificador, UUID ou placa do veículo atribuído e não substitui a autorização no servidor. O contrato de QR/check-in/out da SCRUM-38 permanece sob responsabilidade da respectiva implementação. Não são exibidos rotas ou GPS fictícios.
 
 A câmera exige HTTPS (ou localhost) e permissão do navegador. Também é possível selecionar uma foto e informar o código manualmente. O aplicativo usa a configuração existente de `VITE_API_URL`, sem nova chave de serviço no frontend.
+
+## QR do veículo e vínculo de sessão
+
+Nos detalhes do veículo, contas com `veiculos:gerenciar` podem gerar uma etiqueta com QR para impressão ou salvar como PDF pelo diálogo do navegador. Conteúdo: `sivof:veiculo:v1:<UUID>`, sem token de acesso ou dados pessoais. No menu mobile, **Veículo da sessão** lê a etiqueta e seleciona o veículo via `/motorista/veiculo-sessao` (GET, POST com `veiculo_id`, DELETE). A identificação na viagem também grava essa seleção antes de avançar.
+
+A seleção fica em `motorista_veiculo_sessao`, ligada ao token hash da sessão, e não altera `motoristas_veiculos`. Sair remove a sessão e o vínculo por cascade; uma nova sessão começa sem seleção. Expiração impede uso. Apenas veículos já liberados por vínculo, motorista coringa ou viagem ativa atribuída são aceitos. A seleção não concede permissões nem reatribui viagens; o contrato de check-in/out da SCRUM-38 permanece separado.
+
+## Painel simulado em desenvolvimento
+
+No servidor de desenvolvimento, configure `ENABLE_PANEL_DEMO=true` para permitir registros de teste. A opção **Usar painel simulado** aparece apenas no Vite em desenvolvimento; builds de produção não exibem o botão. O backend recusa a simulação por padrão. O registro recebe `simulada=true` e `foto=NULL`, sem inventar evidência. A confirmação **altera status e quilometragem reais da base usada**: habilite somente na base de desenvolvimento. Captura real continua disponível e validada. Não foi implementado OCR.
+
+A migration `1793700000000_add-driver-session-vehicle.sql` adiciona a seleção e a marcação de simulação. O rollback remove registros simulados antes de restaurar a obrigação de foto; não use rollback para preservar dados de simulação.

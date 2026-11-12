@@ -82,6 +82,17 @@ const capture = (
 ) =>
   transaction(async (client) => {
     await authorizeTripActor(client, userId, true);
+    const simulated = "simulada" in input;
+    if (
+      simulated &&
+      (process.env.ENABLE_PANEL_DEMO !== "true" ||
+        process.env.NODE_ENV === "production")
+    )
+      throw new DomainError(
+        403,
+        "Simulação do painel desabilitada no servidor",
+      );
+    const photo = "foto" in input ? input.foto : null;
     // Uma conta só pode iniciar/finalizar uma viagem por vez.
     await client.query(
       "SELECT pg_advisory_xact_lock(hashtextextended($1, 741852))",
@@ -97,14 +108,15 @@ const capture = (
     const target = type === "inicio" ? "Em deslocamento" : "Finalizada";
     const previous = type === "inicio" ? "Agendada" : "Em andamento";
     const record = await client.query(
-      "SELECT km,foto FROM viagens_registros_painel WHERE viagem_id=$1 AND tipo=$2",
+      "SELECT km,foto,simulada FROM viagens_registros_painel WHERE viagem_id=$1 AND tipo=$2",
       [id, type],
     );
     if (record.rows[0]) {
       if (
         trip.status === target &&
         record.rows[0].km === input.km &&
-        record.rows[0].foto === input.foto
+        record.rows[0].foto === photo &&
+        record.rows[0].simulada === simulated
       )
         return get(userId, id, client);
       throw new DomainError(
@@ -157,8 +169,8 @@ const capture = (
       [id, input.km],
     );
     await client.query(
-      "INSERT INTO viagens_registros_painel (viagem_id,usuario_id,tipo,km,foto) VALUES ($1,$2,$3,$4,$5)",
-      [id, userId, type, input.km, input.foto],
+      "INSERT INTO viagens_registros_painel (viagem_id,usuario_id,tipo,km,foto,simulada) VALUES ($1,$2,$3,$4,$5,$6)",
+      [id, userId, type, input.km, photo, simulated],
     );
     await client.query(
       "UPDATE veiculos SET quilometragem=$2,atualizado_em=NOW() WHERE id=$1",

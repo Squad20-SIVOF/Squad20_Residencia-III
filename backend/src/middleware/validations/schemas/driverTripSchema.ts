@@ -7,7 +7,7 @@ export const driverTripQuerySchema = z
     limite: z.coerce.number().int().min(1).max(50).default(20),
   })
   .strict();
-export const driverTripCaptureSchema = z
+const realCaptureSchema = z
   .object({
     km: z.number().int().min(0).max(2147483647),
     foto: photoSchema
@@ -27,5 +27,14 @@ export const driverTripCaptureSchema = z
       }, "Envie uma foto JPG ou PNG válida de até 5 MB"),
   })
   .strict();
+export const driverTripCaptureSchema = z.union([
+  realCaptureSchema,
+  z
+    .object({
+      km: z.number().int().min(0).max(2147483647),
+      simulada: z.literal(true),
+    })
+    .strict(),
+]);
 export type DriverTripQuery = z.infer<typeof driverTripQuerySchema>;
 export type DriverTripCapture = z.infer<typeof driverTripCaptureSchema>;

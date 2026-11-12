@@ -1,3 +1,6 @@
+import { z } from "zod";
+import sessionVehicle from "../models/driverSessionVehicleModel";
+import { execute, parse } from "../utils/serviceUtils";
 import { Router } from "express";
 import { authorize } from "../middleware/authorization";
 import { createHandler, idFrom } from "../utils/controllerUtils";
@@ -35,6 +38,37 @@ router.post(
   authorize("viagens:atualizar-proprias"),
   handle((req: AuthenticatedRequest) =>
     service.capture(idFrom(req), req.body, "fim", req.user?.id),
+  ),
+);
+router.get(
+  "/veiculo-sessao",
+  authorize("viagens:ler-proprias"),
+  handle((req: AuthenticatedRequest) =>
+    execute(() => sessionVehicle.get(req.user!.id, req.sessionHash!)),
+  ),
+);
+router.post(
+  "/veiculo-sessao",
+  authorize("viagens:atualizar-proprias"),
+  handle((req: AuthenticatedRequest) =>
+    execute(() => {
+      const body = parse(
+        z.object({ veiculo_id: z.string().uuid() }).strict(),
+        req.body,
+      );
+      return sessionVehicle.set(
+        req.user!.id,
+        req.sessionHash!,
+        body.veiculo_id,
+      );
+    }),
+  ),
+);
+router.delete(
+  "/veiculo-sessao",
+  authorize("viagens:atualizar-proprias"),
+  handle((req: AuthenticatedRequest) =>
+    execute(() => sessionVehicle.remove(req.user!.id, req.sessionHash!)),
   ),
 );
 export default router;
