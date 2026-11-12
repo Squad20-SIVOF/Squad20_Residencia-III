@@ -32,7 +32,7 @@ O cancelamento de solicitações reutiliza essa regra: cancela viagens agendadas
 
 ## Histórico e eventos
 
-Cada mudança atualiza a viagem, grava `historico_status_viagem` e insere o evento em `outbox_events`, na mesma transação. Se uma gravação falhar, nenhuma alteração é confirmada. Chamadas concorrentes são serializadas por bloqueio da viagem.
+Cada mudança atualiza a viagem, grava `historico_status_viagem` e insere o evento em `outbox_events`, na mesma transação. Se uma gravação falhar, nenhuma alteração é confirmada. Chamadas concorrentes são serializadas por bloqueio da viagem. As permissões são revalidadas na mesma transação: o bloqueio compartilhado de autorização coordena alterações de perfis e concessões; os bloqueios do usuário e do motorista protegem desativação e troca de vínculo até o commit.
 
 `data_inicio` é registrada ao entrar em Em deslocamento; `data_fim`, ao entrar em Finalizada. O cancelamento mantém o início já registrado. Quilometragem não é alterada por essa operação.
 
@@ -50,3 +50,11 @@ A implementação do QR Code deve validar o código e chamar esses adaptadores c
 ## Migration adicionada
 
 `1793500000000_trip-status-transitions.sql` adiciona motivo ao histórico, permissões de gestão/alteração própria e uma restrição de status. A restrição é criada com `NOT VALID`, preservando registros legados; status desconhecidos são rejeitados pelo serviço.
+
+Antes de aplicar a migration, consultar os status no banco de destino:
+
+```sql
+SELECT status, COUNT(*) FROM viagens GROUP BY status ORDER BY status;
+```
+
+Conciliar status desconhecidos com a regra de negócio, sem conversão automática. `NOT VALID` evita a varredura inicial, mas não elimina o bloqueio do `ALTER TABLE`: inserções e atualizações já precisam obedecer à restrição. Em deploy com versões simultâneas, todas devem gravar os estados da tabela acima. Validar os registros antigos com `VALIDATE CONSTRAINT` somente após a conciliação.

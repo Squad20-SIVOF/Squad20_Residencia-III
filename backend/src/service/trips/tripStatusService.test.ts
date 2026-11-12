@@ -78,3 +78,11 @@ test.each([
     );
   },
 );
+
+test("rejeita identidade inválida sem consultar permissão ou alterar viagem", async () => {
+  expect(
+    (await service.transition(id, body, "identidade-inválida")).status,
+  ).toBe(401);
+  expect(profiles.permissions).not.toHaveBeenCalled();
+  expect(model.transition).not.toHaveBeenCalled();
+});

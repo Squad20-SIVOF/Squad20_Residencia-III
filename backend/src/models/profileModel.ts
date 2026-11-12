@@ -1,5 +1,5 @@
 import { pool } from "../db";
-import type { PoolClient } from "pg";
+import type { Pool, PoolClient } from "pg";
 import {
   ADMIN_PERMISSIONS,
   type ProfileInput,
@@ -127,8 +127,11 @@ const assign = (userId: string, profileId: string, removing = false) =>
       [userId, profileId],
     );
   });
-const permissions = async (userId: string): Promise<string[] | null> => {
-  const { rows } = await pool.query(
+const permissions = async (
+  userId: string,
+  client: Pool | PoolClient = pool,
+): Promise<string[] | null> => {
+  const { rows } = await client.query(
     `SELECT p.permissoes, extra.permissoes AS individuais FROM usuarios u
      LEFT JOIN usuarios_permissoes extra ON extra.usuario_id = u.id
      LEFT JOIN usuarios_perfis up ON up.usuario_id = u.id

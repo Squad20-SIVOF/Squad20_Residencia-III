@@ -1,8 +1,9 @@
 import { pool } from "../db";
 import { DomainError } from "../utils/serviceUtils";
 import { transaction } from "../utils/transaction";
+import { authorizeTripActor } from "./tripAuthorization";
 import { transitionInTransaction } from "./tripModel";
-import type { PoolClient } from "pg";
+import type { Pool, PoolClient } from "pg";
 import type {
   RequestInput,
   RequestQuery,
@@ -15,8 +16,11 @@ type RequestRow = {
   solicitante_id: string | null;
   status: string;
 };
-const isManager = async (userId: string): Promise<boolean> => {
-  const { rows } = await pool.query(
+const isManager = async (
+  userId: string,
+  client: Pool | PoolClient = pool,
+): Promise<boolean> => {
+  const { rows } = await client.query(
     `SELECT 1 FROM usuarios u
      JOIN usuarios_perfis up ON up.usuario_id = u.id
      JOIN perfis p ON p.id = up.perfil_id
@@ -110,7 +114,12 @@ const update = (id: string, input: RequestInput, scope: RequestScope) =>
   });
 const cancel = (id: string, motivo: string, scope: RequestScope) =>
   transaction(async (client) => {
-    if (!scope.manager)
+    const actor = await authorizeTripActor(client, scope.userId);
+    if (
+      !scope.manager ||
+      !actor.manager ||
+      !(await isManager(scope.userId, client))
+    )
       throw new RequestError(
         403,
         "Somente Gestor de Frota ou Administrador pode cancelar",

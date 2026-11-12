@@ -84,6 +84,14 @@ describeDatabase("viagens com PostgreSQL real e migrations", () => {
       [driverUser],
     );
     await pool.query(
+      "INSERT INTO usuarios_perfis (usuario_id,perfil_id) SELECT $1,id FROM perfis WHERE codigo='gestor_frota'",
+      [manager],
+    );
+    await pool.query(
+      "INSERT INTO usuarios_perfis (usuario_id,perfil_id) SELECT $1,id FROM perfis WHERE codigo='motorista'",
+      [otherUser],
+    );
+    await pool.query(
       `INSERT INTO veiculos (id,placa,modelo,tipo_combustivel,capacidade_maxima,frota)
       VALUES ($1,'TEST001','Viatura teste','Diesel',4,'SVO')`,
       [vehicleId],
@@ -306,10 +314,6 @@ describeDatabase("viagens com PostgreSQL real e migrations", () => {
     expect((await snapshot()).eventos).toBe(1);
   });
   it("Gestor de Frota cancela viagem em deslocamento pela API", async () => {
-    await pool.query(
-      "INSERT INTO usuarios_perfis (usuario_id,perfil_id) SELECT $1,id FROM perfis WHERE codigo='gestor_frota'",
-      [manager],
-    );
     await trips.transition(tripId, { status: "Em deslocamento" }, scope);
     const token = (
       await (await import("../auth/session")).createSession(manager)
@@ -335,5 +339,209 @@ describeDatabase("viagens com PostgreSQL real e migrations", () => {
       "SELECT motivo FROM historico_status_viagem WHERE status_novo='Cancelada'",
     );
     expect(rows[0].motivo).toBe("Retorno solicitado");
+  });
+  // Espera pelo bloqueio observado pelo PostgreSQL, sem depender de um atraso fixo.
+  const waitUntilBlocked = async (pid: number) => {
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const { rows } = await pool.query(
+        "SELECT cardinality(pg_blocking_pids($1)) > 0 AS blocked",
+        [pid],
+      );
+      if (rows[0].blocked) return;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    throw new Error("A operação concorrente não aguardou o bloqueio esperado");
+  };
+
+  it.each([
+    [
+      "perfil de gestor revogado",
+      manager,
+      "DELETE FROM usuarios_perfis WHERE usuario_id=$1",
+      true,
+      403,
+    ],
+    [
+      "permissão do perfil removida",
+      manager,
+      "UPDATE perfis SET permissoes=array_remove(permissoes,'viagens:gerenciar') WHERE codigo='gestor_frota' AND $1::uuid IS NOT NULL",
+      true,
+      403,
+    ],
+    [
+      "perfil de motorista revogado",
+      driverUser,
+      "DELETE FROM usuarios_perfis WHERE usuario_id=$1",
+      true,
+      403,
+    ],
+    [
+      "gestor desativado",
+      manager,
+      "UPDATE usuarios SET ativo=false WHERE id=$1",
+      false,
+      401,
+    ],
+    [
+      "motorista usuário desativado",
+      driverUser,
+      "UPDATE usuarios SET ativo=false WHERE id=$1",
+      false,
+      401,
+    ],
+    [
+      "vínculo removido",
+      driverUser,
+      "UPDATE usuarios SET motorista_id=NULL WHERE id=$1",
+      false,
+      404,
+    ],
+    [
+      "cadastro de motorista desativado",
+      driverUser,
+      "UPDATE motoristas SET ativo=false WHERE id=(SELECT motorista_id FROM usuarios WHERE id=$1)",
+      false,
+      404,
+    ],
+  ] as const)(
+    "revogação confirmada primeiro bloqueia transição: %s",
+    async (_name, userId, sql, profileLock, expectedStatus) => {
+      const revoker = await pool.connect();
+      const waiter = await pool.connect();
+      let pending: Promise<unknown> | undefined;
+      try {
+        await revoker.query("BEGIN");
+        if (profileLock)
+          await revoker.query("SELECT pg_advisory_xact_lock(2034, 1)");
+        await revoker.query(sql, [userId]);
+        await waiter.query("BEGIN");
+        const { rows } = await waiter.query("SELECT pg_backend_pid() AS pid");
+        const { transitionInTransaction } = await import("./tripModel");
+        // Simula inclusive um escopo de gestor calculado antes da revogação.
+        pending = transitionInTransaction(
+          waiter,
+          tripId,
+          { status: "Em deslocamento" },
+          { userId, manager: true },
+        ).then(
+          () => null,
+          (error: unknown) => error,
+        );
+        await waitUntilBlocked(rows[0].pid);
+        await revoker.query("COMMIT");
+        expect(await pending).toMatchObject({ status: expectedStatus });
+        expect(await snapshot()).toEqual({
+          status: "Agendada",
+          historicos: 0,
+          eventos: 0,
+        });
+      } finally {
+        await revoker.query("ROLLBACK");
+        if (pending) await pending;
+        await waiter.query("ROLLBACK");
+        revoker.release();
+        waiter.release();
+        await pool.query(
+          "UPDATE perfis SET permissoes=ARRAY(SELECT DISTINCT unnest(permissoes || ARRAY['viagens:gerenciar'])) WHERE codigo='gestor_frota'",
+        );
+      }
+    },
+  );
+
+  it.each(["perfil", "vínculo", "cadastro"] as const)(
+    "transição iniciada primeiro mantém autorização até commit: %s",
+    async (kind) => {
+      const actor = kind === "perfil" ? manager : driverUser;
+      const transitionClient = await pool.connect();
+      const revoker = await pool.connect();
+      let pending: Promise<unknown> | undefined;
+      try {
+        await transitionClient.query("BEGIN");
+        const { transitionInTransaction } = await import("./tripModel");
+        await transitionInTransaction(
+          transitionClient,
+          tripId,
+          { status: "Em deslocamento" },
+          { userId: actor, manager: true },
+        );
+        await revoker.query("BEGIN");
+        const { rows } = await revoker.query("SELECT pg_backend_pid() AS pid");
+        pending = (async () => {
+          if (kind === "perfil") {
+            await revoker.query("SELECT pg_advisory_xact_lock(2034, 1)");
+            await revoker.query(
+              "DELETE FROM usuarios_perfis WHERE usuario_id=$1",
+              [actor],
+            );
+          } else if (kind === "vínculo") {
+            await revoker.query(
+              "UPDATE usuarios SET motorista_id=NULL WHERE id=$1",
+              [actor],
+            );
+          } else {
+            await revoker.query(
+              "UPDATE motoristas SET ativo=false WHERE id=$1",
+              [driverId],
+            );
+          }
+          await revoker.query("COMMIT");
+        })();
+        await waitUntilBlocked(rows[0].pid);
+        await transitionClient.query("COMMIT");
+        await pending;
+        expect(await snapshot()).toEqual({
+          status: "Em deslocamento",
+          historicos: 1,
+          eventos: 1,
+        });
+        await expect(
+          trips.transition(
+            tripId,
+            { status: "Em andamento" },
+            { userId: actor, manager: true },
+          ),
+        ).rejects.toMatchObject({ status: kind === "perfil" ? 403 : 404 });
+      } finally {
+        await transitionClient.query("ROLLBACK");
+        if (pending) await pending;
+        await revoker.query("ROLLBACK");
+        transitionClient.release();
+        revoker.release();
+      }
+    },
+  );
+
+  it("CHECK NOT VALID bloqueia novos status desconhecidos", async () => {
+    await expect(
+      pool.query(
+        "UPDATE viagens SET status='Legado desconhecido' WHERE id=$1",
+        [tripId],
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+    expect((await snapshot()).status).toBe("Agendada");
+  });
+  it("cancelamento de solicitação revalida o cargo mesmo com escopo antigo de gestor", async () => {
+    await pool.query("DELETE FROM usuarios_perfis WHERE usuario_id=$1", [
+      manager,
+    ]);
+    await pool.query(
+      "INSERT INTO usuarios_perfis (usuario_id,perfil_id) SELECT $1,id FROM perfis WHERE codigo='gestor_svo'",
+      [manager],
+    );
+    await expect(
+      requests.cancel(requestId, "Teste", scope),
+    ).rejects.toMatchObject({ status: 403 });
+    expect(await snapshot()).toEqual({
+      status: "Agendada",
+      historicos: 0,
+      eventos: 0,
+    });
+    expect(
+      (
+        await pool.query("SELECT status FROM solicitacoes WHERE id=$1", [
+          requestId,
+        ])
+      ).rows[0].status,
+    ).toBe("Agendada");
   });
 });

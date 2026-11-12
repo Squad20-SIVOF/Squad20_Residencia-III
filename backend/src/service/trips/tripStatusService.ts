@@ -1,3 +1,4 @@
+import { userIdSchema } from "../../auth/identity";
 import model from "../../models/tripModel";
 import profiles from "../../models/profileModel";
 import {
@@ -8,7 +9,7 @@ import { DomainError, execute, parse } from "../../utils/serviceUtils";
 
 const transition = (id: string, body: unknown, userId?: string) =>
   execute(async () => {
-    if (!tripIdSchema.safeParse(userId).success)
+    if (!userIdSchema.safeParse(userId).success)
       throw new DomainError(401, "Autenticação necessária");
     const identity = userId as string;
     const permissions = await profiles.permissions(identity);
