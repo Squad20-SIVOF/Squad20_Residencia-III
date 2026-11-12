@@ -1,8 +1,10 @@
 @use '../../../../styles/tokens' as *;
 @use '../../../../styles/breakpoints' as *;
+@use '../../requestFields' as *;
 
 .form {
   min-width: 0;
+  @include request-fields;
 }
 
 .fields {

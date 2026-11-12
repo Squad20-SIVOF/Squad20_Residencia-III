@@ -1,8 +1,10 @@
 @use '../../styles/tokens' as *;
 @use '../../styles/breakpoints' as *;
+@use '../../styles/mixins' as *;
 
 // Mobile: título, rota e campos em coluna única.
-// A partir de lg: mapa grande à esquerda, título e formulário à direita (como no Figma desktop).
+// A partir de lg: mapa grande à esquerda e, à direita, uma coluna branca de cima a baixo
+// com título e formulário (como no Figma desktop).
 .page {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -18,16 +20,53 @@
     grid-template-areas:
       'route header'
       'route form';
-    column-gap: $space-4;
+    row-gap: $space-3;
+    column-gap: $space-3;
+    // Anula o respiro do <main> para a coluna branca encostar no alto, embaixo e à
+    // direita da tela; o mapa fica a $space-3 do menu, como no Figma.
+    min-height: 100dvh;
+    margin: (-$space-5) (-$space-4);
+    padding-left: $space-3;
+
+    &::before {
+      content: '';
+      grid-area: 1 / 2 / -1 / 3;
+      background-color: $color-card;
+    }
   }
 
   @include up(xl) {
-    grid-template-columns: minmax(0, 1fr) $panel-width;
+    grid-template-columns: minmax(0, 1fr) calc(#{$panel-width} + 2 * #{$space-4});
+    margin-inline: -$space-5;
   }
 }
 
 .header {
   grid-area: header;
+
+  h1 {
+    font-weight: 700;
+  }
+
+  @include up(lg) {
+    padding: $space-4 $space-4 0;
+  }
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+  align-self: flex-start;
+  min-height: $touch-target;
+  font-size: $font-size-small;
+  font-weight: 600;
+  color: $color-primary;
+  text-decoration: none;
+
+  @include hover {
+    text-decoration: underline;
+  }
 }
 
 .route {
@@ -37,9 +76,14 @@
     position: sticky;
     top: $space-4;
     align-self: start;
+    margin-block: $space-4;
   }
 }
 
 .form {
   grid-area: form;
+
+  @include up(lg) {
+    padding: 0 $space-4 $space-4;
+  }
 }
