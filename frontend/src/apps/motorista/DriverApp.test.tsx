@@ -2,8 +2,36 @@ import * as authService from '@/service/authService'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { expect, test, vi } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 import { DriverRoutes } from './DriverApp'
+import { api } from '@/service/api'
+vi.mock('@/service/api', () => ({ api: vi.fn<typeof api>() }))
+const trip = {
+  id: '40000000-0000-4000-8000-000000000001',
+  veiculo_id: 'vehicle',
+  status: 'Agendada',
+  modelo: 'Viatura de teste',
+  placa: 'TEST001',
+  categoria: 'SVO',
+  data_necessidade: null,
+  km_inicial: null,
+  km_final: null,
+}
+beforeEach(() => {
+  vi.mocked(api).mockImplementation(async (path) => {
+    if (path === '/motorista/resumo')
+      return {
+        message: {
+          motorista: { id: 'driver', nome: 'Carlos Almeida' },
+          veiculos: [],
+          viagem: trip,
+        },
+      } as never
+    if (path.startsWith('/motorista/viagens'))
+      return { message: { dados: [trip], total: 1, pagina: 1, limite: 20 } } as never
+    return {} as never
+  })
+})
 
 function renderAt(path: string) {
   return render(
@@ -34,7 +62,7 @@ test('navega para as viagens pela barra de abas', async () => {
   expect(
     await screen.findByRole('heading', { name: 'Minhas viagens' }),
   ).toBeInTheDocument()
-  expect(await screen.findByText('VG-2041')).toBeInTheDocument()
+  expect(await screen.findByText('Viatura de teste · TEST001')).toBeInTheDocument()
 })
 
 test('valida o formulário de abastecimento', async () => {

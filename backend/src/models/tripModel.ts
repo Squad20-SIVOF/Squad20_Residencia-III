@@ -6,7 +6,7 @@ import { transaction } from "../utils/transaction";
 import { authorizeTripActor } from "./tripAuthorization";
 import { appendEvent } from "./outboxModel";
 
-export type TripScope = { userId: string; manager: boolean };
+export type TripScope = { userId: string; manager: boolean; ownOnly?: boolean };
 type TripRow = {
   id: string;
   status: string;
@@ -23,7 +23,7 @@ export const transitionInTransaction = async (
   scope: TripScope,
 ) => {
   // O escopo calculado antes de BEGIN não autoriza a gravação.
-  scope = await authorizeTripActor(client, scope.userId);
+  scope = await authorizeTripActor(client, scope.userId, scope.ownOnly);
   const trip = (
     await client.query<TripRow>(
       `SELECT v.id, v.status, v.data_inicio, v.data_fim, v.atualizado_em

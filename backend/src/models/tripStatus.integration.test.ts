@@ -1,3 +1,4 @@
+import { registerDriverTripCases } from "./driverTrip.integration-cases";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import type { Pool } from "pg";
@@ -56,6 +57,11 @@ describeDatabase("viagens com PostgreSQL real e migrations", () => {
     const app = express();
     app.use(express.json());
     app.use("/viagens", authenticate, routes);
+    app.use(
+      "/motorista",
+      authenticate,
+      (await import("../routes/driverTripRoutes")).default,
+    );
     app.use(
       "/solicitacoes",
       authenticate,
@@ -631,5 +637,13 @@ describeDatabase("viagens com PostgreSQL real e migrations", () => {
       pode_cancelar: false,
     });
     expect(cancelled.historico).toHaveLength(1);
+  });
+  registerDriverTripCases({
+    pool: () => pool,
+    base: () => new URL(base).origin,
+    user: driverUser,
+    other: otherUser,
+    trip: tripId,
+    vehicle: vehicleId,
   });
 });

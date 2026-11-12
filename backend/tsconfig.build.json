@@ -6,6 +6,7 @@
     "coverage",
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
+    "src/**/*.integration-cases.ts",
     "src/**/__tests__/**"
   ]
 }

@@ -129,3 +129,7 @@ $driver-max-width: 32rem;
     animation: none;
   }
 }
+
+.waitingMain {
+  padding: 0 0 calc(4rem + env(safe-area-inset-bottom));
+}

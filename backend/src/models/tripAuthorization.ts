@@ -7,6 +7,7 @@ import { DomainError } from "../utils/serviceUtils";
 export const authorizeTripActor = async (
   client: PoolClient,
   userId: string,
+  ownOnly = false,
 ) => {
   await client.query("SELECT pg_advisory_xact_lock_shared(2034, 1)");
   const { rows } = await client.query<{ motorista_id: string | null }>(
@@ -15,7 +16,8 @@ export const authorizeTripActor = async (
   );
   if (!rows[0]) throw new DomainError(401, "Usuário inativo ou inexistente");
   const permissions = await profiles.permissions(userId, client);
-  const manager = permissions?.includes("viagens:gerenciar") ?? false;
+  const manager =
+    !ownOnly && (permissions?.includes("viagens:gerenciar") ?? false);
   if (!manager && !permissions?.includes("viagens:atualizar-proprias"))
     throw new DomainError(403, "Sem permissão para alterar viagens");
   if (!manager) {
