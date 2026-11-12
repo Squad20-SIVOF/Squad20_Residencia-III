@@ -61,7 +61,7 @@ export function CorrectMileagePage() {
         </Button>
       </div>
       <section className={styles.keypad} aria-label="Teclado numérico">
-        {keys.map((key, index) =>
+        {keys.map((key) =>
           key ? (
             <button
               type="button"
@@ -76,7 +76,7 @@ export function CorrectMileagePage() {
               {key === 'delete' ? <img src={removeIcon} alt="" /> : key}
             </button>
           ) : (
-            <span key={index} />
+            <span key="spacer" />
           ),
         )}
       </section>
