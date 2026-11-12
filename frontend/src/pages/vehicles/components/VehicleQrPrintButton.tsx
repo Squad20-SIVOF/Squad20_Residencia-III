@@ -33,7 +33,7 @@ export function VehicleQrPrintButton({
     }
     sheet.opener = null
     try {
-      const qr = await import('qrcode')
+      const { default: qr } = await import('qrcode')
       const image = await qr.toDataURL(vehicleQrPayload(id), {
         width: 720,
         margin: 4,
@@ -69,7 +69,7 @@ export function VehicleQrPrintButton({
   if (!allowed) return null
   return (
     <div>
-      <Button variant="secondary" onClick={() => void generate()}>
+      <Button variant="secondary" isFullWidth onClick={() => void generate()}>
         Gerar QR Code para impressão
       </Button>
       {error && <p role="alert">{error}</p>}

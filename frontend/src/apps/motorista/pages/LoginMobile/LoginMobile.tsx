@@ -27,7 +27,7 @@ export function LoginMobile() {
           'Sua conta não possui acesso ao app do motorista. Contate o gestor.',
         )
       }
-      navigate('/', { replace: true })
+      navigate('/veiculo-sessao', { replace: true })
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível entrar.')
     } finally {

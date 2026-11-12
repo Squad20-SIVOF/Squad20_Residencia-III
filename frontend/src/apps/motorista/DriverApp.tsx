@@ -1,3 +1,4 @@
+import { RequireDriverVehicle } from './components/RequireDriverVehicle'
 import { SessionVehiclePage } from './pages/flow/SessionVehiclePage'
 import { RequireAuth } from '@/components/RequireAuth/RequireAuth'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
@@ -24,30 +25,34 @@ export function DriverRoutes() {
       <Route path="/login" element={<LoginMobile />} />
       <Route element={<RequireAuth />}>
         <Route element={<TripCaptureProvider />}>
-          <Route element={<DriverLayout />}>
-            <Route index element={<DriverHomePage />} />
-            <Route path="viagens" element={<DriverTripsPage />} />
-            <Route path="checklist" element={<DriverChecklistPage />} />
-            <Route path="abastecimento" element={<DriverFuelPage />} />
-            <Route path="perfil" element={<DriverProfilePage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
           <Route element={<DriverFlowLayout />}>
             <Route path="veiculo-sessao" element={<SessionVehiclePage />} />
-            <Route path="viagens/:id" element={<MobileTripPage />} />
-            <Route
-              path="viagens/:id/inicio/identificar"
-              element={<IdentifyVehiclePage />}
-            />
-            <Route path="viagens/:id/:action/painel" element={<CapturePanelPage />} />
-            <Route
-              path="viagens/:id/:action/corrigir-leitura"
-              element={<CorrectMileagePage />}
-            />
-            <Route
-              path="viagens/:id/:action/quilometragem"
-              element={<ConfirmMileagePage />}
-            />
+          </Route>
+          <Route element={<RequireDriverVehicle />}>
+            <Route element={<DriverLayout />}>
+              <Route index element={<DriverHomePage />} />
+              <Route path="viagens" element={<DriverTripsPage />} />
+              <Route path="checklist" element={<DriverChecklistPage />} />
+              <Route path="abastecimento" element={<DriverFuelPage />} />
+              <Route path="perfil" element={<DriverProfilePage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
+            <Route element={<DriverFlowLayout />}>
+              <Route path="viagens/:id" element={<MobileTripPage />} />
+              <Route
+                path="viagens/:id/inicio/identificar"
+                element={<IdentifyVehiclePage />}
+              />
+              <Route path="viagens/:id/:action/painel" element={<CapturePanelPage />} />
+              <Route
+                path="viagens/:id/:action/corrigir-leitura"
+                element={<CorrectMileagePage />}
+              />
+              <Route
+                path="viagens/:id/:action/quilometragem"
+                element={<ConfirmMileagePage />}
+              />
+            </Route>
           </Route>
         </Route>
       </Route>

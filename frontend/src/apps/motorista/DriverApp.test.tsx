@@ -19,6 +19,8 @@ const trip = {
 }
 beforeEach(() => {
   vi.mocked(api).mockImplementation(async (path) => {
+    if (path === '/motorista/veiculo-sessao')
+      return { message: { id: 'vehicle', modelo: 'Teste', placa: 'TEST001' } } as never
     if (path === '/motorista/resumo')
       return {
         message: {

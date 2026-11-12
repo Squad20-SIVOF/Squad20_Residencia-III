@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom'
+import { ButtonLink } from '@/components/ButtonLink'
 import { useState } from 'react'
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
@@ -14,6 +16,7 @@ const load = async () =>
 export function SessionVehiclePage() {
   useDocumentTitle('Veículo da sessão')
   const result = useAsync(load)
+  const navigate = useNavigate()
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -27,7 +30,7 @@ export function SessionVehiclePage() {
         method: 'POST',
         body: JSON.stringify({ veiculo_id }),
       })
-      result.reload()
+      navigate('/', { replace: true })
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : 'Não foi possível vincular o veículo.',
@@ -50,6 +53,7 @@ export function SessionVehiclePage() {
               <p>
                 {result.data.modelo} · {result.data.placa}
               </p>
+              <ButtonLink to="/">Continuar para o início</ButtonLink>
               <Button
                 variant="secondary"
                 disabled={saving}

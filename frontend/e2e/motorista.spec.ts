@@ -104,6 +104,10 @@ test('mobile exige identificação, foto e confirmação antes de iniciar e fina
     fullPage: true,
     animations: 'disabled',
   })
+  await expect(
+    page.getByRole('link', { name: 'Identificar veículo', exact: true }),
+  ).toHaveAttribute('href', '/veiculo-sessao')
+  await page.getByRole('link', { name: 'Consultar viagem', exact: true }).click()
   await page.getByRole('link', { name: 'Identificar veículo', exact: true }).click()
   await page.getByLabel('Código do veículo').fill('OUTRO')
   await page.getByRole('button', { name: 'Confirmar veículo' }).click()
@@ -184,14 +188,17 @@ test('QR seleciona veículo somente na sessão e permite remover a seleção', a
     if (route.request().method() === 'DELETE') selected = null
     await route.fulfill({ json: { message: selected } })
   })
-  await signIn(page)
-  await page.goto('/veiculo-sessao')
+  await signIn(page, false)
+  await expect(page).toHaveURL(/\/veiculo-sessao$/)
+  await page.goto('/viagens')
+  await expect(page).toHaveURL(/\/veiculo-sessao$/)
   await expect(page.getByText('Nenhum veículo selecionado.')).toBeVisible()
   await page
     .getByLabel('Código da etiqueta')
     .fill('sivof:veiculo:v1:30000000-0000-4000-8000-000000000001')
   await page.getByRole('button', { name: 'Vincular nesta sessão' }).click()
-  await expect(page.getByText('Viatura de teste · TEST001')).toBeVisible()
+  await expect(page).toHaveURL(/\/$/)
+  await page.goto('/veiculo-sessao')
   await page.reload()
   await expect(
     page.getByRole('button', { name: 'Desvincular desta sessão' }),
