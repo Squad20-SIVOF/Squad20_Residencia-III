@@ -1,0 +1,331 @@
+@use '../../styles/tokens' as *;
+@use '../../styles/mixins' as *;
+@use '../../styles/breakpoints' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  min-width: 0;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  border-bottom: 1px solid $color-border;
+
+  button {
+    min-height: $touch-target;
+    padding: $space-2 $space-3;
+    color: $color-text-muted;
+    font: inherit;
+    font-size: $font-size-small;
+    font-weight: 600;
+    background: transparent;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+
+    &[aria-selected='true'] {
+      color: $color-primary;
+      border-bottom-color: $color-primary;
+    }
+
+    &:hover {
+      background: $color-primary-soft;
+    }
+    &:focus-visible {
+      @include focus-ring;
+    }
+  }
+}
+
+.permissionCard {
+  background: $color-card;
+}
+.sectionHeader,
+.matrixHeader,
+.permissionFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: $space-3;
+
+  h2 {
+    margin: 0 0 $space-2;
+    color: $color-navy;
+    font-size: $font-size-h4;
+  }
+  h3 {
+    margin: 0 0 $space-1;
+    color: $color-navy;
+    font-size: $font-size-body;
+  }
+  p {
+    margin: 0;
+  }
+}
+.sectionHeader {
+  padding-bottom: $space-3;
+  border-bottom: 1px solid $color-border-subtle;
+}
+.permissionForm {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  min-width: 0;
+}
+.muted {
+  color: $color-text-muted;
+  font-size: $font-size-small;
+  line-height: $line-height-body;
+}
+.selection {
+  display: grid;
+  gap: $space-3;
+  align-items: center;
+}
+.selectField {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  min-width: 0;
+}
+.selectField label,
+.adminForms label {
+  color: $color-text-label;
+  font-size: $font-size-small;
+  font-weight: 600;
+}
+.selectField select,
+.adminForms select {
+  width: 100%;
+  min-width: 0;
+  min-height: $input-height;
+  padding: $space-2 $space-3;
+  color: $color-text;
+  background: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  font: inherit;
+  font-size: $font-size-small;
+  &:focus-visible {
+    @include focus-ring;
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+.userSummary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $space-2;
+  min-width: 0;
+}
+.userSummary > div,
+.userList li > div:first-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.userSummary strong,
+.userList strong {
+  font-size: $font-size-small;
+  color: $color-navy;
+}
+.userSummary div span,
+.userList div > span {
+  color: $color-text-muted;
+  font-size: $font-size-small;
+  overflow-wrap: anywhere;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: $radius-full;
+  background: $color-primary-soft;
+  color: $color-primary;
+  font-weight: 700;
+}
+.bulkActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+.bulkActions button {
+  min-height: 2.5rem;
+  padding: $space-2;
+  font-size: $font-size-xsmall;
+}
+.matrixWrapper {
+  overflow-x: auto;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+}
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-small;
+  th,
+  td {
+    padding: $space-3;
+    vertical-align: middle;
+  }
+  thead th {
+    background: $color-table-header;
+    color: $color-primary;
+    font-size: $font-size-xsmall;
+    font-weight: 600;
+  }
+  th:first-child {
+    text-align: left;
+  }
+  thead th:not(:first-child),
+  td {
+    width: 22%;
+    text-align: center;
+    border-left: 1px solid $color-border-subtle;
+  }
+  tbody tr:not(:last-child) {
+    border-bottom: 1px solid $color-border;
+  }
+  tbody tr:hover {
+    background: $color-surface;
+  }
+  tbody th strong {
+    display: block;
+    color: $color-navy;
+    font-weight: 600;
+  }
+  tbody th span {
+    display: block;
+    margin-top: $space-1;
+    font-size: $font-size-xsmall;
+    color: $color-text-muted;
+    font-weight: 400;
+  }
+}
+.matrixCheckbox {
+  justify-content: center;
+  min-width: $touch-target;
+  > span {
+    @include visually-hidden;
+  }
+  input {
+    margin: 0;
+    cursor: pointer;
+  }
+  input:focus-visible {
+    @include focus-ring;
+  }
+  input:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+.permissionFooter {
+  align-items: center;
+  padding-top: $space-3;
+  border-top: 1px solid $color-border-subtle;
+}
+.extraPermissions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+  padding: $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+.srOnly {
+  @include visually-hidden;
+}
+.empty {
+  padding: $space-4;
+  margin: 0;
+  color: $color-text-muted;
+  background: $color-surface;
+  border-radius: $radius-md;
+  font-size: $font-size-small;
+}
+.error,
+.success {
+  margin: 0;
+  padding: $space-3;
+  border-radius: $radius-md;
+  font-size: $font-size-small;
+}
+.error {
+  color: $color-error;
+  background: $color-danger-soft;
+}
+.success {
+  color: $color-success;
+  background: $color-success-soft;
+}
+.adminForms {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-4;
+}
+.adminForms form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+.adminForms p {
+  color: $color-text-muted;
+  font-size: $font-size-small;
+}
+.userList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.userList li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: $space-2;
+  padding-block: $space-3;
+  border-bottom: 1px solid $color-border-subtle;
+}
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-1;
+}
+
+@include up(lg) {
+  .selection {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: $space-4;
+  }
+  .adminForms {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 575px) {
+  .matrix th,
+  .matrix td {
+    padding: $space-2;
+  }
+  .matrix tbody th span {
+    max-width: 10rem;
+  }
+  .permissionFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .permissionFooter > button {
+    width: 100%;
+  }
+}

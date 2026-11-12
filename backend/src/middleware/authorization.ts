@@ -1,12 +1,12 @@
 import type { RequestHandler } from "express";
 import model from "../models/profileModel";
-import { profileIdSchema } from "./validations/schemas/profileSchema";
+import { userIdSchema } from "../auth/identity";
 
 import type { AuthenticatedRequest } from "../auth/session";
 export const authorize =
   (permission: string): RequestHandler =>
   async (req, res, next) => {
-    const identity = profileIdSchema.safeParse(
+    const identity = userIdSchema.safeParse(
       (req as AuthenticatedRequest).user?.id,
     );
     if (!identity.success) {

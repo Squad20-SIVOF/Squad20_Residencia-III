@@ -1,5 +1,5 @@
 import { pool } from "../db";
-import type { PoolClient } from "pg";
+import type { Pool, PoolClient } from "pg";
 import {
   ADMIN_PERMISSIONS,
   type ProfileInput,
@@ -122,21 +122,18 @@ const assign = (userId: string, profileId: string, removing = false) =>
           "Não é permitido remover o último Administrador",
         );
     }
-    if (profile.codigo === "auxiliar_gestor") {
-      await client.query(
-        "DELETE FROM usuarios_permissoes WHERE usuario_id=$1",
-        [userId],
-      );
-    }
     await client.query(
       "DELETE FROM usuarios_perfis WHERE usuario_id = $1 AND perfil_id = $2",
       [userId, profileId],
     );
   });
-const permissions = async (userId: string): Promise<string[] | null> => {
-  const { rows } = await pool.query(
+const permissions = async (
+  userId: string,
+  client: Pool | PoolClient = pool,
+): Promise<string[] | null> => {
+  const { rows } = await client.query(
     `SELECT p.permissoes, extra.permissoes AS individuais FROM usuarios u
-     LEFT JOIN usuarios_permissoes extra ON extra.usuario_id = u.id AND EXISTS (SELECT 1 FROM usuarios_perfis aux JOIN perfis ap ON ap.id=aux.perfil_id WHERE aux.usuario_id=u.id AND ap.codigo='auxiliar_gestor')
+     LEFT JOIN usuarios_permissoes extra ON extra.usuario_id = u.id
      LEFT JOIN usuarios_perfis up ON up.usuario_id = u.id
      LEFT JOIN perfis p ON p.id = up.perfil_id
      WHERE u.id = $1 AND u.ativo = TRUE AND u.deletado_em IS NULL`,
