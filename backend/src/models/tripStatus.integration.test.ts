@@ -56,6 +56,11 @@ describeDatabase("viagens com PostgreSQL real e migrations", () => {
     const app = express();
     app.use(express.json());
     app.use("/viagens", authenticate, routes);
+    app.use(
+      "/solicitacoes",
+      authenticate,
+      (await import("../routes/requestRoutes")).default,
+    );
     await new Promise<void>((resolve, reject) => {
       server = app.listen(0, "127.0.0.1", () => resolve());
       server.once("error", reject);
@@ -543,5 +548,88 @@ describeDatabase("viagens com PostgreSQL real e migrations", () => {
         ])
       ).rows[0].status,
     ).toBe("Agendada");
+  });
+  it("contrato HTTP de detalhes, edição e cancelamento corresponde às ações da tela", async () => {
+    await pool.query(
+      "UPDATE solicitacoes SET status='Pendente', solicitante_id=$1 WHERE id=$2",
+      [driverUser, requestId],
+    );
+    await pool.query(
+      "INSERT INTO usuarios_perfis (usuario_id,perfil_id) SELECT $1,id FROM perfis WHERE codigo='solicitante'",
+      [driverUser],
+    );
+    const token = (
+      await (await import("../auth/session")).createSession(manager)
+    ).token;
+    const target = `${new URL(base).origin}/solicitacoes/${requestId}`;
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+    const ownHeaders = { ...headers, Authorization: `Bearer ${driverToken}` };
+    const detail = await (await fetch(target, { headers })).json();
+    expect(detail.message).toMatchObject({
+      id: requestId,
+      pode_editar: false,
+      pode_cancelar: true,
+      historico: [],
+    });
+    const own = await (await fetch(target, { headers: ownHeaders })).json();
+    expect(own.message).toMatchObject({
+      pode_editar: true,
+      pode_cancelar: false,
+    });
+    const input = {
+      categoria: "administrativa",
+      flag_urgencia: true,
+      data_necessidade: "2026-12-01T12:00:00Z",
+    };
+    expect(
+      (
+        await fetch(target, {
+          method: "PUT",
+          headers: ownHeaders,
+          body: JSON.stringify(input),
+        })
+      ).status,
+    ).toBe(200);
+    expect(
+      (await (await fetch(target, { headers: ownHeaders })).json()).message
+        .categoria,
+    ).toBe("administrativa");
+    expect(
+      (
+        await fetch(`${target}/cancelar`, {
+          method: "PATCH",
+          headers: ownHeaders,
+          body: JSON.stringify({ motivo: "Teste" }),
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await fetch(`${target}/cancelar`, {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ motivo: "x".repeat(501) }),
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await fetch(`${target}/cancelar`, {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ motivo: "Reprogramação" }),
+        })
+      ).status,
+    ).toBe(200);
+    const cancelled = (await (await fetch(target, { headers })).json()).message;
+    expect(cancelled).toMatchObject({
+      status: "Cancelada",
+      pode_editar: false,
+      pode_cancelar: false,
+    });
+    expect(cancelled.historico).toHaveLength(1);
   });
 });

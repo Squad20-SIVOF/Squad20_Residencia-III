@@ -1,111 +1,260 @@
+import { useCallback, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { RouteMap } from './components/RouteMap'
+import { Button } from '@/components/Button'
+import { Badge } from '@/components/Badge'
+import { Card } from '@/components/Card'
+import { CheckboxField } from '@/components/CheckboxField'
+import { TextField } from '@/components/TextField'
+import { TextAreaField } from '@/components/TextAreaField'
+import { StateMessage } from '@/components/StateMessage'
+import { useAsync } from '@/hooks/useAsync'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import {
+  cancelRequest,
+  getRequestDetails,
+  updateRequest,
+  type RequestDetails,
+} from './services/requestApi'
 import styles from './RequestDetailsPage.module.scss'
 
-const exemplo = {
-  codigo: '2401',
-  horario: '08:42',
-  prioridade: 'normal',
-  status: 'Aguardando atribuição',
-  origem: 'Central SVO',
-  destino: 'Posto Sul',
-  paradas: ['Terminal Norte', 'Base SVO'],
-  solicitante: {
-    nome: 'João Silva',
-    setor: 'Logística',
-    telefone: '(79) 99999-9999',
-    email: 'joao.silva@exemplo.com',
-  },
-  carga: {
-    tipo: 'Equipamentos',
-    peso: '120 kg',
-    volumes: '4 caixas',
-  },
+const dateTime = (value: string) => new Date(value).toLocaleString('pt-BR')
+function localDateTime(value: string) {
+  const date = new Date(value)
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16)
+}
+
+function RequestActions({
+  request,
+  reload,
+}: {
+  request: RequestDetails
+  reload: () => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
+  const [reason, setReason] = useState('')
+  const [category, setCategory] = useState(request.categoria)
+  const [neededAt, setNeededAt] = useState(localDateTime(request.data_necessidade))
+  const [urgent, setUrgent] = useState(request.flag_urgencia)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    if (saving) return
+    setSaving(true)
+    setError('')
+    try {
+      if (cancelling) await cancelRequest(request.id, reason)
+      else
+        await updateRequest(request.id, {
+          categoria: category.trim(),
+          flag_urgencia: urgent,
+          data_necessidade: new Date(neededAt).toISOString(),
+        })
+      reload()
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : 'Não foi possível salvar a solicitação.',
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Card className={styles.card} title="Ações da solicitação">
+      {error && <p role="alert">{error}</p>}
+      <div className={styles.actions}>
+        {request.pode_editar && (
+          <Button
+            variant="secondary"
+            disabled={saving}
+            onClick={() => {
+              setEditing(true)
+              setCancelling(false)
+              setError('')
+            }}
+          >
+            Editar solicitação
+          </Button>
+        )}
+        {request.pode_cancelar && (
+          <Button
+            variant="danger"
+            disabled={saving}
+            onClick={() => {
+              setCancelling(true)
+              setEditing(false)
+              setError('')
+            }}
+          >
+            Cancelar solicitação
+          </Button>
+        )}
+      </div>
+      {(editing || cancelling) && (
+        <form className={styles.editForm} onSubmit={submit}>
+          {cancelling ? (
+            <>
+              <p>
+                Confirme o cancelamento informando o motivo. Viagens agendadas ou em
+                deslocamento também serão canceladas.
+              </p>
+              <TextAreaField
+                label="Motivo do cancelamento"
+                value={reason}
+                onChange={setReason}
+                required
+                maxLength={500}
+                disabled={saving}
+              />
+            </>
+          ) : (
+            <>
+              <TextField
+                label="Categoria"
+                value={category}
+                onChange={setCategory}
+                required
+                maxLength={50}
+                disabled={saving}
+              />
+              <TextField
+                label="Data e horário de necessidade"
+                type="datetime-local"
+                value={neededAt}
+                onChange={setNeededAt}
+                required
+                disabled={saving}
+              />
+              <CheckboxField
+                label="Solicitação urgente"
+                variant="plain"
+                checked={urgent}
+                onChange={setUrgent}
+                disabled={saving}
+              />
+            </>
+          )}
+          <div className={styles.actions}>
+            <Button
+              type="submit"
+              variant={cancelling ? 'danger' : 'primary'}
+              isLoading={saving}
+              disabled={cancelling ? !reason.trim() : !category.trim() || !neededAt}
+            >
+              {cancelling ? 'Confirmar cancelamento' : 'Salvar alterações'}
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={saving}
+              onClick={() => {
+                setEditing(false)
+                setCancelling(false)
+              }}
+            >
+              Voltar sem salvar
+            </Button>
+          </div>
+        </form>
+      )}
+      <StateMessage
+        title="Aprovação, recusa e atribuição indisponíveis"
+        description="Essas ações ainda não estão disponíveis. Nenhuma alteração é simulada."
+      />
+    </Card>
+  )
 }
 
 export function RequestDetailsPage() {
   useDocumentTitle('Detalhes da solicitação')
-  const { id } = useParams()
-  const codigo = id || exemplo.codigo
-
+  const { id = '' } = useParams()
+  const load = useCallback(() => getRequestDetails(id), [id])
+  const result = useAsync(load)
   return (
-    <main className={styles.page}>
-      <Link to="/viagens" className={styles.back}>
-        ← Voltar para o Painel de Viagens
+    <section className={styles.page}>
+      <Link to="/viagens/solicitacoes" className={styles.back}>
+        ← Voltar para solicitações pendentes
       </Link>
-
-      <header className={styles.header}>
-        <div>
-          <h1>Detalhes da Solicitação #{codigo}</h1>
-          <p>
-            Solicitada hoje às {exemplo.horario} · Prioridade {exemplo.prioridade}
-          </p>
-        </div>
-        <span className={styles.status}>{exemplo.status}</span>
-      </header>
-
-      <section className={styles.mapSection} aria-label="Mapa da rota">
-        <RouteMap className={styles.map} label="Mapa ilustrativo da rota planejada">
-          <span className={styles.routeBadge}>
-            {exemplo.origem} → {exemplo.destino}
-          </span>
-        </RouteMap>
-      </section>
-
-      <div className={styles.grid}>
-        <section className={styles.card}>
-          <h2>Rota</h2>
-          <dl>
-            <dt>Origem</dt>
-            <dd>{exemplo.origem}</dd>
-            <dt>Destino</dt>
-            <dd>{exemplo.destino}</dd>
-            <dt>Paradas</dt>
-            <dd>{exemplo.paradas.join(', ')}</dd>
-          </dl>
-        </section>
-
-        <section className={styles.card}>
-          <h2>Solicitante</h2>
-          <dl>
-            <dt>Nome</dt>
-            <dd>{exemplo.solicitante.nome}</dd>
-            <dt>Setor</dt>
-            <dd>{exemplo.solicitante.setor}</dd>
-            <dt>Contato</dt>
-            <dd>
-              <a href="tel:+5579999999999">{exemplo.solicitante.telefone}</a>
-              <a href={`mailto:${exemplo.solicitante.email}`}>
-                {exemplo.solicitante.email}
-              </a>
-            </dd>
-          </dl>
-        </section>
-
-        <section className={styles.card}>
-          <h2>Detalhes da Carga</h2>
-          <dl>
-            <dt>Tipo</dt>
-            <dd>{exemplo.carga.tipo}</dd>
-            <dt>Peso Total</dt>
-            <dd>{exemplo.carga.peso}</dd>
-            <dt>Volumes</dt>
-            <dd>{exemplo.carga.volumes}</dd>
-          </dl>
-        </section>
-
-        <section className={styles.card}>
-          <h2>Veículo Atribuído</h2>
-          <span className={styles.unassigned}>Não atribuído</span>
-          <button className={styles.assignButton} type="button" disabled>
-            Atribuir veículo e motorista
-          </button>
-          <p className={styles.note}>
-            A atribuição ficará disponível após a integração com o serviço.
-          </p>
-        </section>
-      </div>
-    </main>
+      {result.status === 'loading' && (
+        <StateMessage variant="loading" title="Carregando solicitação" />
+      )}
+      {result.status === 'error' && (
+        <StateMessage
+          variant="error"
+          title="Não foi possível carregar a solicitação"
+          description={
+            result.error instanceof Error ? result.error.message : 'Tente novamente.'
+          }
+          action={<Button onClick={result.reload}>Tentar novamente</Button>}
+        />
+      )}
+      {result.status === 'success' && (
+        <>
+          <header className={styles.header}>
+            <div>
+              <h1>Detalhes da Solicitação #{result.data.id.slice(0, 8)}</h1>
+              <p>Solicitada em {dateTime(result.data.criado_em)}</p>
+            </div>
+            <Badge variant="info">{result.data.status}</Badge>
+          </header>
+          <div className={styles.grid}>
+            <Card title="Solicitação" className={styles.card}>
+              <dl>
+                <dt>Identificador</dt>
+                <dd>{result.data.id}</dd>
+                <dt>Categoria</dt>
+                <dd>{result.data.categoria}</dd>
+                <dt>Necessidade</dt>
+                <dd>{dateTime(result.data.data_necessidade)}</dd>
+                <dt>Urgência</dt>
+                <dd>{result.data.flag_urgencia ? 'Urgente' : 'Normal'}</dd>
+                {result.data.motivo_cancelamento && (
+                  <>
+                    <dt>Cancelamento</dt>
+                    <dd>{result.data.motivo_cancelamento}</dd>
+                  </>
+                )}
+              </dl>
+            </Card>
+            <Card title="Solicitante" className={styles.card}>
+              <dl>
+                <dt>Nome</dt>
+                <dd>{result.data.solicitante_nome || 'Não informado'}</dd>
+                <dt>Setor</dt>
+                <dd>{result.data.setor_nome || 'Não informado'}</dd>
+              </dl>
+              <p>Rota, carga e contato não foram informados nesta solicitação.</p>
+            </Card>
+            <Card title="Histórico de status" className={styles.card}>
+              {result.data.historico.length ? (
+                <ol className={styles.history}>
+                  {result.data.historico.map((entry) => (
+                    <li key={entry.id}>
+                      <strong>
+                        {entry.status_anterior ? `${entry.status_anterior} → ` : ''}
+                        {entry.status_novo}
+                      </strong>
+                      <time dateTime={entry.data_hora}>{dateTime(entry.data_hora)}</time>
+                      {entry.motivo && <p>{entry.motivo}</p>}
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p>Nenhuma mudança de status registrada.</p>
+              )}
+            </Card>
+            <RequestActions
+              key={result.data.id}
+              request={result.data}
+              reload={result.reload}
+            />
+          </div>
+        </>
+      )}
+    </section>
   )
 }

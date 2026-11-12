@@ -33,9 +33,17 @@ export function RequestFormPage() {
         className={styles.header}
         title="Solicitar Veículo"
         breadcrumb={
-          <Link to="/viagens" className={styles.backLink}>
-            <span aria-hidden="true">←</span> Voltar para o Painel de Viagens
-          </Link>
+          <>
+            <p>Envio demonstrativo: este formulário ainda não registra solicitações.</p>
+            <nav className={styles.breadcrumbLinks} aria-label="Navegação de viagens">
+              <Link to="/viagens" className={styles.backLink}>
+                <span aria-hidden="true">←</span> Voltar para o Painel de Viagens
+              </Link>
+              <Link to="/viagens/solicitacoes" className={styles.backLink}>
+                Ver solicitações pendentes
+              </Link>
+            </nav>
+          </>
         }
         subtitle="Preencha os dados abaixo para reservar um veículo oficial do setor SVO."
       />

@@ -33,7 +33,7 @@ export const requestCancelSchema = z
       .string()
       .trim()
       .min(1, "Informe o motivo do cancelamento")
-      .max(1000),
+      .max(500),
   })
   .strict();
 export type RequestQuery = z.infer<typeof requestQuerySchema>;
