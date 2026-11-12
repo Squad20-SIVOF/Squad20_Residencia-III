@@ -1,26 +1,26 @@
 import { pool } from "../db";
-import type { PoolClient } from "pg";
+import { DomainError } from "../utils/serviceUtils";
+import { transaction } from "../utils/transaction";
+import { authorizeTripActor } from "./tripAuthorization";
+import { transitionInTransaction } from "./tripModel";
+import type { Pool, PoolClient } from "pg";
 import type {
   RequestInput,
   RequestQuery,
 } from "../middleware/validations/schemas/requestSchema";
 
-export class RequestError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
+export class RequestError extends DomainError {}
 export type RequestScope = { userId: string; manager: boolean };
 type RequestRow = {
   id: string;
   solicitante_id: string | null;
   status: string;
 };
-const isManager = async (userId: string): Promise<boolean> => {
-  const { rows } = await pool.query(
+const isManager = async (
+  userId: string,
+  client: Pool | PoolClient = pool,
+): Promise<boolean> => {
+  const { rows } = await client.query(
     `SELECT 1 FROM usuarios u
      JOIN usuarios_perfis up ON up.usuario_id = u.id
      JOIN perfis p ON p.id = up.perfil_id
@@ -81,23 +81,14 @@ const get = async (id: string, scope: RequestScope) => {
     [id, scope.manager, scope.userId],
   );
   if (!rows[0]) throw new RequestError(404, "Solicitação não encontrada");
-  return rows[0];
-};
-const transaction = async <T>(
-  operation: (client: PoolClient) => Promise<T>,
-): Promise<T> => {
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
-    const result = await operation(client);
-    await client.query("COMMIT");
-    return result;
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
-  }
+  return {
+    ...rows[0],
+    pode_editar:
+      rows[0].solicitante_id === scope.userId && rows[0].status === "Pendente",
+    pode_cancelar:
+      scope.manager &&
+      ["Pendente", "Aprovada", "Agendada"].includes(rows[0].status),
+  };
 };
 const lock = async (
   client: PoolClient,
@@ -130,7 +121,12 @@ const update = (id: string, input: RequestInput, scope: RequestScope) =>
   });
 const cancel = (id: string, motivo: string, scope: RequestScope) =>
   transaction(async (client) => {
-    if (!scope.manager)
+    const actor = await authorizeTripActor(client, scope.userId);
+    if (
+      !scope.manager ||
+      !actor.manager ||
+      !(await isManager(scope.userId, client))
+    )
       throw new RequestError(
         403,
         "Somente Gestor de Frota ou Administrador pode cancelar",
@@ -144,24 +140,22 @@ const cancel = (id: string, motivo: string, scope: RequestScope) =>
     );
     if (
       trips.rows.some(
-        (trip) => !["Agendada", "Cancelada"].includes(trip.status),
+        (trip) =>
+          !["Agendada", "Em deslocamento", "Cancelada"].includes(trip.status),
       )
     )
       throw new RequestError(
         409,
-        "Solicitação possui viagem iniciada ou finalizada",
+        "Solicitação possui viagem em andamento ou finalizada",
       );
-    for (const trip of trips.rows.filter(
-      (trip) => trip.status === "Agendada",
+    for (const trip of trips.rows.filter((trip) =>
+      ["Agendada", "Em deslocamento"].includes(trip.status),
     )) {
-      await client.query(
-        "UPDATE viagens SET status = 'Cancelada', atualizado_em = NOW() WHERE id = $1",
-        [trip.id],
-      );
-      await client.query(
-        `INSERT INTO historico_status_viagem (viagem_id, status_anterior, status_novo, usuario_id)
-         VALUES ($1, $2, 'Cancelada', $3)`,
-        [trip.id, trip.status, scope.userId],
+      await transitionInTransaction(
+        client,
+        trip.id,
+        { status: "Cancelada", motivo },
+        { userId: scope.userId, manager: true },
       );
     }
     const { rows } = await client.query(

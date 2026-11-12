@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { execute, parse } from "../../utils/serviceUtils";
 import model, {
   RequestError,
   type RequestScope,
@@ -11,24 +11,6 @@ import {
   requestCancelSchema,
 } from "../../middleware/validations/schemas/requestSchema";
 
-const parse = <T>(schema: z.ZodType<T>, value: unknown): T => {
-  const result = schema.safeParse(value);
-  if (!result.success)
-    throw new RequestError(
-      400,
-      result.error.issues.map((issue) => issue.message).join("; "),
-    );
-  return result.data;
-};
-const execute = async (operation: () => Promise<unknown>) => {
-  try {
-    return { message: await operation(), status: 200 };
-  } catch (error) {
-    if (error instanceof RequestError)
-      return { message: error.message, status: error.status };
-    throw error;
-  }
-};
 const scopeFor = async (userId?: string): Promise<RequestScope> => {
   if (!userId || !requestIdSchema.safeParse(userId).success)
     throw new RequestError(401, "Autenticação necessária");

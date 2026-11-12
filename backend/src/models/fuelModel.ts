@@ -1,4 +1,5 @@
 import { pool } from "../db";
+import { transaction } from "../utils/transaction";
 import type {
   FuelInput,
   FuelQuery,
@@ -53,10 +54,8 @@ const options = async () => {
   ]);
   return { veiculos: vehicles.rows, motoristas: drivers.rows };
 };
-const save = async (input: FuelInput, total: number, id?: string) => {
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
+const save = (input: FuelInput, total: number, id?: string) =>
+  transaction(async (client) => {
     // Serializa registros e edições que alteram o veículo ou o mês.
     await client.query("SELECT pg_advisory_xact_lock(203734441, 21)");
     if (id) {
@@ -116,33 +115,17 @@ const save = async (input: FuelInput, total: number, id?: string) => {
     const { rows } = await client.query(`${select} WHERE a.id=$1`, [
       result.rows[0].id,
     ]);
-    await client.query("COMMIT");
     return rows[0];
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
-  }
-};
-const remove = async (id: string) => {
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
+  });
+const remove = (id: string) =>
+  transaction(async (client) => {
     await client.query("SELECT pg_advisory_xact_lock(203734441, 21)");
     const result = await client.query(
       "DELETE FROM abastecimentos WHERE id=$1",
       [id],
     );
-    await client.query("COMMIT");
     return result.rowCount === 1;
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
-  }
-};
+  });
 const ownOptions = async (driver: {
   id: string;
   nome: string;

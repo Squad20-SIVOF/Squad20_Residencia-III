@@ -259,3 +259,35 @@ Regra dos vínculos: motorista comum só vincula veículos da mesma frota; corin
 ## Alertas por e-mail
 
 A configuração do Brevo, os secrets do GitHub Actions e as regras de destinatários estão em [EMAIL-ALERTS.md](EMAIL-ALERTS.md).
+
+## Mobile no Vercel (configuração atualizada em 12/11/2026)
+
+Gestor e motorista são dois projetos Vercel do mesmo repositório, ambos com **Root Directory `frontend`**. Cada projeto recebe suas próprias variáveis e domínio. A configuração em `frontend/vercel.json` agora executa `npm run build:vercel` e publica `dist/vercel`; o script escolhe o app por `VERCEL_APP`. Sem essa variável, mantém o gestor como padrão.
+
+| Configuração | Gestor | Motorista |
+| --- | --- | --- |
+| Nome sugerido | `frotamanager-gestor` | `frotamanager-motorista` |
+| Framework | Vite | Vite |
+| Root Directory | `frontend` | `frontend` |
+| Install Command | `npm ci` | `npm ci` |
+| Build Command (vercel.json) | `npm run build:vercel` | `npm run build:vercel` |
+| Output Directory (vercel.json) | `dist/vercel` | `dist/vercel` |
+| `VERCEL_APP` | `gestor` (ou ausente) | `motorista` |
+| `VITE_API_URL` | URL HTTPS da API | A mesma URL HTTPS da API |
+| Production Branch | `main` | `main` |
+
+Crie o segundo projeto por **Add New → Project**, importe o repositório que efetivamente recebe os commits e configure as variáveis para Production e Preview. O gestor atual acompanha o fork: se o mobile também usar esse fork, sincronize nele a release depois de integrar o PR na main oficial. Não presuma que o PR aberto no repositório da equipe já atualizou a main do fork.
+
+O arquivo JSON versionado prevalece sobre o comando/output configurados no painel. Não configure o projeto mobile com `build:motorista` e `dist/motorista` mantendo um JSON que manda construir o gestor; use a seleção `VERCEL_APP=motorista` com o script compartilhado. O build gera manifest, ícones e service worker do app escolhido. As rewrites existentes permitem abrir e recarregar `/veiculo-sessao` e `/viagens` diretamente.
+
+No backend publicado, acrescente a origem exata do domínio mobile em `CORS_ORIGINS`, mantendo a do gestor. Exemplo ilustrativo (substitua pelo domínio atribuído pelo Vercel):
+
+```text
+CORS_ORIGINS=https://frotamanager-gestor.vercel.app,https://SEU-MOBILE.vercel.app
+```
+
+A API deve executar a versão do PR e as migrations `1793600000000` e `1793700000000` no banco correspondente. A aplicação dessas migrations foi validada apenas no desenvolvimento; não foi aplicada automaticamente em produção. `ENABLE_PANEL_DEMO` deve ficar ausente ou `false` em produção. O banco continua acessível somente pelo backend: não cadastre `DATABASE_URL` nem chave Gemini no Vercel do frontend.
+
+Depois de publicar: confirme o deploy Ready e o SHA, teste login → identificação obrigatória → vínculo, recarregue uma rota interna, teste logout e uma nova sessão e confira a câmera em aparelho físico com HTTPS. Não trate build aprovado como prova de que a API e o CORS de produção estão conectados. O aplicativo permanece online; instalar como PWA não habilita envio offline.
+
+Referências: [monorepos Vercel](https://vercel.com/docs/monorepos), [configuração por vercel.json](https://vercel.com/docs/project-configuration/vercel-json).

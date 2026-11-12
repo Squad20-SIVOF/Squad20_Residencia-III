@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/PageHeader'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useVehicles } from '@/pages/vehicles/hooks/useVehicles'
@@ -9,7 +9,7 @@ import { createRequest } from './services/requestService'
 import type { RequestInput } from './types'
 import styles from './RequestFormPage.module.scss'
 
-/** Solicitação de veículo (`/viagens`). */
+/** Solicitação de veículo (`/viagens/solicitar`). */
 export function RequestFormPage() {
   useDocumentTitle('Solicitar Veículo')
   const navigate = useNavigate()
@@ -32,6 +32,19 @@ export function RequestFormPage() {
       <PageHeader
         className={styles.header}
         title="Solicitar Veículo"
+        breadcrumb={
+          <>
+            <p>Envio demonstrativo: este formulário ainda não registra solicitações.</p>
+            <nav className={styles.breadcrumbLinks} aria-label="Navegação de viagens">
+              <Link to="/viagens" className={styles.backLink}>
+                <span aria-hidden="true">←</span> Voltar para o Painel de Viagens
+              </Link>
+              <Link to="/viagens/solicitacoes" className={styles.backLink}>
+                Ver solicitações pendentes
+              </Link>
+            </nav>
+          </>
+        }
         subtitle="Preencha os dados abaixo para reservar um veículo oficial do setor SVO."
       />
 

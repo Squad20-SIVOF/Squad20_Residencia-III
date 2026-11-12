@@ -1,3 +1,4 @@
+import { VehicleQrPrintButton } from '../VehicleQrPrintButton'
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { formatKm, formatMonthYear } from '@/utils/format'
@@ -38,6 +39,7 @@ export function VehicleSummaryCard({ vehicle, onEdit }: VehicleSummaryCardProps)
       <Button variant="secondary" isFullWidth onClick={onEdit}>
         Editar veículo
       </Button>
+      <VehicleQrPrintButton id={vehicle.id} plate={vehicle.plate} model={vehicle.model} />
     </Card>
   )
 }
