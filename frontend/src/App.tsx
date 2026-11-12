@@ -1,6 +1,5 @@
 import AbastecimentosPage from '@/pages/abastecimentos/AbastecimentosPage'
 import RegistrarAbastecimento from '@/pages/abastecimentos/registrar/RegistrarAbastecimento'
-import SolicitacoesPendentesPage from '@/pages/solicitacoes/SolicitacoesPendentesPage'
 import { UsersPage } from '@/pages/users/UsersPage'
 import { RequireAuth } from '@/components/RequireAuth/RequireAuth'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
@@ -37,7 +36,6 @@ export function AppRoutes() {
 
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
-          <Route path="viagens/solicitacoes" element={<SolicitacoesPendentesPage />} />
           <Route index element={<HomePage />} />
           <Route path="veiculos" element={<VehiclesPage />} />
           <Route path="manutencoes" element={<ManutencoesPage />} />
