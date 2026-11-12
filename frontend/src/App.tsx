@@ -14,6 +14,7 @@ import { NotFoundPage } from '@/pages/placeholder/NotFoundPage'
 import ProfilePage from '@/pages/perfil'
 import { RequestFormPage } from '@/pages/requests/RequestFormPage'
 import { RequestTrackingPage } from '@/pages/requests/RequestTrackingPage'
+import { RequestDetailsPage } from '@/pages/requests/RequestDetailsPage'
 import { VehiclesPage } from '@/pages/vehicles/VehiclesPage'
 import {
   ManutencoesPage,
@@ -47,6 +48,7 @@ export function AppRoutes() {
           {/* Enquanto o Painel de Viagens não existe, a entrada do módulo abre a solicitação. */}
           <Route path="viagens" element={<Navigate to="/viagens/solicitar" replace />} />
           <Route path="viagens/solicitar" element={<RequestFormPage />} />
+          <Route path="viagens/solicitacoes/:id" element={<RequestDetailsPage />} />
           <Route path="viagens/:id" element={<RequestTrackingPage />} />
           <Route path="perfil" element={<ProfilePage />} />
           <Route path="usuarios" element={<UsersPage />} />
