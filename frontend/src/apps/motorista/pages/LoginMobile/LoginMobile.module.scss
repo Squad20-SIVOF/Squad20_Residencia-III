@@ -1,0 +1,85 @@
+@use '../../styles/mobile' as *;
+@use '@/styles/breakpoints' as *;
+
+.screen {
+  min-height: 100dvh;
+  background: $color-background-app;
+}
+
+.main {
+  min-height: calc(100dvh - 4rem);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-6;
+  min-height: calc(100dvh - 4rem);
+  padding: $space-4 $space-6 $space-6;
+  overflow: hidden;
+}
+
+.brand {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 5.125rem;
+  height: 5.125rem;
+  border-radius: $radius-brand;
+  background: $color-primary;
+  color: $color-text-on-primary;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-2;
+  width: 100%;
+  text-align: center;
+}
+
+.heading h1 {
+  margin: 0;
+  color: $color-text-primary;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.heading p,
+.helpText {
+  margin: 0;
+  color: $color-text-secondary;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+  width: 100%;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+  width: 100%;
+}
+
+.helpText {
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+@include up(md) {
+  .content {
+    width: min(100%, 32rem);
+    margin-inline: auto;
+  }
+}

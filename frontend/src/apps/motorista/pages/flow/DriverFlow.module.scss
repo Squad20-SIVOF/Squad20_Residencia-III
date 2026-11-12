@@ -1,0 +1,152 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+.header {
+  min-height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-2 $space-3;
+  background: $color-card;
+  border-bottom: 1px solid $color-border;
+  color: $color-text-muted;
+  font-size: $font-size-small;
+  font-weight: 700;
+}
+.headerSpacer,
+.iconButton,
+.menu summary {
+  width: $touch-target;
+  min-height: $touch-target;
+  display: grid;
+  place-items: center;
+}
+.iconButton img,
+.menu img {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.menu {
+  position: relative;
+  summary {
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  nav {
+    position: absolute;
+    right: 0;
+    top: 3rem;
+    z-index: 30;
+    display: grid;
+    gap: $space-2;
+    min-width: 13rem;
+    padding: $space-3;
+    background: $color-card;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-card;
+  }
+  a {
+    min-height: $touch-target;
+    display: flex;
+    align-items: center;
+    color: $color-primary;
+    text-decoration: none;
+  }
+}
+.screen {
+  max-width: 32rem;
+  margin: auto;
+  min-height: 100dvh;
+  background: $color-background;
+}
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  min-width: 0;
+  padding: $space-4 $space-3;
+  h1 {
+    margin: 0;
+    font-size: $font-size-h3;
+  }
+  p {
+    margin: 0;
+  }
+}
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+.camera {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 17rem;
+  overflow: hidden;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-navy;
+  img {
+    width: 4rem;
+  }
+  video {
+    width: 100%;
+    min-height: 17rem;
+    object-fit: cover;
+  }
+}
+.photo {
+  width: 100%;
+  max-height: 22rem;
+  object-fit: contain;
+  border-radius: $radius-lg;
+  background: $color-card;
+}
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+.summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $space-2;
+  flex-wrap: wrap;
+}
+.muted {
+  color: $color-text-muted;
+  font-size: $font-size-small;
+}
+.reading {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $color-navy;
+}
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $space-2;
+  button {
+    min-height: 3.5rem;
+    font: inherit;
+    font-size: 1.5rem;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    background: $color-card;
+    cursor: pointer;
+  }
+  img {
+    width: 1.5rem;
+  }
+}
+input[type='file'] {
+  max-width: 100%;
+}
+.error {
+  color: $color-error;
+}

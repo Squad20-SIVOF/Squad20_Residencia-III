@@ -9,7 +9,14 @@ export async function mockApi(page: Page) {
     id: '11111111-1111-4111-8111-111111111111',
     nome: 'Gestor de teste',
     email: testCredentials.email,
-    permissoes: ['veiculos:ler', 'motoristas:ler'],
+    permissoes: [
+      'veiculos:ler',
+      'motoristas:ler',
+      'viagens:ler-proprias',
+      'viagens:atualizar-proprias',
+      'veiculos:vistoriar-proprios',
+      'abastecimentos:criar-proprio',
+    ],
   }
   await page.route('**/auth/**', async (route) => {
     const request = route.request()
@@ -49,6 +56,6 @@ export async function signIn(page: Page) {
   await page.goto('/login')
   await page.getByLabel('E-mail', { exact: true }).fill(testCredentials.email)
   await page.getByLabel('Senha', { exact: true }).fill(testCredentials.password)
-  await page.getByRole('button', { name: 'Confirmar', exact: true }).click()
+  await page.getByRole('button', { name: /^(Confirmar|Entrar)$/, exact: true }).click()
   await page.waitForURL('/')
 }

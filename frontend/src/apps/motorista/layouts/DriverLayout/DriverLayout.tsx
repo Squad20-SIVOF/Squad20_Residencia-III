@@ -1,3 +1,4 @@
+import { MobileHeader } from '../../components/MobileHeader'
 import type { ReactNode } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { classNames } from '@/utils/classNames'
@@ -72,12 +73,7 @@ export function DriverLayout() {
 
   return (
     <div className={styles.layout}>
-      <header className={styles.topBar}>
-        <span className={styles.logo} aria-hidden="true">
-          FM
-        </span>
-        <span className={styles.brand}>FrotaManager Motorista</span>
-      </header>
+      <MobileHeader />
 
       {!isOnline && (
         <p className={styles.offline} role="alert">
@@ -85,7 +81,10 @@ export function DriverLayout() {
         </p>
       )}
 
-      <main key={pathname} className={styles.main}>
+      <main
+        key={pathname}
+        className={classNames(styles.main, pathname === '/' && styles.waitingMain)}
+      >
         <Outlet />
       </main>
 
