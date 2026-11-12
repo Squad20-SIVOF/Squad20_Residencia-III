@@ -130,6 +130,7 @@ test('solicitações consultam a API e cancelamento aguarda confirmação do ser
   ).toBe(true)
   await page.screenshot({
     path: testInfo.outputPath('solicitacoes-lista.png'),
+    animations: 'disabled',
     fullPage: true,
   })
   await page.getByRole('link', { name: 'Ver detalhes da solicitação #11111111' }).click()
@@ -142,6 +143,7 @@ test('solicitações consultam a API e cancelamento aguarda confirmação do ser
   ).toBe(true)
   await page.screenshot({
     path: testInfo.outputPath('solicitacoes-detalhes.png'),
+    animations: 'disabled',
     fullPage: true,
   })
   await page.getByRole('button', { name: 'Cancelar solicitação', exact: true }).click()
