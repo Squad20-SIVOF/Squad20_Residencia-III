@@ -3,9 +3,9 @@ import { cpSync, rmSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
-const app = process.env.VERCEL_APP || 'gestor'
+const app = process.env.FROTAMANAGER_APP || 'gestor'
 if (!['gestor', 'motorista'].includes(app)) {
-  throw new Error('VERCEL_APP deve ser gestor ou motorista')
+  throw new Error('FROTAMANAGER_APP deve ser gestor ou motorista')
 }
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 for (const script of ['typecheck', `build:${app}`]) {

@@ -262,7 +262,7 @@ A configuração do Brevo, os secrets do GitHub Actions e as regras de destinat�
 
 ## Mobile no Vercel (configuração atualizada em 12/11/2026)
 
-Gestor e motorista são dois projetos Vercel do mesmo repositório, ambos com **Root Directory `frontend`**. Cada projeto recebe suas próprias variáveis e domínio. A configuração em `frontend/vercel.json` agora executa `npm run build:vercel` e publica `dist/vercel`; o script escolhe o app por `VERCEL_APP`. Sem essa variável, mantém o gestor como padrão.
+Gestor e motorista são dois projetos Vercel do mesmo repositório, ambos com **Root Directory `frontend`**. Cada projeto recebe suas próprias variáveis e domínio. A configuração em `frontend/vercel.json` agora executa `npm run build:vercel` e publica `dist/vercel`; o script escolhe o app por `FROTAMANAGER_APP`. Sem essa variável, mantém o gestor como padrão.
 
 | Configuração | Gestor | Motorista |
 | --- | --- | --- |
@@ -272,13 +272,13 @@ Gestor e motorista são dois projetos Vercel do mesmo repositório, ambos com **
 | Install Command | `npm ci` | `npm ci` |
 | Build Command (vercel.json) | `npm run build:vercel` | `npm run build:vercel` |
 | Output Directory (vercel.json) | `dist/vercel` | `dist/vercel` |
-| `VERCEL_APP` | `gestor` (ou ausente) | `motorista` |
+| `FROTAMANAGER_APP` | `gestor` (ou ausente) | `motorista` |
 | `VITE_API_URL` | URL HTTPS da API | A mesma URL HTTPS da API |
 | Production Branch | `main` | `main` |
 
 Crie o segundo projeto por **Add New → Project**, importe o repositório que efetivamente recebe os commits e configure as variáveis para Production e Preview. O gestor atual acompanha o fork: se o mobile também usar esse fork, sincronize nele a release depois de integrar o PR na main oficial. Não presuma que o PR aberto no repositório da equipe já atualizou a main do fork.
 
-O arquivo JSON versionado prevalece sobre o comando/output configurados no painel. Não configure o projeto mobile com `build:motorista` e `dist/motorista` mantendo um JSON que manda construir o gestor; use a seleção `VERCEL_APP=motorista` com o script compartilhado. O build gera manifest, ícones e service worker do app escolhido. As rewrites existentes permitem abrir e recarregar `/veiculo-sessao` e `/viagens` diretamente.
+O arquivo JSON versionado prevalece sobre o comando/output configurados no painel. Não configure o projeto mobile com `build:motorista` e `dist/motorista` mantendo um JSON que manda construir o gestor; use a seleção `FROTAMANAGER_APP=motorista` com o script compartilhado. O build gera manifest, ícones e service worker do app escolhido. As rewrites existentes permitem abrir e recarregar `/veiculo-sessao` e `/viagens` diretamente.
 
 No backend publicado, acrescente a origem exata do domínio mobile em `CORS_ORIGINS`, mantendo a do gestor. Exemplo ilustrativo (substitua pelo domínio atribuído pelo Vercel):
 
