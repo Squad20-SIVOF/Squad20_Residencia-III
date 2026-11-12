@@ -176,8 +176,8 @@ export function RequestDetailsPage() {
   const result = useAsync(load)
   return (
     <section className={styles.page}>
-      <Link to="/viagens" className={styles.back}>
-        ← Voltar para Viagens
+      <Link to="/viagens/solicitacoes" className={styles.back}>
+        ← Voltar para solicitações pendentes
       </Link>
       {result.status === 'loading' && (
         <StateMessage variant="loading" title="Carregando solicitação" />

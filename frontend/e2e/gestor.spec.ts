@@ -72,3 +72,88 @@ test('detalhes de veículo mostram histórico e vistoria, e breadcrumb volta à 
     page.getByRole('heading', { name: 'Controle de Veículos', exact: true }),
   ).toBeVisible()
 })
+
+test('solicitações consultam a API e cancelamento aguarda confirmação do servidor', async ({
+  page,
+}, testInfo) => {
+  const id = '11111111-1111-4111-8111-111111111111'
+  let cancelled = false
+  const record = () => ({
+    id,
+    solicitante_id: null,
+    solicitante_nome: 'Solicitante de teste',
+    setor_nome: 'Operacional',
+    categoria: 'SVO',
+    flag_urgencia: true,
+    data_necessidade: '2026-12-01T12:00:00Z',
+    criado_em: '2026-11-12T12:00:00Z',
+    status: cancelled ? 'Cancelada' : 'Pendente',
+    pode_editar: false,
+    pode_cancelar: !cancelled,
+    historico: cancelled
+      ? [
+          {
+            id: 'historico-teste',
+            status_anterior: 'Pendente',
+            status_novo: 'Cancelada',
+            data_hora: '2026-11-12T13:00:00Z',
+            motivo: 'Reprogramação',
+          },
+        ]
+      : [],
+  })
+  await page.route('**/api/solicitacoes**', async (route) => {
+    const request = route.request()
+    const url = new URL(request.url())
+    if (request.method() === 'PATCH') {
+      expect(url.pathname).toBe(`/api/solicitacoes/${id}/cancelar`)
+      expect(request.postDataJSON()).toEqual({ motivo: 'Reprogramação' })
+      cancelled = true
+      await route.fulfill({ json: { message: record() } })
+    } else if (url.pathname === '/api/solicitacoes') {
+      expect(url.searchParams.get('status')).toBe('Pendente')
+      await route.fulfill({
+        json: { message: { dados: [record()], total: 1, pagina: 1, limite: 20 } },
+      })
+    } else {
+      expect(url.pathname).toBe(`/api/solicitacoes/${id}`)
+      await route.fulfill({ json: { message: record() } })
+    }
+  })
+  await signIn(page)
+  await page.goto('/viagens/solicitacoes')
+  await expect(page.getByText('Solicitante de teste', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Aprovar', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Recusar', exact: true })).toBeDisabled()
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+  ).toBe(true)
+  await page.screenshot({
+    path: testInfo.outputPath('solicitacoes-lista.png'),
+    animations: 'disabled',
+    fullPage: true,
+  })
+  await page.getByRole('link', { name: 'Ver detalhes da solicitação #11111111' }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Detalhes da Solicitação #11111111' }),
+  ).toBeVisible()
+  await expect(page.getByText('Solicitante de teste', { exact: true })).toBeVisible()
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+  ).toBe(true)
+  await page.screenshot({
+    path: testInfo.outputPath('solicitacoes-detalhes.png'),
+    animations: 'disabled',
+    fullPage: true,
+  })
+  await page.getByRole('button', { name: 'Cancelar solicitação', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: 'Confirmar cancelamento', exact: true }),
+  ).toBeDisabled()
+  await page.getByLabel('Motivo do cancelamento').fill('Reprogramação')
+  await page.getByRole('button', { name: 'Confirmar cancelamento', exact: true }).click()
+  await expect(page.getByText('Cancelada', { exact: true })).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Cancelar solicitação', exact: true }),
+  ).toHaveCount(0)
+})
