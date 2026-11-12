@@ -1,0 +1,17 @@
+@use '../../styles/tokens' as *;
+
+// Campos da solicitação como no Figma: fundo branco, borda fina clara e rótulo suave.
+// Os campos compartilhados seguem com o visual padrão nas outras telas.
+@mixin request-fields {
+  label[for] {
+    font-weight: 400;
+    color: $color-text-muted;
+  }
+
+  // Só o fundo: a borda ($color-border) e os estados de foco e erro vêm do componente.
+  input:not([type='checkbox']):not([aria-invalid='true']),
+  select:not([aria-invalid='true']),
+  textarea:not([aria-invalid='true']) {
+    background-color: $color-card;
+  }
+}
