@@ -1,3 +1,6 @@
+import { RelatoriosPage } from '@/pages/relatorios/RelatoriosPage'
+import { AtendimentoSVOPage } from '@/pages/atendimento-svo/AtendimentoSVOPage'
+import { PainelViagensPage } from '@/pages/painel-viagens/PainelViagensPage'
 import AbastecimentosPage from '@/pages/abastecimentos/AbastecimentosPage'
 import RegistrarAbastecimento from '@/pages/abastecimentos/registrar/RegistrarAbastecimento'
 import { UsersPage } from '@/pages/users/UsersPage'
@@ -25,7 +28,6 @@ const COMING_SOON_ROUTES = [
   { path: 'abastecimentos', title: 'Abastecimentos' },
   { path: 'viagens', title: 'Viagens' },
   { path: 'manutencoes', title: 'Manutenções' },
-  { path: 'relatorios', title: 'Relatórios' },
 ]
 
 /** Rotas da aplicação (separadas do BrowserRouter para poderem ser testadas). */
@@ -46,6 +48,9 @@ export function AppRoutes() {
           <Route path="motoristas/editar/:id" element={<DriverFormPage />} />
           <Route path="motoristas/:id" element={<DriverDetailsPage />} />
           <Route path="viagens" element={<RequestFormPage />} />
+          <Route path="painel-viagens" element={<PainelViagensPage />} />
+          <Route path="relatorios" element={<RelatoriosPage />} />
+          <Route path="atendimento-svo" element={<AtendimentoSVOPage />} />
           <Route path="viagens/:id" element={<RequestTrackingPage />} />
           <Route path="perfil" element={<ProfilePage />} />
           <Route path="usuarios" element={<UsersPage />} />

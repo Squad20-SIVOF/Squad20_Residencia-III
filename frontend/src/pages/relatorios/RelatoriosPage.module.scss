@@ -1,0 +1,147 @@
+@use '../../styles/tokens' as *;
+@use '../../styles/breakpoints' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  p {
+    font-size: 14px;
+    color: #64748b;
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 150px;
+
+  label {
+    font-size: 12px;
+    color: #475569;
+  }
+
+  select {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: white;
+  }
+}
+
+.generateButton {
+  padding: 11px 18px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+
+  @include up(lg) {
+    grid-template-columns: 1.1fr 1fr;
+  }
+}
+
+.reportList,
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  h2 {
+    font-size: 16px;
+    color: #1e293b;
+  }
+}
+
+.reportCard {
+  padding: 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+
+  h3 {
+    font-size: 14px;
+  }
+
+  p {
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  button {
+    margin: 8px 8px 0 0;
+    padding: 6px 12px;
+    border: 1px solid #2563eb;
+    border-radius: 5px;
+    background: white;
+    color: #2563eb;
+    cursor: pointer;
+  }
+}
+
+.previewBox {
+  padding: 20px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0;
+
+  article {
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 6px;
+  }
+
+  h4 {
+    font-size: 11px;
+    color: #64748b;
+  }
+
+  strong {
+    font-size: 18px;
+  }
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 120px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+}
