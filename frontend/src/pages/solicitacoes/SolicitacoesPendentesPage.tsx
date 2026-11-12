@@ -1,134 +1,156 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Badge } from '@/components/Badge'
+import { Button } from '@/components/Button'
+import { Card } from '@/components/Card'
+import { PageHeader } from '@/components/PageHeader'
+import { StateMessage } from '@/components/StateMessage'
+import { TextField } from '@/components/TextField'
+import { useAsync } from '@/hooks/useAsync'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { normalizeText } from '@/utils/format'
+import { listPendingRequests } from '@/pages/requests/services/requestApi'
 import styles from './SolicitacoesPendentesPage.module.scss'
 
-interface Solicitacao {
-  id: string
-  importante: boolean
-  horario: string
-  origem: string
-  destino: string
-  carga: string
-  setor: string
-}
-
-const MOCK_SOLICITACOES: Solicitacao[] = [
-  {
-    id: '2401',
-    importante: true,
-    horario: 'Hoje · 10:30',
-    origem: 'Central SVO',
-    destino: 'Posto Sul',
-    carga: 'Equipamentos',
-    setor: 'Logística',
-  },
-  {
-    id: '2402',
-    importante: false,
-    horario: 'Hoje · 14:00',
-    origem: 'Terminal Norte',
-    destino: 'Base SVO',
-    carga: 'Documentos Oficiais',
-    setor: 'Administrativo',
-  },
-]
-
 export default function SolicitacoesPendentesPage() {
-  const [busca, setBusca] = useState('')
-
-  const solicitacoesFiltradas = MOCK_SOLICITACOES.filter(
-    (sol) =>
-      sol.id.includes(busca) ||
-      sol.origem.toLowerCase().includes(busca.toLowerCase()) ||
-      sol.destino.toLowerCase().includes(busca.toLowerCase()),
-  )
+  useDocumentTitle('Solicitações pendentes')
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const load = useCallback(() => listPendingRequests(page), [page])
+  const result = useAsync(load)
+  const data = result.status === 'success' ? result.data : null
+  const rows =
+    data?.dados.filter((row) =>
+      normalizeText(
+        [row.id, row.categoria, row.solicitante_nome, row.setor_nome].join(' '),
+      ).includes(normalizeText(search)),
+    ) ?? []
 
   return (
-    <div className={styles.page}>
-      {/* Link de Voltar */}
+    <section className={styles.page}>
       <Link to="/viagens" className={styles.backLink}>
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-        Voltar para Painel de Viagens
+        ← Voltar para Viagens
       </Link>
-
-      <header className={styles.header}>
-        <h1>Solicitações Pendentes</h1>
-        <p>Analise, aprove e atribua veículos às novas solicitações</p>
-      </header>
-
-      {/* Barra de Filtros */}
-      <div className={styles.filterBar}>
-        <div className={styles.chips}>
-          <span className={styles.chipPendente}>2 pendentes</span>
-          <span className={styles.chipImportante}>1 importante</span>
-        </div>
-        <input
-          type="text"
-          placeholder="Buscar solicitação..."
-          className={styles.searchInput}
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
+      <PageHeader
+        title="Solicitações Pendentes"
+        subtitle="Consulte as solicitações que aguardam análise."
+      />
+      <p>
+        Aprovação, recusa e atribuição ainda estão indisponíveis. Abra os detalhes para
+        consultar as ações disponíveis.
+      </p>
+      {result.status === 'loading' && (
+        <StateMessage title="Carregando solicitações" variant="loading" />
+      )}
+      {result.status === 'error' && (
+        <StateMessage
+          title="Não foi possível carregar as solicitações"
+          variant="error"
+          description={
+            result.error instanceof Error ? result.error.message : 'Tente novamente.'
+          }
+          action={<Button onClick={result.reload}>Tentar novamente</Button>}
         />
-      </div>
-
-      {/* Lista de Cards */}
-      <div className={styles.list}>
-        {solicitacoesFiltradas.map((sol) => (
-          <div
-            key={sol.id}
-            className={`${styles.card} ${sol.importante ? styles.cardDestaque : ''}`}
-          >
-            <div className={styles.cardHeader}>
-              <div className={styles.cardTitleGroup}>
-                <h2>Descrição da Solicitação #{sol.id}</h2>
-                {sol.importante && (
-                  <span className={styles.badgeImportante}>Importante</span>
-                )}
-              </div>
-              <span className={styles.time}>⏱ {sol.horario}</span>
-            </div>
-
-            <div className={styles.cardDetails}>
-              <span>
-                <strong>Origem:</strong> {sol.origem}{' '}
-                <span className={styles.arrow}>→</span> <strong>Destino:</strong>{' '}
-                {sol.destino}
-              </span>
-              <span>
-                <strong>Carga:</strong> {sol.carga}
-              </span>
-              <span>
-                <strong>Setor:</strong> {sol.setor}
-              </span>
-            </div>
-
-            <div className={styles.cardActions}>
-              <button className={styles.btnAprovar}>✓ Aprovar</button>
-              <button className={styles.btnRecusar}>✕ Recusar</button>
-              <button className={styles.btnAtribuir}>🚙 Atribuir</button>
-              <button className={styles.btnDetalhes}>ⓘ Ver detalhes</button>
-            </div>
+      )}
+      {data && (
+        <>
+          <div className={styles.filterBar}>
+            <Badge variant="warning">{data.total} pendentes</Badge>
+            <Badge variant="danger">
+              {data.dados.filter((row) => row.flag_urgencia).length} urgentes nesta página
+            </Badge>
+            <TextField
+              label="Buscar nesta página"
+              placeholder="Identificador, categoria, solicitante ou setor"
+              value={search}
+              onChange={setSearch}
+            />
           </div>
-        ))}
-
-        {solicitacoesFiltradas.length === 0 && (
-          <p style={{ color: '#64748b', textAlign: 'center', marginTop: '2rem' }}>
-            Nenhuma solicitação encontrada.
-          </p>
-        )}
-      </div>
-    </div>
+          <div className={styles.list}>
+            {rows.map((request) => (
+              <Card key={request.id} className={styles.card}>
+                <header className={styles.cardHeader}>
+                  <h2>Solicitação #{request.id.slice(0, 8)}</h2>
+                  {request.flag_urgencia && <Badge variant="warning">Urgente</Badge>}
+                </header>
+                <dl className={styles.cardDetails}>
+                  <div>
+                    <dt>Solicitante</dt>
+                    <dd>{request.solicitante_nome || 'Não informado'}</dd>
+                  </div>
+                  <div>
+                    <dt>Setor</dt>
+                    <dd>{request.setor_nome || 'Não informado'}</dd>
+                  </div>
+                  <div>
+                    <dt>Categoria</dt>
+                    <dd>{request.categoria}</dd>
+                  </div>
+                  <div>
+                    <dt>Necessidade</dt>
+                    <dd>
+                      <time dateTime={request.data_necessidade}>
+                        {new Date(request.data_necessidade).toLocaleString('pt-BR')}
+                      </time>
+                    </dd>
+                  </div>
+                </dl>
+                <div className={styles.cardActions}>
+                  <Button variant="secondary" disabled>
+                    Aprovar
+                  </Button>
+                  <Button variant="secondary" disabled>
+                    Recusar
+                  </Button>
+                  <Button variant="secondary" disabled>
+                    Atribuir
+                  </Button>
+                  <Link
+                    className={styles.detailsLink}
+                    to={`/viagens/solicitacoes/${encodeURIComponent(request.id)}`}
+                  >
+                    Ver detalhes da solicitação #{request.id.slice(0, 8)}
+                  </Link>
+                </div>
+              </Card>
+            ))}
+            {!rows.length && (
+              <StateMessage
+                title={
+                  data.total === 0
+                    ? 'Nenhuma solicitação pendente.'
+                    : 'Nenhuma solicitação encontrada nesta página.'
+                }
+              />
+            )}
+          </div>
+          <nav className={styles.pagination} aria-label="Paginação de solicitações">
+            <Button
+              variant="secondary"
+              disabled={page === 1}
+              onClick={() => {
+                setSearch('')
+                setPage((current) => current - 1)
+              }}
+            >
+              Anterior
+            </Button>
+            <span>
+              Página {data.pagina} de {Math.max(1, Math.ceil(data.total / data.limite))}
+            </span>
+            <Button
+              variant="secondary"
+              disabled={page * data.limite >= data.total}
+              onClick={() => {
+                setSearch('')
+                setPage((current) => current + 1)
+              }}
+            >
+              Próxima
+            </Button>
+          </nav>
+        </>
+      )}
+    </section>
   )
 }

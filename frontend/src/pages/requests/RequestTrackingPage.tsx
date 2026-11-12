@@ -74,6 +74,9 @@ export function RequestTrackingPage() {
           <span className={styles.code} />
         )}
       </div>
+      <Alert variant="warning">
+        Demonstração: a posição e os dados desta rota são simulados.
+      </Alert>
       {renderContent()}
     </div>
   )

@@ -13,8 +13,9 @@ import type {
 import { getEtaMinutes, getRemainingKm, getTripStage } from '../utils/requestRules'
 
 /*
- * O backend de solicitações ainda não existe: as funções devolvem dados mockados
- * com a mesma assinatura da versão real. Para integrar, troque o corpo por
+ * Os endpoints de criação e acompanhamento ainda não existem: as funções devolvem dados demonstrativos
+ * com a assinatura planejada. As telas identificam a simulação. A leitura e as
+ * ações existentes usam requestApi.ts. Para integrar os endpoints futuros, use
  * api<RequestResponse>('/solicitacoes', { method: 'POST', body }) e
  * api<RequestTrackingResponse>(`/solicitacoes/${id}/acompanhamento`).
  */
