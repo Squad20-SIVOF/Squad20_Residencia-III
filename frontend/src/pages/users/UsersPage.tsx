@@ -58,7 +58,7 @@ export function UsersPage() {
       )
     }
     if (me.permissoes.includes('usuarios:delegar-permissoes'))
-      setDelegation(await api<Delegation>('/usuarios/auxiliares'))
+      setDelegation(await api<Delegation>('/usuarios/permissoes'))
   }, [])
 
   useEffect(() => {
@@ -172,7 +172,7 @@ export function UsersPage() {
               aria-selected={activeTab === 'permissions'}
               onClick={() => setActiveTab('permissions')}
             >
-              Permissões dos auxiliares
+              Permissões dos usuários
             </button>
           )}
           {canCreate && (

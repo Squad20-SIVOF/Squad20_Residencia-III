@@ -37,12 +37,16 @@ export function PermissionsPanel({ delegation, saving, onSave }: Props) {
   const extra = available.filter(
     (permission) => !ACTIONS.some(({ key }) => permission.endsWith(`:${key}`)),
   )
+  const inherited = user?.permissoesHerdadas ?? []
+  const editable = available.filter((permission) => !inherited.includes(permission))
   const saved = user?.permissoes ?? []
-  const dirty = available.some(
+  const dirty = editable.some(
     (permission) => saved.includes(permission) !== permissions.includes(permission),
   )
   const disabled = !user || saving
-  const active = available.filter((permission) => permissions.includes(permission)).length
+  const active = available.filter(
+    (permission) => permissions.includes(permission) || inherited.includes(permission),
+  ).length
 
   function toggle(permission: string, checked: boolean) {
     setPermissions((current) =>
@@ -62,23 +66,23 @@ export function PermissionsPanel({ delegation, saving, onSave }: Props) {
     <Card className={styles.permissionCard}>
       <div className={styles.sectionHeader}>
         <div>
-          <h2>Acessos dos auxiliares</h2>
+          <h2>Permissões do usuário</h2>
           <p className={styles.muted}>
-            Defina o que cada auxiliar pode consultar e gerenciar.
+            Selecione um usuário para visualizar seus acessos e conceder permissões
+            adicionais.
           </p>
         </div>
         <Badge variant="info">Permissões operacionais</Badge>
       </div>
       {!delegation.usuarios.length ? (
         <p className={styles.empty}>
-          Nenhum auxiliar disponível. Cadastre um usuário com o perfil Auxiliar de Gestor
-          para configurar os acessos.
+          Nenhum usuário ativo disponível para configurar os acessos.
         </p>
       ) : (
         <form onSubmit={submit} className={styles.permissionForm}>
           <div className={styles.selection}>
             <div className={styles.selectField}>
-              <label htmlFor="assistant-user">Auxiliar</label>
+              <label htmlFor="assistant-user">Usuário</label>
               <select
                 id="assistant-user"
                 required
@@ -92,7 +96,7 @@ export function PermissionsPanel({ delegation, saving, onSave }: Props) {
                   )
                 }}
               >
-                <option value="">Selecione um auxiliar</option>
+                <option value="">Selecione um usuário</option>
                 {delegation.usuarios.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.nome} — {item.email}
@@ -114,7 +118,9 @@ export function PermissionsPanel({ delegation, saving, onSave }: Props) {
                   <strong>{user.nome}</strong>
                   <span>{user.email}</span>
                 </div>
-                <Badge variant="neutral">Auxiliar de Gestor</Badge>
+                <Badge variant="neutral">
+                  {user.perfis?.map((profile) => profile.nome).join(', ') || 'Sem perfil'}
+                </Badge>
               </div>
             ) : (
               <p className={styles.muted}>
@@ -122,121 +128,145 @@ export function PermissionsPanel({ delegation, saving, onSave }: Props) {
               </p>
             )}
           </div>
-          <div className={styles.matrixHeader}>
-            <div>
-              <h3>Permissões por módulo</h3>
-              <p className={styles.muted}>
-                Gerenciar permite criar, editar e excluir registros.
-              </p>
-            </div>
-            <div className={styles.bulkActions}>
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={disabled || !available.length}
-                onClick={() =>
-                  setPermissions([...new Set([...permissions, ...available])])
-                }
-              >
-                Selecionar todas
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={disabled || active === 0}
-                onClick={() =>
-                  setPermissions(
-                    permissions.filter((permission) => !available.includes(permission)),
-                  )
-                }
-              >
-                Limpar seleção
-              </Button>
-            </div>
-          </div>
-          <div className={styles.matrixWrapper}>
-            <table className={styles.matrix}>
-              <caption className={styles.srOnly}>
-                Permissões operacionais por módulo
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Módulo</th>
-                  {ACTIONS.map((action) => (
-                    <th key={action.key} scope="col">
-                      {action.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {modules.map((module) => {
-                  const info = MODULES[module] ?? { title: module, description: '' }
-                  return (
-                    <tr key={module}>
-                      <th scope="row">
-                        <strong>{info.title}</strong>
-                        <span>{info.description}</span>
-                      </th>
-                      {ACTIONS.map((action) => {
-                        const permission = `${module}:${action.key}`
-                        return (
-                          <td key={action.key}>
-                            {available.includes(permission) ? (
-                              <CheckboxField
-                                variant="plain"
-                                className={styles.matrixCheckbox}
-                                label={`${action.label} ${info.title.toLocaleLowerCase('pt-BR')}`}
-                                checked={permissions.includes(permission)}
-                                disabled={disabled}
-                                onChange={(checked) => toggle(permission, checked)}
-                              />
-                            ) : (
-                              <span aria-label="Não disponível">—</span>
-                            )}
-                          </td>
-                        )
-                      })}
+          {user && (
+            <>
+              <div className={styles.matrixHeader}>
+                <div>
+                  <h3>Permissões por módulo</h3>
+                  <p className={styles.muted}>
+                    Gerenciar permite criar, editar e excluir registros. Acessos herdados
+                    do perfil não podem ser removidos aqui.
+                  </p>
+                </div>
+                <div className={styles.bulkActions}>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={disabled || !editable.length}
+                    onClick={() =>
+                      setPermissions([...new Set([...permissions, ...editable])])
+                    }
+                  >
+                    Selecionar todas
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={
+                      disabled ||
+                      !editable.some((permission) => permissions.includes(permission))
+                    }
+                    onClick={() =>
+                      setPermissions(
+                        permissions.filter(
+                          (permission) => !editable.includes(permission),
+                        ),
+                      )
+                    }
+                  >
+                    Limpar seleção
+                  </Button>
+                </div>
+              </div>
+              <div className={styles.matrixWrapper}>
+                <table className={styles.matrix}>
+                  <caption className={styles.srOnly}>
+                    Permissões operacionais por módulo
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Módulo</th>
+                      {ACTIONS.map((action) => (
+                        <th key={action.key} scope="col">
+                          {action.label}
+                        </th>
+                      ))}
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-          {extra.length > 0 && (
-            <fieldset disabled={disabled} className={styles.extraPermissions}>
-              <legend>Outros acessos</legend>
-              {extra.map((permission) => (
-                <CheckboxField
-                  key={permission}
-                  variant="plain"
-                  label={permission}
-                  checked={permissions.includes(permission)}
-                  onChange={(checked) => toggle(permission, checked)}
-                />
-              ))}
-            </fieldset>
-          )}
-          {!available.length && (
-            <p className={styles.empty}>Não há permissões disponíveis para delegação.</p>
-          )}
-          <footer className={styles.permissionFooter}>
-            <p className={styles.muted}>
-              {user ? (
-                <>
-                  <strong>
-                    {active} de {available.length}
-                  </strong>{' '}
-                  acessos selecionados{dirty ? ' · Alterações não salvas' : ''}
-                </>
-              ) : (
-                'Os acessos serão aplicados ao auxiliar selecionado.'
+                  </thead>
+                  <tbody>
+                    {modules.map((module) => {
+                      const info = MODULES[module] ?? { title: module, description: '' }
+                      return (
+                        <tr key={module}>
+                          <th scope="row">
+                            <strong>{info.title}</strong>
+                            <span>{info.description}</span>
+                          </th>
+                          {ACTIONS.map((action) => {
+                            const permission = `${module}:${action.key}`
+                            return (
+                              <td key={action.key}>
+                                {available.includes(permission) ? (
+                                  <>
+                                    <CheckboxField
+                                      variant="plain"
+                                      className={styles.matrixCheckbox}
+                                      label={`${action.label} ${info.title.toLocaleLowerCase('pt-BR')}${inherited.includes(permission) ? ' (herdado do perfil)' : ''}`}
+                                      checked={
+                                        permissions.includes(permission) ||
+                                        inherited.includes(permission)
+                                      }
+                                      disabled={
+                                        disabled || inherited.includes(permission)
+                                      }
+                                      onChange={(checked) => toggle(permission, checked)}
+                                    />
+                                    {inherited.includes(permission) && (
+                                      <span className={styles.muted}>Do perfil</span>
+                                    )}
+                                  </>
+                                ) : (
+                                  <span aria-label="Não disponível">—</span>
+                                )}
+                              </td>
+                            )
+                          })}
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              {extra.length > 0 && (
+                <fieldset disabled={disabled} className={styles.extraPermissions}>
+                  <legend>Outros acessos</legend>
+                  {extra.map((permission) => (
+                    <CheckboxField
+                      key={permission}
+                      variant="plain"
+                      label={permission}
+                      checked={
+                        permissions.includes(permission) || inherited.includes(permission)
+                      }
+                      onChange={(checked) => toggle(permission, checked)}
+                    />
+                  ))}
+                </fieldset>
               )}
-            </p>
-            <Button type="submit" disabled={disabled || !dirty} isLoading={saving}>
-              Salvar permissões
-            </Button>
-          </footer>
+              {!available.length && (
+                <p className={styles.empty}>
+                  Não há permissões disponíveis para delegação.
+                </p>
+              )}
+              <footer className={styles.permissionFooter}>
+                <p className={styles.muted}>
+                  {user ? (
+                    <>
+                      <strong>
+                        {active} de {available.length}
+                      </strong>{' '}
+                      acessos selecionados{dirty ? ' · Alterações não salvas' : ''}
+                    </>
+                  ) : (
+                    'Os acessos serão aplicados ao usuário selecionado.'
+                  )}
+                </p>
+                <Button type="submit" disabled={disabled || !dirty} isLoading={saving}>
+                  Salvar permissões
+                </Button>
+              </footer>
+            </>
+          )}
         </form>
       )}
     </Card>

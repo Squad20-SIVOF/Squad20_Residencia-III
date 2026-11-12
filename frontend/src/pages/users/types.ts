@@ -5,6 +5,7 @@ export interface User {
   motorista_id?: string | null
   perfis?: { id: string; nome: string }[]
   permissoes?: string[]
+  permissoesHerdadas?: string[]
 }
 
 export interface Delegation {
