@@ -1,4 +1,4 @@
-import { PageHeader } from '@/components/PageHeader'
+﻿import { PageHeader } from '@/components/PageHeader'
 import { StatCard } from '@/components/StatCard'
 import { Button } from '@/components/Button'
 import { ButtonLink } from '@/components/ButtonLink'
@@ -58,6 +58,7 @@ export function ManutencoesPage() {
   const [draft, setDraft] = useState<MaintenanceFiltersValue>(emptyFilters)
   const [filters, setFilters] = useState<MaintenanceFiltersValue>(emptyFilters)
   const [page, setPage] = useState(1)
+  const [period, setPeriod] = useState('all')
   const [selected, setSelected] = useState<Maintenance | null>(null)
   const [notice, setNotice] = useState('')
   const [mutationError, setMutationError] = useState('')
@@ -210,106 +211,76 @@ export function ManutencoesPage() {
         className={styles.card}
         onSubmit={(e) => {
           e.preventDefault()
-          setFilters(draft)
+          const days = period === 'all' ? 0 : Number(period)
+          const from = new Date()
+          from.setDate(from.getDate() - days)
+          setFilters({
+            ...draft,
+            from: days ? from.toISOString().slice(0, 10) : undefined,
+            to: days ? new Date().toISOString().slice(0, 10) : undefined,
+          })
           setPage(1)
         }}
       >
         <div className={styles.cardBody}>
           <h2 className={styles.sectionTitle}>Filtros</h2>
-          <div className={styles.fieldsGrid}>
-            <div className={styles.fieldThird}>
+          <div className={styles.maintenanceFilterRow}>
+            <div>
               <label className={styles.label} htmlFor="maintenance-search">
-                Buscar
+                Buscar serviço ou oficina
               </label>
               <input
                 id="maintenance-search"
                 className={styles.input}
-                placeholder="Placa, serviço, oficina..."
+                placeholder="Buscar no histórico..."
                 value={draft.search}
                 onChange={(e) => setDraft({ ...draft, search: e.target.value })}
               />
             </div>
-            <div className={styles.fieldThird}>
-              <label className={styles.label} htmlFor="maintenance-vehicle">
-                Veículo
-              </label>
+            <div>
+              <label className={styles.label} htmlFor="maintenance-vehicle">Veículo</label>
               <select
                 id="maintenance-vehicle"
                 className={styles.input}
                 value={draft.vehicleId}
                 onChange={(e) => setDraft({ ...draft, vehicleId: e.target.value })}
               >
-                <option value="all">Todos</option>
+                <option value="all">Todos os veículos</option>
                 {vehicles.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {vehicleLabel(v)}
-                  </option>
+                  <option key={v.id} value={v.id}>{vehicleLabel(v)}</option>
                 ))}
               </select>
             </div>
-            <div className={styles.fieldThird}>
-              <label className={styles.label} htmlFor="maintenance-status">
-                Status
-              </label>
+            <div>
+              <label className={styles.label} htmlFor="maintenance-status">Status</label>
               <select
                 id="maintenance-status"
                 className={styles.input}
                 value={draft.status}
                 onChange={(e) =>
-                  setDraft({
-                    ...draft,
-                    status: e.target.value as MaintenanceFiltersValue['status'],
-                  })
+                  setDraft({ ...draft, status: e.target.value as MaintenanceFiltersValue['status'] })
                 }
               >
-                <option value="all">Todos</option>
-                {MAINTENANCE_STATUSES.map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
+                <option value="all">Todos os status</option>
+                {MAINTENANCE_STATUSES.map((s) => <option key={s}>{s}</option>)}
               </select>
             </div>
-            <div className={styles.fieldQuarter}>
-              <label className={styles.label} htmlFor="maintenance-from">
-                De
-              </label>
-              <input
-                id="maintenance-from"
-                type="date"
+            <div>
+              <label className={styles.label} htmlFor="maintenance-period">Período</label>
+              <select
+                id="maintenance-period"
                 className={styles.input}
-                value={draft.from ?? ''}
-                onChange={(e) =>
-                  setDraft({ ...draft, from: e.target.value || undefined })
-                }
-              />
-            </div>
-            <div className={styles.fieldQuarter}>
-              <label className={styles.label} htmlFor="maintenance-to">
-                Até
-              </label>
-              <input
-                id="maintenance-to"
-                type="date"
-                className={styles.input}
-                value={draft.to ?? ''}
-                onChange={(e) => setDraft({ ...draft, to: e.target.value || undefined })}
-              />
-            </div>
-            <div className={styles.filterActions}>
-              <Button variant="primary" type="submit">
-                Filtrar
-              </Button>
-              <Button
-                variant="secondary"
-
-                type="button"
-                onClick={() => {
-                  setDraft(emptyFilters)
-                  setFilters(emptyFilters)
-                  setPage(1)
-                }}
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
               >
-                Limpar
-              </Button>
+                <option value="all">Todo o período</option>
+                <option value="30">Últimos 30 dias</option>
+                <option value="90">Últimos 90 dias</option>
+                <option value="365">Últimos 12 meses</option>
+              </select>
+            </div>
+            <div className={styles.maintenanceFilterButton}>
+              <Button variant="primary" type="submit">Filtrar</Button>
             </div>
           </div>
         </div>
@@ -967,3 +938,4 @@ function MaintenanceForm({
     </div>
   )
 }
+

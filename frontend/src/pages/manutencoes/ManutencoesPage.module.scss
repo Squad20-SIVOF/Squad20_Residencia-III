@@ -698,3 +698,31 @@ select.input {
     grid-template-columns: 1fr;
   }
 }
+
+.maintenanceFilterRow {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 1.1fr 1.1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.maintenanceFilterRow > div {
+  min-width: 0;
+}
+
+.maintenanceFilterButton {
+  display: flex;
+  align-items: end;
+}
+
+@media (max-width: 900px) {
+  .maintenanceFilterRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 540px) {
+  .maintenanceFilterRow {
+    grid-template-columns: 1fr;
+  }
+}
