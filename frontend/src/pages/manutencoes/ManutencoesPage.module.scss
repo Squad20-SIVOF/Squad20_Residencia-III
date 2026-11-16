@@ -215,3 +215,486 @@ select.input {
   font: inherit;
   cursor: pointer;
 }
+
+/* Ajustes visuais da listagem de manutenções */
+@container (min-width: 1050px) {
+  .statsGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .fieldsGrid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: end;
+  }
+
+  .fieldThird {
+    grid-column: span 4;
+  }
+
+  .fieldQuarter {
+    grid-column: span 3;
+  }
+
+  .filterActions {
+    grid-column: span 6;
+    justify-content: flex-end;
+  }
+}
+
+
+/* Formulário de manutenção — ajustes do Figma */
+
+.form {
+  width: 100%;
+  min-width: 0;
+}
+
+.formColumn,
+.summaryColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.formColumn .cardSpaced,
+.summaryColumn .cardSpaced {
+  margin-top: 0;
+}
+
+.formColumn .card,
+.formColumn .cardSpaced,
+.summaryColumn .card,
+.summaryColumn .cardSpaced {
+  border-radius: 10px;
+  padding: 18px;
+}
+
+.formColumn .sectionTitle,
+.summaryColumn .sectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.formColumn .cardBody,
+.summaryColumn .cardBody {
+  gap: 12px;
+}
+
+.formColumn .fieldsGrid {
+  gap: 12px;
+  align-items: start;
+}
+
+.formColumn .input {
+  min-height: 40px;
+  border-radius: 7px;
+}
+
+.formColumn textarea.input {
+  min-height: 58px;
+}
+
+.formActions {
+  margin-top: 4px;
+  padding-top: 12px;
+}
+
+@container (min-width: 850px) {
+  .formLayout {
+    grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+    align-items: start;
+    gap: 16px;
+  }
+}
+
+
+.availabilityOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 14px;
+  border-top: 1px solid $color-border;
+}
+
+.availabilityOption strong {
+  display: block;
+  font-size: 0.875rem;
+  margin-bottom: 4px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+
+.switchSlider {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: #cbd5e1;
+  transition: background 0.2s;
+  pointer-events: none;
+}
+
+.switchSlider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 3px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.switch input:checked + .switchSlider {
+  background: #2563eb;
+}
+
+.switch input:checked + .switchSlider::before {
+  transform: translateX(18px);
+}
+
+.switch input:focus-visible + .switchSlider {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
+
+
+/* Barra lateral - layout inspirado no Figma */
+.summaryColumn {
+  gap: 14px;
+}
+
+.summaryColumn .card,
+.summaryColumn .cardSpaced {
+  padding: 16px;
+  border: 1px solid #dce5f1;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(18, 48, 87, .05);
+}
+
+.vehicleInfoTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #17253d;
+}
+
+.vehicleInfoDetails {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.licensePlate {
+  width: 90px;
+  overflow: hidden;
+  border: 1px solid #aab7c9;
+  border-radius: 4px;
+  background: #fff;
+  text-align: center;
+}
+
+.licensePlate span {
+  display: block;
+  padding: 2px;
+  background: #123b81;
+  color: #fff;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .8px;
+}
+
+.licensePlate strong {
+  display: block;
+  padding: 3px 2px;
+  color: #17253d;
+  font-size: 16px;
+  letter-spacing: .3px;
+}
+
+.vehicleAvailableBadge {
+  padding: 5px 8px;
+  border-radius: 5px;
+  background: #e2f7ed;
+  color: #147d55;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.vehicleInfoFooter {
+  margin: 12px 0 0;
+  color: #667790;
+  font-size: 11px;
+}
+
+.sidebarCardTitle {
+  margin: 0 0 16px;
+  color: #123b81;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.registrationSummaryCard,
+.lastMaintenanceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summaryStatusBadge,
+.lastMaintenanceBadge {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 20px;
+  background: #eaf0ff;
+  color: #3858a0;
+  font-size: 11px;
+}
+
+.lastMaintenanceBadge {
+  background: #dcf7ed;
+  color: #168263;
+}
+
+.summaryDescription {
+  margin: 0;
+  color: #23324b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.summaryMeta {
+  margin: 0;
+  color: #74829a;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.summaryPriceArea {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 3px;
+}
+
+.summaryPriceArea span {
+  color: #74829a;
+  font-size: 11px;
+}
+
+.summaryPriceArea strong {
+  color: #17253d;
+  font-size: 23px;
+  font-weight: 500;
+}
+
+.sidebarNotice {
+  padding: 13px 15px;
+  border-radius: 9px;
+  background: #fff2d4;
+  color: #8a510c;
+}
+
+.sidebarNotice strong {
+  font-size: 12px;
+}
+
+.sidebarNotice p {
+  margin: 5px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.lastMaintenancePrice {
+  color: #17253d;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Destaque dos títulos e rótulos, preservando as cores */
+.formColumn .sectionTitle {
+  font-weight: 700;
+}
+
+.formColumn .label {
+  font-weight: 700;
+}
+
+
+/* Ajustes visuais da listagem de Manutenções */
+
+/* Títulos dos filtros */
+.filtersGrid .label,
+.filtersCard .label,
+.filters .label,
+.filterField .label {
+  color: #195397;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* Títulos dos cartões e histórico */
+.sectionTitle,
+.tableTitle {
+  font-weight: 700;
+}
+
+/* Indicadores numéricos */
+.statValue {
+  font-weight: 700;
+  font-size: 22px;
+  color: #202b3b;
+}
+
+/* Cabeçalho da tabela */
+.table th {
+  color: #195397;
+  font-weight: 700;
+}
+
+/* Veículo e serviço na tabela */
+.table td {
+  font-weight: 500;
+}
+
+/* Botões de ação */
+.filterActions button,
+.formActions button {
+  font-weight: 700;
+}
+
+/* Ajustes de espaçamento */
+.statsGrid {
+  gap: 16px;
+}
+
+.summaryColumn {
+  gap: 14px;
+}
+
+
+/* Figma - destaque dos filtros da listagem */
+.page > .card .label {
+  color: #195397;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* Títulos azuis */
+.list > .sectionTitle {
+  color: #195397;
+  font-weight: 700;
+}
+
+/* Cabeçalhos dos filtros */
+.page > .card .sectionTitle {
+  color: #195397;
+  font-weight: 700;
+}
+
+
+/* Ajustes finais da listagem conforme Figma */
+
+.listFilters {
+  padding: 12px 14px;
+}
+
+.listFilters .cardBody {
+  gap: 8px;
+}
+
+.listFilters .sectionTitle {
+  display: none;
+}
+
+.listFilters .fieldsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr)) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.listFilters .fieldThird,
+.listFilters .fieldQuarter,
+.listFilters .filterActions {
+  grid-column: auto;
+}
+
+.listFilters .fieldQuarter:nth-of-type(5) {
+  display: none;
+}
+
+.listFilters .label {
+  color: #195397;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.listFilters .input {
+  min-height: 38px;
+}
+
+.listFilters .filterActions {
+  display: flex;
+  align-items: end;
+  gap: 6px;
+}
+
+.historyCard {
+  padding: 0;
+  border: 1px solid #dce5f1;
+  border-radius: 9px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(18, 48, 87, .04);
+}
+
+.historyCard > .sectionTitle {
+  padding: 14px 16px;
+  margin: 0;
+  color: #195397;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.historyCard .pagination {
+  padding: 12px 16px;
+  border-top: 1px solid #dce5f1;
+}
+
+.maintenanceFooterNotice {
+  margin: 0;
+  color: #687b96;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1000px) {
+  .listFilters .fieldsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .listFilters .fieldsGrid {
+    grid-template-columns: 1fr;
+  }
+}

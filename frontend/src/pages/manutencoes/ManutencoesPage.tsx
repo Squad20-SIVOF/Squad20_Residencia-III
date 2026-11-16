@@ -1,4 +1,3 @@
-import { CheckboxField } from '@/components/CheckboxField'
 import { PageHeader } from '@/components/PageHeader'
 import { StatCard } from '@/components/StatCard'
 import { Button } from '@/components/Button'
@@ -96,19 +95,42 @@ export function ManutencoesPage() {
 
   const columns: DataTableColumn<Maintenance>[] = [
     {
-      key: 'service',
-      header: 'Serviço',
-      isPrimary: true,
-      render: (row) => row.descricao,
-    },
-    {
       key: 'vehicle',
-      header: 'Veículo',
+      header: 'Veículo / placa',
+      isPrimary: true,
       render: (row) =>
         vehicleLabel(vehicles.find((vehicle) => vehicle.id === row.vehicleId)),
     },
-    { key: 'date', header: 'Data', render: (row) => date(row.dataServico) },
-    { key: 'type', header: 'Tipo', render: (row) => row.tipo },
+    {
+      key: 'type',
+      header: 'Tipo',
+      render: (row) => row.tipo,
+    },
+    {
+      key: 'service',
+      header: 'Serviço',
+      render: (row) => row.descricao,
+    },
+    {
+      key: 'date',
+      header: 'Data',
+      render: (row) => date(row.dataServico),
+    },
+    {
+      key: 'km',
+      header: 'Km',
+      render: (row) => km(row.quilometragem),
+    },
+    {
+      key: 'workshop',
+      header: 'Oficina',
+      render: (row) => row.oficina,
+    },
+    {
+      key: 'value',
+      header: 'Custo',
+      render: (row) => money(row.valorEstimado),
+    },
     {
       key: 'status',
       header: 'Status',
@@ -128,14 +150,13 @@ export function ManutencoesPage() {
         </Badge>
       ),
     },
-    { key: 'value', header: 'Valor', render: (row) => money(row.valorEstimado) },
   ]
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <PageHeader
           title="Manutenções"
-          subtitle="Monitore e gerencie as manutenções da frota em um só lugar."
+          subtitle="Planeje revisões e acompanhe os serviços da frota em um só lugar."
         />
         {canManage && (
           <ButtonLink to="/manutencoes/nova">+ Registrar manutenção</ButtonLink>
@@ -156,15 +177,35 @@ export function ManutencoesPage() {
         </Alert>
       )}
       <section className={styles.statsGrid} aria-label="Resumo das manutenções">
-        <StatCard label="Total de manutenções" value={stats.total} variant="info" />
-        <StatCard label="Em andamento" value={stats.emAndamento} variant="warning" />
-        <StatCard label="Agendadas" value={stats.agendadas} variant="info" />
-        <StatCard
-          label="Custo total (exceto canceladas)"
-          value={money(stats.custoTotal)}
-          variant="success"
-        />
-      </section>
+  <StatCard
+    label="Serviços concluídos"
+    value={filtered.filter((item) => item.status === 'Concluída').length}
+    hint="No período selecionado"
+    variant="success"
+  />
+  <StatCard
+    label="Em andamento"
+    value={stats.emAndamento}
+    hint="Veículo em manutenção"
+    variant="warning"
+  />
+  <StatCard
+    label="Agendadas"
+    value={stats.agendadas}
+    hint="Próximas manutenções"
+    variant="info"
+  />
+  <StatCard
+    label="Custo realizado"
+    value={money(
+      filtered
+        .filter((item) => item.status === 'Concluída')
+        .reduce((total, item) => total + item.valorEstimado, 0)
+    )}
+    hint="Somente serviços concluídos"
+    variant="danger"
+  />
+</section>
       <form
         className={styles.card}
         onSubmit={(e) => {
@@ -255,7 +296,7 @@ export function ManutencoesPage() {
             </div>
             <div className={styles.filterActions}>
               <Button variant="primary" type="submit">
-                Aplicar filtros
+                Filtrar
               </Button>
               <Button
                 variant="secondary"
@@ -273,9 +314,9 @@ export function ManutencoesPage() {
           </div>
         </div>
       </form>
-      <section className={styles.list} aria-label="Manutenções">
+      <section className={`${styles.list} ${styles.historyCard}`} aria-label="Manutenções">
         <h2 className={styles.sectionTitle}>
-          Registros <span className={styles.muted}>({filtered.length})</span>
+          Histórico de manutenções <span className={styles.muted}>({filtered.length})</span>
         </h2>
         {loading ? (
           <LoadingState label="Carregando manutenções" />
@@ -283,7 +324,7 @@ export function ManutencoesPage() {
           <p className={styles.empty}>Nenhuma manutenção encontrada.</p>
         ) : (
           <DataTable
-            caption="Registros de manutenções"
+            caption="Histórico de manutenções"
             rows={rows}
             columns={columns}
             getRowKey={(row) => row.id}
@@ -316,6 +357,10 @@ export function ManutencoesPage() {
           </div>
         </div>
       </section>
+      <p className={styles.maintenanceFooterNotice}>
+        ⓘ Agendadas não bloqueiam o veículo. Ao concluir um serviço,
+        revise a disponibilidade antes de liberar novas viagens.
+      </p>
       {selected && (
         <ConfirmDialog
           isOpen
@@ -450,6 +495,8 @@ function MaintenanceForm({
     editing ? { ...editing } : { ...emptyForm },
   )
   const [receipt, setReceipt] = useState<File | null>(null)
+  const [indisponibilizar, setIndisponibilizar] = useState(false)
+  const [dataLembrete, setDataLembrete] = useState('')
   const [error, setError] = useState('')
   const vehicle = vehicles.find((v) => v.id === form.vehicleId)
   const lastKm = lastKnownKm(maintenances, vehicle, editing?.id)
@@ -526,7 +573,7 @@ function MaintenanceForm({
     <div className={styles.page}>
       <PageHeader
         title={editing ? 'Editar manutenção' : 'Registrar manutenção'}
-        subtitle="Registre um serviço ou agende uma manutenção da frota."
+        subtitle="Planeje um serviço ou registre uma manutenção já realizada."
         breadcrumb={
           <Breadcrumb
             items={[
@@ -543,7 +590,7 @@ function MaintenanceForm({
             <div className={styles.formColumn}>
               <section className={styles.card}>
                 <div className={styles.cardBody}>
-                  <h2 className={styles.sectionTitle}>Dados da manutenção</h2>
+                  <h2 className={styles.sectionTitle}>Dados do serviço</h2>
                   <div className={styles.fieldsGrid}>
                     <div className={styles.fieldHalf}>
                       <label htmlFor="form-vehicle" className={styles.label}>
@@ -566,7 +613,7 @@ function MaintenanceForm({
                     </div>
                     <div className={styles.fieldHalf}>
                       <label htmlFor="form-type" className={styles.label}>
-                        Tipo *
+                        Tipo de manutenção *
                       </label>
                       <select
                         id="form-type"
@@ -583,18 +630,22 @@ function MaintenanceForm({
                     </div>
                     <div className={styles.fieldFull}>
                       <label htmlFor="form-description" className={styles.label}>
-                        Descrição do serviço *
+                        Serviço / descrição *
                       </label>
-                      <textarea
+                      <input
                         id="form-description"
                         className={styles.input}
+                        type="text"
                         minLength={3}
                         maxLength={200}
                         required
-                        rows={3}
+                        placeholder="Ex.: Revisão dos 45 mil km"
                         value={form.descricao}
                         onChange={(e) => change('descricao', e.target.value)}
                       />
+                      <p className={styles.hint}>
+                        Inspeção de freios, suspensão, correias e níveis dos fluidos.
+                      </p>
                     </div>
                     <div className={styles.fieldHalf}>
                       <label htmlFor="form-date" className={styles.label}>
@@ -623,7 +674,7 @@ function MaintenanceForm({
                     </div>
                     <div className={styles.fieldHalf}>
                       <label htmlFor="form-km" className={styles.label}>
-                        Quilometragem *
+                        Quilometragem de referência *
                       </label>
                       <input
                         id="form-km"
@@ -638,7 +689,7 @@ function MaintenanceForm({
                     </div>
                     <div className={styles.fieldHalf}>
                       <label htmlFor="form-workshop" className={styles.label}>
-                        Oficina / fornecedor *
+                        Fornecedor / oficina *
                       </label>
                       <input
                         id="form-workshop"
@@ -652,7 +703,7 @@ function MaintenanceForm({
                     </div>
                     <div className={styles.fieldHalf}>
                       <label htmlFor="form-value" className={styles.label}>
-                        Valor estimado (R$) *
+                        Valor estimado *
                       </label>
                       <input
                         id="form-value"
@@ -665,6 +716,13 @@ function MaintenanceForm({
                         onChange={(e) => change('valorEstimado', Number(e.target.value))}
                       />
                     </div>
+                  </div>
+                </div>
+              </section>
+              <section className={styles.cardSpaced}>
+                <div className={styles.cardBody}>
+                  <h2 className={styles.sectionTitle}>Status e próxima revisão</h2>
+                  <div className={styles.fieldsGrid}>
                     <div className={styles.fieldHalf}>
                       <label htmlFor="form-status" className={styles.label}>
                         Status *
@@ -682,14 +740,7 @@ function MaintenanceForm({
                         ))}
                       </select>
                     </div>
-                  </div>
-                </div>
-              </section>
-              <section className={styles.cardSpaced}>
-                <div className={styles.cardBody}>
-                  <h2 className={styles.sectionTitle}>Próxima revisão</h2>
-                  <div className={styles.fieldsGrid}>
-                    <div className={styles.fieldFull}>
+                    <div className={styles.fieldHalf}>
                       <label htmlFor="form-revision-type" className={styles.label}>
                         Programar por
                       </label>
@@ -743,18 +794,38 @@ function MaintenanceForm({
                         />
                       </div>
                     )}
-                    <div className={styles.fieldFull}>
-                      <CheckboxField
-                        id="form-notify"
-                        variant="plain"
-                        label="Receber lembrete da próxima revisão por e-mail"
-                        checked={form.notificarRevisao}
-                        onChange={(checked) => change('notificarRevisao', checked)}
-                      />
-                    </div>
+                    <div className={styles.fieldHalf}>
+  <label htmlFor="form-reminder-date" className={styles.label}>
+    Data de lembrete (opcional)
+  </label>
+  <input
+    id="form-reminder-date"
+    className={styles.input}
+    type="date"
+    value={dataLembrete}
+    onChange={(e) => setDataLembrete(e.target.value)}
+  />
+</div>
                   </div>
                 </div>
-              </section>
+                                  <div className={styles.availabilityOption}>
+                      <div>
+                        <strong>Indisponibilizar durante o serviço</strong>
+                        <p className={styles.hint}>
+                          Ao iniciar a manutenção, o veículo ficará indisponível para viagens.
+                        </p>
+                      </div>
+                      <label className={styles.switch}>
+                        <input
+                          type="checkbox"
+                          checked={indisponibilizar}
+                          onChange={(e) => setIndisponibilizar(e.target.checked)}
+                          aria-label="Indisponibilizar durante o serviço"
+                        />
+                        <span className={styles.switchSlider} />
+                      </label>
+                    </div>
+</section>
               <section className={styles.cardSpaced}>
                 <div className={styles.cardBody}>
                   <h2 className={styles.sectionTitle}>Comprovante</h2>
@@ -796,54 +867,100 @@ function MaintenanceForm({
               </div>
             </div>
             <aside className={styles.summaryColumn}>
-              <div className={styles.card}>
-                <div className={styles.cardBody}>
-                  <h2 className={styles.sectionTitle}>Resumo</h2>
-                  <p className={styles.summaryLine}>
-                    <strong>Veículo:</strong> {vehicleLabel(vehicle)}
-                  </p>
-                  <p className={styles.summaryLine}>
-                    <strong>Serviço:</strong> {form.descricao || 'Não informado'}
-                  </p>
-                  <p className={styles.summaryLine}>
-                    <strong>Valor:</strong> {money(form.valorEstimado)}
-                  </p>
-                  <p className={styles.summaryLine}>
-                    <strong>Status:</strong> {form.status}
-                  </p>
-                  <p className={styles.summaryLine}>
-                    <strong>Data:</strong> {date(form.dataServico)}
-                  </p>
-                </div>
-              </div>
-              {vehicle && (
-                <div className={styles.cardSpaced}>
-                  <div className={styles.cardBody}>
-                    <h2 className={styles.sectionTitle}>Veículo selecionado</h2>
-                    <p className={styles.summaryLine}>{vehicleLabel(vehicle)}</p>
-                    <p className={styles.summaryLine}>
-                      Última quilometragem conhecida: {km(lastKm)}
-                    </p>
-                  </div>
-                </div>
-              )}
-              {vehicle && form.quilometragem > 0 && form.quilometragem < lastKm && (
-                <Alert variant="warning">
-                  A quilometragem informada é inferior à última registrada ({km(lastKm)}).
-                </Alert>
-              )}
-              {last && (
-                <div className={styles.cardSpaced}>
-                  <div className={styles.cardBody}>
-                    <h2 className={styles.sectionTitle}>Última manutenção</h2>
-                    <p className={styles.summaryLine}>{last.descricao}</p>
-                    <p className={styles.muted}>
-                      {date(last.dataServico)} · {km(last.quilometragem)}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </aside>
+  {vehicle && (
+    <section className={`${styles.card} ${styles.vehicleInfoCard}`}>
+      <div className={styles.vehicleInfoTitle}>
+        {vehicleLabel(vehicle)}
+      </div>
+
+      <div className={styles.vehicleInfoDetails}>
+        <div className={styles.licensePlate}>
+          <span>BRASIL</span>
+          <strong>{vehicle.placa}</strong>
+        </div>
+        <span className={styles.vehicleAvailableBadge}>
+          Veículo selecionado
+        </span>
+      </div>
+
+      <p className={styles.vehicleInfoFooter}>
+        Última quilometragem conhecida: {km(lastKm)}
+      </p>
+    </section>
+  )}
+
+  <section className={`${styles.card} ${styles.registrationSummaryCard}`}>
+    <h2 className={styles.sidebarCardTitle}>Resumo do registro</h2>
+
+    <div>
+      <span className={styles.summaryStatusBadge}>
+        {form.status || 'Não definido'}
+      </span>
+    </div>
+
+    <p className={styles.summaryDescription}>
+      {form.descricao || 'Descreva o serviço para visualizar o resumo.'}
+    </p>
+
+    <p className={styles.summaryMeta}>
+      {form.dataServico ? date(form.dataServico) : 'Data não informada'}
+      {' · '}
+      {form.oficina || 'Oficina não informada'}
+    </p>
+
+    <div className={styles.summaryPriceArea}>
+      <span>Valor previsto, ainda não realizado</span>
+      <strong>
+        {new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+        }).format(Number(form.valorEstimado) || 0)}
+      </strong>
+    </div>
+  </section>
+
+  {form.status === 'Agendada' && (
+    <section className={styles.sidebarNotice}>
+      <strong>⚠ Sem bloqueio imediato</strong>
+      <p>
+        A manutenção agendada não altera a disponibilidade
+        atual do veículo. O bloqueio durante o serviço
+        dependerá das regras de disponibilidade.
+      </p>
+    </section>
+  )}
+
+  {vehicle && form.quilometragem > 0 && form.quilometragem < lastKm && (
+    <Alert variant="warning">
+      A quilometragem informada é inferior à última registrada ({km(lastKm)}).
+    </Alert>
+  )}
+
+  {last && (
+    <section className={`${styles.card} ${styles.lastMaintenanceCard}`}>
+      <h2 className={styles.sidebarCardTitle}>Última manutenção</h2>
+
+      <div>
+        <span className={styles.lastMaintenanceBadge}>
+          {last.status}
+        </span>
+      </div>
+
+      <p className={styles.summaryDescription}>{last.descricao}</p>
+
+      <p className={styles.summaryMeta}>
+        {date(last.dataServico)} · {km(last.quilometragem)}
+      </p>
+
+      <strong className={styles.lastMaintenancePrice}>
+        {new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+        }).format(Number(last.valorEstimado) || 0)}
+      </strong>
+    </section>
+  )}
+</aside>
           </div>
         </fieldset>
       </form>
