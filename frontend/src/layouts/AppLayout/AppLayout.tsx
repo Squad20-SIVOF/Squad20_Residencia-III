@@ -25,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/abastecimentos', label: 'Abastecimentos', permission: 'abastecimentos:ler' },
   { to: '/manutencoes', label: 'Manutenções' },
   { to: '/viagens', label: 'Viagens' },
+  { to: '/notificacoes', label: 'Notificações' },
   { to: '/relatorios', label: 'Relatórios' },
   { to: '/perfil', label: 'Perfil' },
   {

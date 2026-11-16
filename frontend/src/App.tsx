@@ -1,3 +1,4 @@
+﻿import { NotificacoesPage } from '@/pages/notificacoes/NotificacoesPage'
 import AbastecimentosPage from '@/pages/abastecimentos/AbastecimentosPage'
 import RegistrarAbastecimento from '@/pages/abastecimentos/registrar/RegistrarAbastecimento'
 import SolicitacoesPendentesPage from '@/pages/solicitacoes/SolicitacoesPendentesPage'
@@ -34,7 +35,6 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route path="viagens/solicitacoes" element={<SolicitacoesPendentesPage />} />
@@ -52,6 +52,7 @@ export function AppRoutes() {
           <Route path="viagens/solicitar" element={<RequestFormPage />} />
           <Route path="viagens/solicitacoes/:id" element={<RequestDetailsPage />} />
           <Route path="viagens/:id" element={<RequestTrackingPage />} />
+          <Route path="notificacoes" element={<NotificacoesPage />} />
           <Route path="perfil" element={<ProfilePage />} />
           <Route path="usuarios" element={<UsersPage />} />
           <Route path="abastecimentos" element={<AbastecimentosPage />} />
@@ -74,3 +75,5 @@ export function App() {
     </BrowserRouter>
   )
 }
+
+
