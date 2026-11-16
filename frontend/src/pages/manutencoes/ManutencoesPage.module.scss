@@ -241,7 +241,6 @@ select.input {
   }
 }
 
-
 /* Formulário de manutenção — ajustes do Figma */
 
 .form {
@@ -306,7 +305,6 @@ select.input {
     gap: 16px;
   }
 }
-
 
 .availabilityOption {
   display: flex;
@@ -374,7 +372,6 @@ select.input {
   outline-offset: 3px;
 }
 
-
 /* Barra lateral - layout inspirado no Figma */
 .summaryColumn {
   gap: 14px;
@@ -386,7 +383,7 @@ select.input {
   border: 1px solid #dce5f1;
   border-radius: 9px;
   background: #fff;
-  box-shadow: 0 2px 5px rgba(18, 48, 87, .05);
+  box-shadow: 0 2px 5px rgba(18, 48, 87, 0.05);
 }
 
 .vehicleInfoTitle {
@@ -419,7 +416,7 @@ select.input {
   color: #fff;
   font-size: 7px;
   font-weight: 700;
-  letter-spacing: .8px;
+  letter-spacing: 0.8px;
 }
 
 .licensePlate strong {
@@ -427,7 +424,7 @@ select.input {
   padding: 3px 2px;
   color: #17253d;
   font-size: 16px;
-  letter-spacing: .3px;
+  letter-spacing: 0.3px;
 }
 
 .vehicleAvailableBadge {
@@ -538,7 +535,6 @@ select.input {
   font-weight: 700;
 }
 
-
 /* Ajustes visuais da listagem de Manutenções */
 
 /* Títulos dos filtros */
@@ -590,7 +586,6 @@ select.input {
   gap: 14px;
 }
 
-
 /* Figma - destaque dos filtros da listagem */
 .page > .card .label {
   color: #195397;
@@ -609,7 +604,6 @@ select.input {
   color: #195397;
   font-weight: 700;
 }
-
 
 /* Ajustes finais da listagem conforme Figma */
 
@@ -664,7 +658,7 @@ select.input {
   border-radius: 9px;
   background: #fff;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(18, 48, 87, .04);
+  box-shadow: 0 2px 5px rgba(18, 48, 87, 0.04);
 }
 
 .historyCard > .sectionTitle {

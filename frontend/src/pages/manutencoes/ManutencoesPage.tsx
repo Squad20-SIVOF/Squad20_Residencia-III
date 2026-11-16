@@ -178,35 +178,35 @@ export function ManutencoesPage() {
         </Alert>
       )}
       <section className={styles.statsGrid} aria-label="Resumo das manutenções">
-  <StatCard
-    label="Serviços concluídos"
-    value={filtered.filter((item) => item.status === 'Concluída').length}
-    hint="No período selecionado"
-    variant="success"
-  />
-  <StatCard
-    label="Em andamento"
-    value={stats.emAndamento}
-    hint="Veículo em manutenção"
-    variant="warning"
-  />
-  <StatCard
-    label="Agendadas"
-    value={stats.agendadas}
-    hint="Próximas manutenções"
-    variant="info"
-  />
-  <StatCard
-    label="Custo realizado"
-    value={money(
-      filtered
-        .filter((item) => item.status === 'Concluída')
-        .reduce((total, item) => total + item.valorEstimado, 0)
-    )}
-    hint="Somente serviços concluídos"
-    variant="danger"
-  />
-</section>
+        <StatCard
+          label="Serviços concluídos"
+          value={filtered.filter((item) => item.status === 'Concluída').length}
+          hint="No período selecionado"
+          variant="success"
+        />
+        <StatCard
+          label="Em andamento"
+          value={stats.emAndamento}
+          hint="Veículo em manutenção"
+          variant="warning"
+        />
+        <StatCard
+          label="Agendadas"
+          value={stats.agendadas}
+          hint="Próximas manutenções"
+          variant="info"
+        />
+        <StatCard
+          label="Custo realizado"
+          value={money(
+            filtered
+              .filter((item) => item.status === 'Concluída')
+              .reduce((total, item) => total + item.valorEstimado, 0),
+          )}
+          hint="Somente serviços concluídos"
+          variant="danger"
+        />
+      </section>
       <form
         className={styles.card}
         onSubmit={(e) => {
@@ -238,7 +238,9 @@ export function ManutencoesPage() {
               />
             </div>
             <div>
-              <label className={styles.label} htmlFor="maintenance-vehicle">Veículo</label>
+              <label className={styles.label} htmlFor="maintenance-vehicle">
+                Veículo
+              </label>
               <select
                 id="maintenance-vehicle"
                 className={styles.input}
@@ -247,26 +249,37 @@ export function ManutencoesPage() {
               >
                 <option value="all">Todos os veículos</option>
                 {vehicles.map((v) => (
-                  <option key={v.id} value={v.id}>{vehicleLabel(v)}</option>
+                  <option key={v.id} value={v.id}>
+                    {vehicleLabel(v)}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className={styles.label} htmlFor="maintenance-status">Status</label>
+              <label className={styles.label} htmlFor="maintenance-status">
+                Status
+              </label>
               <select
                 id="maintenance-status"
                 className={styles.input}
                 value={draft.status}
                 onChange={(e) =>
-                  setDraft({ ...draft, status: e.target.value as MaintenanceFiltersValue['status'] })
+                  setDraft({
+                    ...draft,
+                    status: e.target.value as MaintenanceFiltersValue['status'],
+                  })
                 }
               >
                 <option value="all">Todos os status</option>
-                {MAINTENANCE_STATUSES.map((s) => <option key={s}>{s}</option>)}
+                {MAINTENANCE_STATUSES.map((s) => (
+                  <option key={s}>{s}</option>
+                ))}
               </select>
             </div>
             <div>
-              <label className={styles.label} htmlFor="maintenance-period">Período</label>
+              <label className={styles.label} htmlFor="maintenance-period">
+                Período
+              </label>
               <select
                 id="maintenance-period"
                 className={styles.input}
@@ -280,14 +293,20 @@ export function ManutencoesPage() {
               </select>
             </div>
             <div className={styles.maintenanceFilterButton}>
-              <Button variant="primary" type="submit">Filtrar</Button>
+              <Button variant="primary" type="submit">
+                Filtrar
+              </Button>
             </div>
           </div>
         </div>
       </form>
-      <section className={`${styles.list} ${styles.historyCard}`} aria-label="Manutenções">
+      <section
+        className={`${styles.list} ${styles.historyCard}`}
+        aria-label="Manutenções"
+      >
         <h2 className={styles.sectionTitle}>
-          Histórico de manutenções <span className={styles.muted}>({filtered.length})</span>
+          Histórico de manutenções{' '}
+          <span className={styles.muted}>({filtered.length})</span>
         </h2>
         {loading ? (
           <LoadingState label="Carregando manutenções" />
@@ -329,8 +348,8 @@ export function ManutencoesPage() {
         </div>
       </section>
       <p className={styles.maintenanceFooterNotice}>
-        ⓘ Agendadas não bloqueiam o veículo. Ao concluir um serviço,
-        revise a disponibilidade antes de liberar novas viagens.
+        ⓘ Agendadas não bloqueiam o veículo. Ao concluir um serviço, revise a
+        disponibilidade antes de liberar novas viagens.
       </p>
       {selected && (
         <ConfirmDialog
@@ -766,37 +785,37 @@ function MaintenanceForm({
                       </div>
                     )}
                     <div className={styles.fieldHalf}>
-  <label htmlFor="form-reminder-date" className={styles.label}>
-    Data de lembrete (opcional)
-  </label>
-  <input
-    id="form-reminder-date"
-    className={styles.input}
-    type="date"
-    value={dataLembrete}
-    onChange={(e) => setDataLembrete(e.target.value)}
-  />
-</div>
+                      <label htmlFor="form-reminder-date" className={styles.label}>
+                        Data de lembrete (opcional)
+                      </label>
+                      <input
+                        id="form-reminder-date"
+                        className={styles.input}
+                        type="date"
+                        value={dataLembrete}
+                        onChange={(e) => setDataLembrete(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
-                                  <div className={styles.availabilityOption}>
-                      <div>
-                        <strong>Indisponibilizar durante o serviço</strong>
-                        <p className={styles.hint}>
-                          Ao iniciar a manutenção, o veículo ficará indisponível para viagens.
-                        </p>
-                      </div>
-                      <label className={styles.switch}>
-                        <input
-                          type="checkbox"
-                          checked={indisponibilizar}
-                          onChange={(e) => setIndisponibilizar(e.target.checked)}
-                          aria-label="Indisponibilizar durante o serviço"
-                        />
-                        <span className={styles.switchSlider} />
-                      </label>
-                    </div>
-</section>
+                <div className={styles.availabilityOption}>
+                  <div>
+                    <strong>Indisponibilizar durante o serviço</strong>
+                    <p className={styles.hint}>
+                      Ao iniciar a manutenção, o veículo ficará indisponível para viagens.
+                    </p>
+                  </div>
+                  <label className={styles.switch}>
+                    <input
+                      type="checkbox"
+                      checked={indisponibilizar}
+                      onChange={(e) => setIndisponibilizar(e.target.checked)}
+                      aria-label="Indisponibilizar durante o serviço"
+                    />
+                    <span className={styles.switchSlider} />
+                  </label>
+                </div>
+              </section>
               <section className={styles.cardSpaced}>
                 <div className={styles.cardBody}>
                   <h2 className={styles.sectionTitle}>Comprovante</h2>
@@ -838,104 +857,98 @@ function MaintenanceForm({
               </div>
             </div>
             <aside className={styles.summaryColumn}>
-  {vehicle && (
-    <section className={`${styles.card} ${styles.vehicleInfoCard}`}>
-      <div className={styles.vehicleInfoTitle}>
-        {vehicleLabel(vehicle)}
-      </div>
+              {vehicle && (
+                <section className={`${styles.card} ${styles.vehicleInfoCard}`}>
+                  <div className={styles.vehicleInfoTitle}>{vehicleLabel(vehicle)}</div>
 
-      <div className={styles.vehicleInfoDetails}>
-        <div className={styles.licensePlate}>
-          <span>BRASIL</span>
-          <strong>{vehicle.placa}</strong>
-        </div>
-        <span className={styles.vehicleAvailableBadge}>
-          Veículo selecionado
-        </span>
-      </div>
+                  <div className={styles.vehicleInfoDetails}>
+                    <div className={styles.licensePlate}>
+                      <span>BRASIL</span>
+                      <strong>{vehicle.placa}</strong>
+                    </div>
+                    <span className={styles.vehicleAvailableBadge}>
+                      Veículo selecionado
+                    </span>
+                  </div>
 
-      <p className={styles.vehicleInfoFooter}>
-        Última quilometragem conhecida: {km(lastKm)}
-      </p>
-    </section>
-  )}
+                  <p className={styles.vehicleInfoFooter}>
+                    Última quilometragem conhecida: {km(lastKm)}
+                  </p>
+                </section>
+              )}
 
-  <section className={`${styles.card} ${styles.registrationSummaryCard}`}>
-    <h2 className={styles.sidebarCardTitle}>Resumo do registro</h2>
+              <section className={`${styles.card} ${styles.registrationSummaryCard}`}>
+                <h2 className={styles.sidebarCardTitle}>Resumo do registro</h2>
 
-    <div>
-      <span className={styles.summaryStatusBadge}>
-        {form.status || 'Não definido'}
-      </span>
-    </div>
+                <div>
+                  <span className={styles.summaryStatusBadge}>
+                    {form.status || 'Não definido'}
+                  </span>
+                </div>
 
-    <p className={styles.summaryDescription}>
-      {form.descricao || 'Descreva o serviço para visualizar o resumo.'}
-    </p>
+                <p className={styles.summaryDescription}>
+                  {form.descricao || 'Descreva o serviço para visualizar o resumo.'}
+                </p>
 
-    <p className={styles.summaryMeta}>
-      {form.dataServico ? date(form.dataServico) : 'Data não informada'}
-      {' · '}
-      {form.oficina || 'Oficina não informada'}
-    </p>
+                <p className={styles.summaryMeta}>
+                  {form.dataServico ? date(form.dataServico) : 'Data não informada'}
+                  {' · '}
+                  {form.oficina || 'Oficina não informada'}
+                </p>
 
-    <div className={styles.summaryPriceArea}>
-      <span>Valor previsto, ainda não realizado</span>
-      <strong>
-        {new Intl.NumberFormat('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-        }).format(Number(form.valorEstimado) || 0)}
-      </strong>
-    </div>
-  </section>
+                <div className={styles.summaryPriceArea}>
+                  <span>Valor previsto, ainda não realizado</span>
+                  <strong>
+                    {new Intl.NumberFormat('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    }).format(Number(form.valorEstimado) || 0)}
+                  </strong>
+                </div>
+              </section>
 
-  {form.status === 'Agendada' && (
-    <section className={styles.sidebarNotice}>
-      <strong>⚠ Sem bloqueio imediato</strong>
-      <p>
-        A manutenção agendada não altera a disponibilidade
-        atual do veículo. O bloqueio durante o serviço
-        dependerá das regras de disponibilidade.
-      </p>
-    </section>
-  )}
+              {form.status === 'Agendada' && (
+                <section className={styles.sidebarNotice}>
+                  <strong>⚠ Sem bloqueio imediato</strong>
+                  <p>
+                    A manutenção agendada não altera a disponibilidade atual do veículo. O
+                    bloqueio durante o serviço dependerá das regras de disponibilidade.
+                  </p>
+                </section>
+              )}
 
-  {vehicle && form.quilometragem > 0 && form.quilometragem < lastKm && (
-    <Alert variant="warning">
-      A quilometragem informada é inferior à última registrada ({km(lastKm)}).
-    </Alert>
-  )}
+              {vehicle && form.quilometragem > 0 && form.quilometragem < lastKm && (
+                <Alert variant="warning">
+                  A quilometragem informada é inferior à última registrada ({km(lastKm)}).
+                </Alert>
+              )}
 
-  {last && (
-    <section className={`${styles.card} ${styles.lastMaintenanceCard}`}>
-      <h2 className={styles.sidebarCardTitle}>Última manutenção</h2>
+              {last && (
+                <section className={`${styles.card} ${styles.lastMaintenanceCard}`}>
+                  <h2 className={styles.sidebarCardTitle}>Última manutenção</h2>
 
-      <div>
-        <span className={styles.lastMaintenanceBadge}>
-          {last.status}
-        </span>
-      </div>
+                  <div>
+                    <span className={styles.lastMaintenanceBadge}>{last.status}</span>
+                  </div>
 
-      <p className={styles.summaryDescription}>{last.descricao}</p>
+                  <p className={styles.summaryDescription}>{last.descricao}</p>
 
-      <p className={styles.summaryMeta}>
-        {date(last.dataServico)} · {km(last.quilometragem)}
-      </p>
+                  <p className={styles.summaryMeta}>
+                    {date(last.dataServico)} · {km(last.quilometragem)}
+                  </p>
 
-      <strong className={styles.lastMaintenancePrice}>
-        {new Intl.NumberFormat('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-        }).format(Number(last.valorEstimado) || 0)}
-      </strong>
-    </section>
-  )}
-</aside>
+                  <strong className={styles.lastMaintenancePrice}>
+                    {new Intl.NumberFormat('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    }).format(Number(last.valorEstimado) || 0)}
+                  </strong>
+                </section>
+              )}
+            </aside>
           </div>
         </fieldset>
       </form>
     </div>
   )
 }
-
