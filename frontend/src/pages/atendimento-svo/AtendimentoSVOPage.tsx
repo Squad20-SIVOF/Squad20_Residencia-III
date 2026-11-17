@@ -44,9 +44,7 @@ export function AtendimentoSVOPage() {
 
   const toggleSection = (index: number) => {
     setExpanded((previous) =>
-      previous.map((value, position) =>
-        position === index ? !value : value
-      )
+      previous.map((value, position) => (position === index ? !value : value)),
     )
   }
 
@@ -61,7 +59,7 @@ export function AtendimentoSVOPage() {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setMessage(
-      'Formulário validado. O registro definitivo ainda precisa ser conectado ao backend.'
+      'Formulário validado. O registro definitivo ainda precisa ser conectado ao backend.',
     )
   }
 
@@ -69,7 +67,7 @@ export function AtendimentoSVOPage() {
     field: FieldName,
     label: string,
     placeholder: string,
-    type: string = 'text'
+    type: string = 'text',
   ) => (
     <div className={styles.field} key={field}>
       <label htmlFor={field}>{label}</label>
@@ -83,9 +81,7 @@ export function AtendimentoSVOPage() {
         onChange={(event) =>
           updateField(
             field,
-            field === 'uf'
-              ? event.target.value.toUpperCase()
-              : event.target.value
+            field === 'uf' ? event.target.value.toUpperCase() : event.target.value,
           )
         }
         required
@@ -97,17 +93,15 @@ export function AtendimentoSVOPage() {
     <main className={styles.page}>
       <header className={styles.header}>
         <a href="/painel-viagens" className={styles.backLink}>
-  ← Voltar para o Painel de Viagens
-</a>
+          ← Voltar para o Painel de Viagens
+        </a>
 
         <h1>Atendimento SVO</h1>
         <p>Registro de solicitação de óbito e encaminhamento de remoção.</p>
 
         <div className={styles.headerBottom}>
           <span className={styles.newBadge}>NOVO ATENDIMENTO</span>
-          <span className={styles.stepCount}>
-            4 etapas · preenchimento obrigatório
-          </span>
+          <span className={styles.stepCount}>4 etapas · preenchimento obrigatório</span>
         </div>
       </header>
 
@@ -146,11 +140,7 @@ export function AtendimentoSVOPage() {
 
           {expanded[1] && (
             <div className={styles.fieldGrid}>
-              {renderField(
-                'endereco',
-                'Endereço de origem',
-                'Rua, Número, Complemento'
-              )}
+              {renderField('endereco', 'Endereço de origem', 'Rua, Número, Complemento')}
               {renderField('bairro', 'Bairro', 'Bairro')}
               {renderField('cidade', 'Cidade', 'Cidade')}
               {renderField('uf', 'UF', 'UF')}
@@ -174,19 +164,10 @@ export function AtendimentoSVOPage() {
               {renderField(
                 'solicitante',
                 'Nome do solicitante',
-                'Nome completo do familiar/responsável'
+                'Nome completo do familiar/responsável',
               )}
-              {renderField(
-                'telefone',
-                'Telefone de contato',
-                '(00) 00000-0000',
-                'tel'
-              )}
-              {renderField(
-                'parentesco',
-                'Parentesco',
-                'Ex.: Filho(a), Cônjuge'
-              )}
+              {renderField('telefone', 'Telefone de contato', '(00) 00000-0000', 'tel')}
+              {renderField('parentesco', 'Parentesco', 'Ex.: Filho(a), Cônjuge')}
             </div>
           )}
         </section>
@@ -207,9 +188,7 @@ export function AtendimentoSVOPage() {
               <label htmlFor="documentos" className={styles.uploadLabel}>
                 <span className={styles.uploadIcon}>↑</span>
                 <strong>Upload de documentos</strong>
-                <span>
-                  Arraste os arquivos para esta área ou clique para selecionar
-                </span>
+                <span>Arraste os arquivos para esta área ou clique para selecionar</span>
                 <small>PDF, JPG ou PNG</small>
               </label>
 
@@ -220,9 +199,7 @@ export function AtendimentoSVOPage() {
                 accept=".pdf,.jpg,.jpeg,.png"
                 multiple
                 className={styles.fileInput}
-                onChange={(event) =>
-                  setDocuments(Array.from(event.target.files ?? []))
-                }
+                onChange={(event) => setDocuments(Array.from(event.target.files ?? []))}
               />
 
               {documents.length > 0 && (
@@ -236,18 +213,10 @@ export function AtendimentoSVOPage() {
           )}
         </section>
 
-        {message && (
-        <output className={styles.message}>
-        {message}
-        </output>
-        )}
+        {message && <output className={styles.message}>{message}</output>}
 
         <div className={styles.actions}>
-          <button
-            type="button"
-            className={styles.cancelButton}
-            onClick={resetForm}
-          >
+          <button type="button" className={styles.cancelButton} onClick={resetForm}>
             Cancelar
           </button>
 

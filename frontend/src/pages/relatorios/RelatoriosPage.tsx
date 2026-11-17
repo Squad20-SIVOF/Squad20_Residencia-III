@@ -1,13 +1,7 @@
-
 import { useState } from 'react'
 import styles from './RelatoriosPage.module.scss'
 
-type ReportType =
-  | 'viagens'
-  | 'manutencao'
-  | 'combustivel'
-  | 'motoristas'
-  | 'vistorias'
+type ReportType = 'viagens' | 'manutencao' | 'combustivel' | 'motoristas' | 'vistorias'
 
 type Report = {
   id: ReportType
@@ -69,18 +63,15 @@ export function RelatoriosPage() {
   const [periodo, setPeriodo] = useState('mes')
   const [tipo, setTipo] = useState<ReportType | ''>('')
   const [veiculo, setVeiculo] = useState('todos')
-  const [selectedReport, setSelectedReport] =
-    useState<ReportType>('viagens')
+  const [selectedReport, setSelectedReport] = useState<ReportType>('viagens')
   const [message, setMessage] = useState('')
 
-  const activeReport = reports.find(
-  (report) => report.id === selectedReport
-) ?? {
-  id: 'viagens',
-  title: 'Relatório de Viagens',
-  description: 'Histórico completo de viagens realizadas.',
-  icon: '↗',
-}
+  const activeReport = reports.find((report) => report.id === selectedReport) ?? {
+    id: 'viagens',
+    title: 'Relatório de Viagens',
+    description: 'Histórico completo de viagens realizadas.',
+    icon: '↗',
+  }
 
   const handleGenerate = () => {
     if (!tipo) {
@@ -90,18 +81,15 @@ export function RelatoriosPage() {
 
     setSelectedReport(tipo)
     setMessage(
-      'Relatório selecionado. A geração com dados reais ainda depende da integração com o backend.'
+      'Relatório selecionado. A geração com dados reais ainda depende da integração com o backend.',
     )
   }
 
-  const handleExport = (
-    report: ReportType,
-    format: 'PDF' | 'Excel'
-  ) => {
+  const handleExport = (report: ReportType, format: 'PDF' | 'Excel') => {
     setTipo(report)
     setSelectedReport(report)
     setMessage(
-      `A exportação ${format} ainda precisa ser integrada aos dados reais do sistema.`
+      `A exportação ${format} ainda precisa ser integrada aos dados reais do sistema.`,
     )
   }
 
@@ -109,9 +97,7 @@ export function RelatoriosPage() {
     <main className={styles.page}>
       <header className={styles.header}>
         <h1>Exportação de Relatórios</h1>
-        <p>
-          Gere arquivos gerenciais por período, veículo ou motorista.
-        </p>
+        <p>Gere arquivos gerenciais por período, veículo ou motorista.</p>
       </header>
 
       <section className={styles.filters}>
@@ -133,9 +119,7 @@ export function RelatoriosPage() {
           <select
             id="tipo"
             value={tipo}
-            onChange={(event) =>
-              setTipo(event.target.value as ReportType | '')
-            }
+            onChange={(event) => setTipo(event.target.value as ReportType | '')}
           >
             <option value="">Selecione</option>
             {reports.map((report) => (
@@ -157,20 +141,12 @@ export function RelatoriosPage() {
           </select>
         </div>
 
-        <button
-          type="button"
-          className={styles.generateButton}
-          onClick={handleGenerate}
-        >
+        <button type="button" className={styles.generateButton} onClick={handleGenerate}>
           Gerar Relatório
         </button>
       </section>
 
-      {message && (
-        <output className={styles.message}>
-  {message}
-</output>
-      )}
+      {message && <output className={styles.message}>{message}</output>}
 
       <div className={styles.content}>
         <section className={styles.reportList}>
@@ -181,14 +157,10 @@ export function RelatoriosPage() {
               <article
                 key={report.id}
                 className={`${styles.reportCard} ${
-                  selectedReport === report.id
-                    ? styles.selectedCard
-                    : ''
+                  selectedReport === report.id ? styles.selectedCard : ''
                 }`}
               >
-                <div className={styles.reportIcon}>
-                  {report.icon}
-                </div>
+                <div className={styles.reportIcon}>{report.icon}</div>
 
                 <div className={styles.reportInfo}>
                   <h3>{report.title}</h3>
@@ -196,21 +168,11 @@ export function RelatoriosPage() {
                 </div>
 
                 <div className={styles.exportButtons}>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleExport(report.id, 'PDF')
-                    }
-                  >
+                  <button type="button" onClick={() => handleExport(report.id, 'PDF')}>
                     ↓ PDF
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleExport(report.id, 'Excel')
-                    }
-                  >
+                  <button type="button" onClick={() => handleExport(report.id, 'Excel')}>
                     ↓ Excel
                   </button>
                 </div>
@@ -245,21 +207,13 @@ export function RelatoriosPage() {
               </article>
             </div>
 
-            <h4 className={styles.chartTitle}>
-              Viagens por período
-            </h4>
+            <h4 className={styles.chartTitle}>Viagens por período</h4>
 
             <div className={styles.chart}>
               {chartData.map((item) => (
-                <div
-                  className={styles.chartColumn}
-                  key={item.label}
-                >
+                <div className={styles.chartColumn} key={item.label}>
                   <div className={styles.barTrack}>
-                    <div
-                      className={styles.bar}
-                      style={{ height: `${item.value}%` }}
-                    />
+                    <div className={styles.bar} style={{ height: `${item.value}%` }} />
                   </div>
                   <span>{item.label}</span>
                 </div>
@@ -296,8 +250,8 @@ export function RelatoriosPage() {
             </div>
 
             <p className={styles.previewNote}>
-              Os dados apresentados são apenas exemplos.
-              A integração com o backend ainda é necessária.
+              Os dados apresentados são apenas exemplos. A integração com o backend ainda
+              é necessária.
             </p>
           </div>
         </section>
