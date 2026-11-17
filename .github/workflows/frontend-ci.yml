@@ -1,6 +1,7 @@
 name: Frontend CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, dev]
     paths:
@@ -11,10 +12,10 @@ on:
       - "frontend/**"
       - ".github/workflows/frontend-ci.yml"
 
-# Cancela execuções antigas da mesma branch/PR quando chega um push novo
+# Mantém publicações da main em andamento; cancela execuções antigas das outras branches.
 concurrency:
   group: frontend-ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -54,6 +55,19 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.FRONTEND_API_URL || 'https://frotamanager-api.onrender.com' }}
+
+      - name: Salvar builds para publicação
+        if: github.repository == 'Squad20-SIVOF/Squad20_Residencia-III' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-production-${{ github.sha }}
+          path: |
+            frontend/dist/gestor
+            frontend/dist/motorista
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Salvar relatório de cobertura
         if: always()
@@ -98,3 +112,59 @@ jobs:
             frontend/test-results
           if-no-files-found: ignore
           retention-days: 7
+
+  deploy:
+    name: Publicar ${{ matrix.app }} no Cloudflare Pages
+    needs: [quality, e2e]
+    if: github.repository == 'Squad20-SIVOF/Squad20_Residencia-III' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [gestor, motorista]
+    concurrency:
+      group: cloudflare-production-${{ matrix.app }}
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_PROJECT_NAME: ${{ matrix.app == 'gestor' && (vars.CLOUDFLARE_GESTOR_PROJECT_NAME || 'frotamanager-gestor') || (vars.CLOUDFLARE_MOTORISTA_PROJECT_NAME || 'frotamanager-motorista') }}
+    steps:
+      - name: Conferir configuração de publicação
+        working-directory: .
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$CLOUDFLARE_API_TOKEN" || -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo "::error::Configure os secrets CLOUDFLARE_API_TOKEN e CLOUDFLARE_ACCOUNT_ID para publicar os frontends."
+            exit 1
+          fi
+          if [[ ! "$CLOUDFLARE_PROJECT_NAME" =~ ^[a-z0-9][a-z0-9-]*[a-z0-9]$ ]]; then
+            echo "::error::Configure um nome válido de projeto Cloudflare Pages nas variáveis do repositório."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: frontend/.nvmrc
+
+      - name: Baixar builds do commit validado
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-production-${{ github.sha }}
+          path: frontend/dist
+
+      - name: Conferir build do aplicativo
+        run: test -s "dist/${{ matrix.app }}/index.html"
+
+      - name: Publicar build validado
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.164.0"
+          workingDirectory: frontend
+          command: pages deploy dist/${{ matrix.app }} --project-name=${{ env.CLOUDFLARE_PROJECT_NAME }} --branch=main --commit-hash=${{ github.sha }}
