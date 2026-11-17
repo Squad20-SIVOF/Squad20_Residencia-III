@@ -1,4 +1,3 @@
-import { VehicleQrPrintButton } from './components/VehicleQrPrintButton'
 import { Breadcrumb } from '@/components/Breadcrumb'
 import type { Vehicle } from './types'
 import { useEffect, useRef, useState } from 'react'

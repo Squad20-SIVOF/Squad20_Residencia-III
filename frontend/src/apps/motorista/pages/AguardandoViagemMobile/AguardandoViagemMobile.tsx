@@ -61,21 +61,13 @@ export function AguardandoViagemMobile() {
         </Button>
       </div>
       <footer className={styles.vehicleIdentification}>
-        {viagem ? (
-          <ButtonLink
-            isFullWidth
-            to={
-              viagem.status === 'Agendada'
-                ? `/viagens/${viagem.id}/inicio/identificar`
-                : `/viagens/${viagem.id}`
-            }
-          >
-            {viagem.status === 'Agendada' ? 'Identificar veículo' : 'Retomar viagem'}
+        <ButtonLink isFullWidth to="/veiculo-sessao">
+          Identificar veículo
+        </ButtonLink>
+        {viagem && (
+          <ButtonLink variant="secondary" isFullWidth to={`/viagens/${viagem.id}`}>
+            Consultar viagem
           </ButtonLink>
-        ) : (
-          <Button isFullWidth disabled>
-            Identificar veículo
-          </Button>
         )}
       </footer>
     </div>

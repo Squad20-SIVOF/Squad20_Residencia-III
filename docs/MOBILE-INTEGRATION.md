@@ -42,3 +42,7 @@ A seleção fica em `motorista_veiculo_sessao`, ligada ao token hash da sessão,
 No servidor de desenvolvimento, configure `ENABLE_PANEL_DEMO=true` para permitir registros de teste. A opção **Usar painel simulado** aparece apenas no Vite em desenvolvimento; builds de produção não exibem o botão. O backend recusa a simulação por padrão. O registro recebe `simulada=true` e `foto=NULL`, sem inventar evidência. A confirmação **altera status e quilometragem reais da base usada**: habilite somente na base de desenvolvimento. Captura real continua disponível e validada. Não foi implementado OCR.
 
 A migration `1793700000000_add-driver-session-vehicle.sql` adiciona a seleção e a marcação de simulação. O rollback remove registros simulados antes de restaurar a obrigação de foto; não use rollback para preservar dados de simulação.
+
+Após o login, o mobile abre **Veículo da sessão**. Sem veículo selecionado, tentativas de abrir início, viagens, abastecimento ou vistorias retornam à identificação. Falhas ao consultar o vínculo exibem erro e permitem nova tentativa, sem liberar a navegação. Depois de vincular, o aplicativo abre o início; seu botão **Identificar veículo** permite trocar a seleção. Isso não altera as permissões ou o motorista atribuído às viagens.
+
+A etiqueta fica no cartão **Resumo Geral**, abaixo de **Editar veículo**. A importação da biblioteca de QR usa seu export padrão, compatível com o servidor Vite em desenvolvimento e com o build de produção.

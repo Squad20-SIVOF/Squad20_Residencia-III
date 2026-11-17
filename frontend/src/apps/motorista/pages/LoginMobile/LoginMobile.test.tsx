@@ -23,7 +23,7 @@ function mount() {
     <MemoryRouter initialEntries={['/login']}>
       <Routes>
         <Route path="/login" element={<LoginMobile />} />
-        <Route path="/" element={<h1>Área do motorista</h1>} />
+        <Route path="/veiculo-sessao" element={<h1>Área do motorista</h1>} />
       </Routes>
     </MemoryRouter>,
   )

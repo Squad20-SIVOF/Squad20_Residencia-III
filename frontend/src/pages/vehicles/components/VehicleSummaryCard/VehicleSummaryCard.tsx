@@ -1,4 +1,7 @@
 import { useId } from 'react'
+import { VehicleQrPrintButton } from '../VehicleQrPrintButton'
+import { Button } from '@/components/Button'
+import { Card } from '@/components/Card'
 import { formatKm, formatMonthYear } from '@/utils/format'
 import type { Vehicle } from '../../types'
 import { vehicleDisplayName, vehicleFullModel } from '../../utils/vehicleRules'

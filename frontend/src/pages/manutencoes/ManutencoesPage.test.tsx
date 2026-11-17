@@ -57,10 +57,10 @@ test('edição espera o carregamento e preenche os campos com o registro do banc
       </Routes>
     </MemoryRouter>,
   )
-  expect(await screen.findByLabelText('Descrição do serviço *')).toHaveValue(
+  expect(await screen.findByLabelText('Serviço / descrição *')).toHaveValue(
     'Troca de peça',
   )
-  expect(screen.getByLabelText('Oficina / fornecedor *')).toHaveValue('Oficina teste')
+  expect(screen.getByLabelText('Fornecedor / oficina *')).toHaveValue('Oficina teste')
   expect(screen.queryByText('Manutenção não encontrada')).not.toBeInTheDocument()
 })
 test('erro de carregamento oferece nova tentativa em vez de apresentar registro inexistente', async () => {

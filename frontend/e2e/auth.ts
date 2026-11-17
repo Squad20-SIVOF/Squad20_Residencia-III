@@ -21,6 +21,10 @@ export async function mockApi(page: Page) {
   }
   await page.route('**/auth/**', async (route) => {
     const request = route.request()
+    if (!['fetch', 'xhr'].includes(request.resourceType())) {
+      await route.fallback()
+      return
+    }
     const path = new URL(request.url()).pathname.replace(/^\/api(?=\/|$)/, '')
     if (request.method() === 'OPTIONS') {
       await route.fulfill({
@@ -53,10 +57,16 @@ export async function mockApi(page: Page) {
   for (const path of ['vehicles', 'drivers'])
     await page.route(`**/${path}`, (route) => route.fulfill({ json: { message: [] } }))
 }
-export async function signIn(page: Page) {
+export async function signIn(page: Page, selectVehicle = true) {
   await page.goto('/login')
   await page.getByLabel('E-mail', { exact: true }).fill(testCredentials.email)
   await page.getByLabel('Senha', { exact: true }).fill(testCredentials.password)
   await page.getByRole('button', { name: /^(Confirmar|Entrar)$/, exact: true }).click()
-  await page.waitForURL('/')
+  await page.waitForURL(/\/(veiculo-sessao)?$/)
+  if (selectVehicle && new URL(page.url()).pathname === '/veiculo-sessao') {
+    const continueButton = page.getByRole('link', { name: 'Continuar para o início' })
+    await continueButton.waitFor()
+    await continueButton.click()
+    await page.waitForURL('/')
+  }
 }
