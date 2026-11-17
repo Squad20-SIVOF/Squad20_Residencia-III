@@ -7,6 +7,10 @@
   @include request-fields;
 }
 
+.notice {
+  margin-bottom: $space-3;
+}
+
 .fields {
   display: flex;
   flex-direction: column;

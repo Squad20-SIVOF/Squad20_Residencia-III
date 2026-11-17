@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import { CheckboxField } from '@/components/CheckboxField'
@@ -27,6 +28,8 @@ export interface RequestFormProps {
   vehicles: Vehicle[]
   vehiclesStatus: 'loading' | 'error' | 'success'
   onReloadVehicles: () => void
+  /** Aviso exibido acima dos campos (ex.: confirmação de envio). */
+  notice?: ReactNode
   className?: string
 }
 
@@ -36,6 +39,7 @@ export function RequestForm({
   vehicles,
   vehiclesStatus,
   onReloadVehicles,
+  notice,
   className,
 }: RequestFormProps) {
   const { values, errors, setField } = form
@@ -55,6 +59,7 @@ export function RequestForm({
       className={classNames(styles.form, className)}
       aria-busy={form.isSubmitting}
     >
+      {notice && <div className={styles.notice}>{notice}</div>}
       <fieldset disabled={form.isSubmitting} className={styles.fields}>
         {(form.hasErrors || form.submitError) && (
           <Alert variant="danger">
