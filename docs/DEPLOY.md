@@ -1,54 +1,128 @@
 # Guia de publicação — FrotaManager
 
-Este guia explica o fluxo da equipe, a sincronização do fork e a publicação do frontend na Vercel e do backend no Render. Atualizado em 26/10/2026.
+## Fluxo principal
 
-## 1. O que cada serviço faz
+Os dois frontends receberam uma primeira publicação por Direct Upload em 17/11/2026, com builds locais validados do código da main oficial. Login público, fallback SPA e preflight CORS foram verificados; o fluxo autenticado ainda precisa de homologação. O CD automático depende dos secrets configurados e da integração deste workflow à main oficial; a publicação inicial não comprova execução do CD.
 
-| Serviço | Responsabilidade | Endereço |
-| --- | --- | --- |
-| Repositório principal | Código oficial da equipe; desenvolvimento na `dev`, versão demonstrável na `main` | https://github.com/Levi-Fabricio/Squad20_Residencia-III |
-| Fork do Gabriel | Espelha a `main` principal para a publicação do frontend | https://github.com/Gabriellin1227/Squad20_Residencia-III |
-| Vercel | Compila e hospeda o frontend do gestor | https://frotamanager-gestor.vercel.app |
-| Render | Executa a API Node/Express | https://frotamanager-api.onrender.com |
-| Neon | PostgreSQL com usuários, veículos, motoristas e vínculos | A conexão fica apenas no ambiente do backend |
-
-Fluxo planejado:
+| Componente            | Origem e hospedagem                                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Código oficial        | [Squad20-SIVOF/Squad20_Residencia-III](https://github.com/Squad20-SIVOF/Squad20_Residencia-III), branch `main` |
+| Frontend do gestor    | Cloudflare Pages, projeto `frotamanager-gestor`                                                                |
+| Frontend do motorista | Cloudflare Pages, projeto `frotamanager-motorista`                                                             |
+| API                   | [Render — frotamanager-api](https://frotamanager-api.onrender.com)                                             |
+| Banco                 | Neon PostgreSQL, acessível somente pelo backend                                                                |
 
 ```text
-desenvolvimento → dev do principal → PR aprovado → main do principal
-                                                    ├─ CI → Render → API
-                                                    └─ workflow do fork → testes → main do fork → Vercel
+desenvolvimento → dev → PR para main oficial → checks aprovados → merge
+                                                              ├─ Frontend CI → Cloudflare Pages (gestor e motorista)
+                                                              └─ Backend CI → deploy hook do Render (SHA validado)
 ```
 
-Commit envia código ao Git. Deploy publica esse código em um serviço. Migração altera a estrutura do banco. São três operações diferentes. Criar um administrador altera o banco: não precisa de commit por causa do usuário criado; scripts e mudanças no código precisam de commit.
+O frontend passa a ser publicado diretamente pelo GitHub Actions do repositório oficial. O fork de Gabriel e a sincronização da branch `automation` deixam de ser necessários para o novo fluxo. Não altere `origin` nem reescreva o histórico do fork para realizar a migração.
 
-## 2. Estado e pendências conhecidas
+## Cloudflare Pages e GitHub Actions
 
-- O fork existe. Sua branch padrão é `automation`, que contém o workflow de sincronização. A branch `main` é o espelho do principal.
-- O workflow `.github/workflows/sync-and-deploy.yml` está na branch `automation`. A primeira execução de sincronização/testes concluiu com sucesso.
-- Na última consulta, o fork **não tinha o secret `VERCEL_TOKEN`**. Nesse estado, o workflow pode concluir verde e pular a publicação com um aviso. Verde não comprova que o frontend foi publicado.
-- A Vercel foi conectada ao fork e configurada para usar a pasta `frontend`. Confira a branch de produção e a variável da API conforme a seção 5 antes de contar com a publicação automática.
-- O Render foi configurado para acompanhar a `main` do repositório principal, com auto-deploy após os checks. Acompanhe o deploy na interface: teste local ou CI verde não comprova que o serviço ficou Live.
-- As mudanças locais de frota/vínculos precisam ser commitadas e chegar à `main` para atualizar os serviços. A migração e os três veículos de demonstração já foram aplicados ao Neon de desenvolvimento durante esta implementação.
+Crie dois projetos Pages do tipo **Direct Upload**, chamados `frotamanager-gestor` e `frotamanager-motorista`, com branch de produção `main`. Os arquivos compilados serão enviados pelo Actions; não configure uma segunda publicação automática pela integração Git, que poderia publicar antes dos checks.
 
-## 3. Rotina de desenvolvimento e envio ao principal
+No repositório oficial, em **Settings → Secrets and variables → Actions**, configure:
 
-Na pasta do projeto, confira primeiro o que será enviado:
+| Tipo     | Nome                                | Valor ou finalidade                                              |
+| -------- | ----------------------------------- | ---------------------------------------------------------------- |
+| Secret   | `CLOUDFLARE_API_TOKEN`              | Token com edição de Cloudflare Pages, limitado à conta utilizada |
+| Secret   | `CLOUDFLARE_ACCOUNT_ID`             | Identificador da conta dos dois projetos                         |
+| Variable | `FRONTEND_API_URL`                  | `https://frotamanager-api.onrender.com`                          |
+| Variable | `CLOUDFLARE_GESTOR_PROJECT_NAME`    | `frotamanager-gestor`                                            |
+| Variable | `CLOUDFLARE_MOTORISTA_PROJECT_NAME` | `frotamanager-motorista`                                         |
+
+Cadastre as credenciais diretamente no GitHub, sem enviá-las ao chat, ao repositório ou aos logs. Não use token global da conta. O token de Pages não precisa de acesso ao banco, à API Gemini ou ao DNS para enviar arquivos aos domínios `pages.dev`.
+
+O Frontend CI valida lint, formatação, tipos, testes, build e E2E. A etapa de CD publica somente a `main` do repositório oficial depois dos checks exigidos. PRs e `dev` não publicam produção. Confira os dois resultados: sucesso de apenas um aplicativo não comprova que ambos foram atualizados.
+
+| Aplicativo | Comando na pasta `frontend` | Diretório publicado |
+| ---------- | --------------------------- | ------------------- |
+| Gestor     | `npm run build:gestor`      | `dist/gestor`       |
+| Motorista  | `npm run build:motorista`   | `dist/motorista`    |
+
+O workflow usa Node de `frontend/.nvmrc` e `npm ci`. `FRONTEND_API_URL` é passada ao Vite como `VITE_API_URL` no build de publicação. Alterar a URL exige novo build. Nunca coloque senhas, tokens ou `DATABASE_URL` em variáveis `VITE_*`: elas podem entrar no JavaScript público.
+
+Os E2E recompilam os aplicativos com `VITE_API_URL=/api`. Esses arquivos de teste **não podem ser publicados**. O CD deve usar o build de produção com a API real, sem reutilizar a saída do job E2E.
+
+Pages fornece fallback SPA quando não há `404.html` na raiz da saída. Os aplicativos não precisam do rewrite Vercel para recarregar `/login`, `/veiculo-sessao` ou `/viagens`. Manifest, ícones, service worker e `offline.html` do motorista são arquivos estáticos. A instalação PWA continua online; não habilita envio offline.
+
+## Domínios e CORS da API
+
+Confirme os domínios efetivamente atribuídos no painel Cloudflare. Os nomes esperados são `https://frotamanager-gestor.pages.dev` e `https://frotamanager-motorista.pages.dev`; use os endereços reais dos projetos como referência.
+
+No Render, acrescente as duas origens exatas a `CORS_ORIGINS`, separadas por vírgula e sem barra final. Preserve as origens Vercel durante validação e rollback. Não use `*` nem libere todos os subdomínios `pages.dev`. URLs de preview têm origens diferentes e não ficam autorizadas automaticamente.
+
+As duas origens Pages foram adicionadas ao Render em 17/11/2026, mantendo Vercel e localhost. O preflight retornou 204 com a origem exata para ambos os aplicativos. CORS não concede permissões: 401 indica ausência/invalidade da sessão; 403 pode indicar falta de perfil ou permissão. Vínculo do cadastro de motorista não atribui automaticamente o perfil Motorista.
+
+A mudança de origem não transfere a sessão salva nem a instalação PWA. Os usuários devem entrar novamente e, se utilizarem o aplicativo instalado, instalar a versão do novo domínio.
+
+## Backend no Render
+
+A migração do frontend não altera o backend nem move o banco. O [serviço Render](https://dashboard.render.com/web/srv-dbfkp6ajnfac73cog5sg) mantém o ambiente e o deploy hook existente.
+
+`.github/workflows/backend-ci.yml` testa e compila o backend e, na `main` oficial, chama `RENDER_DEPLOY_HOOK_URL` com o SHA validado. O secret permanece apenas no GitHub. Resposta bem-sucedida do hook não significa publicação concluída: confira commit e status **Live** no Render.
+
+Configuração: pasta `backend`, build `HUSKY=0 npm ci --include=dev && npm run build`, início `npm start`, health check `/health` e Node conforme `backend/.nvmrc`. Não habilite outro auto-deploy sem revisar se publicaria antes dos checks ou geraria deploys duplicados.
+
+Valide [a saúde da API](https://frotamanager-api.onrender.com/health), login e uma operação autorizada. Health 200 não comprova que todas as migrations e operações funcionam. `ENABLE_PANEL_DEMO` deve ficar ausente ou `false` em produção.
+
+## Neon e migrations
+
+Commit, publicação e migration são operações diferentes. O deploy do Render não aplica migrations automaticamente. Antes de publicar código que dependa delas, confirme a base e execute as pendentes uma vez nesse ambiente.
+
+Com `.env` local apontando conscientemente para a base correta:
 
 ```bash
-git status
-git diff
+cd backend
+npm ci
+npm run migrate:up
 ```
 
-Trabalhe em uma branch de tarefa criada a partir de uma `dev` atualizada. Faça pull com a árvore de trabalho limpa; se houver alterações locais, termine seu commit ou use stash conscientemente antes.
+Não copie a conexão Neon para comandos compartilhados, documentos ou Git. Não use `migrate:down` em base compartilhada como tentativa de correção: pode remover dados e vínculos. Investigue o erro e prefira migration corretiva.
 
-```bash
-git switch dev
-git pull --ff-only origin dev
-git switch -c feat/nome-da-tarefa
-```
+Migrations relevantes:
 
-Implemente e valide:
+- `1793100000000_add-fleet-links.sql`: frota de veículos/motoristas, exclusividade SVO e `motoristas_veiculos`.
+- `1793500000000_trip-status-transitions.sql`: transições, histórico e permissões de viagem.
+- `1793600000000_add-driver-trip-captures.sql`: km e foto do painel por viagem.
+- `1793700000000_add-driver-session-vehicle.sql`: veículo por sessão e marcação de painel simulado em desenvolvimento.
+
+Migrations foram validadas no desenvolvimento durante a implementação; isso não comprova aplicação independente no banco de produção. Confira a base usada pelo Render.
+
+`npm run seed:svo-demo` é exclusivo de demonstração/desenvolvimento e não deve integrar build/start de produção. Usa placas fictícias `SVO0A01`, `SVO0A02` e `SVO0A03`, com `ON CONFLICT DO NOTHING`; não sobrescreve registros existentes.
+
+Motorista comum só vincula veículos da mesma frota; coringa pode vincular outras frotas, inclusive SVO. Remova vínculos incompatíveis antes de mudar frota ou desmarcar coringa. Exclusividade SVO não concede permissões de usuário.
+
+## Validação e troca de hospedagem
+
+Antes de considerar a migração concluída:
+
+1. Confirme a mudança na `main` oficial e os checks aprovados.
+2. Confira os dois projetos Cloudflare, o commit e o status de cada deployment.
+3. Abra `/login` e recarregue rotas internas nos dois domínios. Confira manifest, ícones e service worker do motorista.
+4. Confirme preflight/CORS para as origens finais, login e leituras autorizadas.
+5. No mobile, valide identificação obrigatória, vínculo, recarregamento, logout e nova sessão; teste câmera em aparelho físico com HTTPS.
+6. Confira persistência e fluxo de viagem com conta/dados de teste autorizados. Build verde não equivale à homologação do fluxo.
+7. Após validar, atualize links divulgados e decida quando desativar deploys Vercel e sincronização exclusiva do fork.
+
+Não exclua projetos Vercel nem remova suas origens CORS antes de confirmar o novo caminho. Registre o último commit funcional e os domínios publicados para permitir retorno.
+
+## Rollback e configuração anterior da Vercel
+
+Endereços anteriores: [gestor](https://frotamanager-gestor.vercel.app) e [motorista](https://frotamanager-motorista.vercel.app/login). Acompanham a `main` do fork `Gabriellin1227/Squad20_Residencia-III`; não presuma que recebem próximos commits oficiais depois da migração.
+
+`frontend/vercel.json` e `npm run build:vercel` permanecem disponíveis. Ambos usam raiz `frontend`, saída `dist/vercel`, `VITE_API_URL` da API e `FROTAMANAGER_APP=gestor` ou `motorista`. Não use `VERCEL_APP`: o prefixo é reservado.
+
+Para retornar temporariamente, divulgue novamente os endereços Vercel e confira compatibilidade com a API atual. Se precisar atualizar o fork, sincronize por merge revisado, sem force push e sem alterar autoria de commits. O workflow em `automation` pertence ao fluxo anterior; evite dois caminhos de produção sem decisão explícita.
+
+## Desenvolvimento e envio
+
+Trabalhe em branch de tarefa a partir de `dev` atualizada, respeitando alterações locais. Faça PR para `dev` e depois promova por PR para `main` oficial. Revise `git status`, `git diff` e o conteúdo staged antes de commitar. Não inclua `.env`, tokens, senhas ou conexões de banco.
+
+Verificações usuais nas respectivas pastas:
 
 ```bash
 cd backend
@@ -58,236 +132,16 @@ npm run build
 cd ../frontend
 npm ci
 npm run check
-npx playwright install --with-deps chromium
 npm run test:e2e
-cd ..
 ```
 
-Adicione apenas os arquivos que revisou. Exemplo de um arquivo específico:
-
-```bash
-git add caminho/do/arquivo
-git diff --cached
-git commit -m "feat: descreve a alteração"
-git push -u origin feat/nome-da-tarefa
-```
-
-Abra PR da sua branch para `dev`. Depois dos testes da equipe, abra PR **de `dev` para `main` no repositório principal**. Espere os checks passarem e faça o merge. A `dev` é para integração e testes; apenas a `main` deve alimentar a demonstração estável.
-
-Não envie `.env`, senhas, tokens ou a conexão do Neon ao Git. A senha do administrador não entra no repositório.
-
-## 4. Como trazer a main principal para o fork
-
-### Caminho automático configurado
-
-1. Faça o merge na `main` de `Levi-Fabricio/Squad20_Residencia-III`.
-2. Abra [Actions do fork](https://github.com/Gabriellin1227/Squad20_Residencia-III/actions).
-3. Selecione **Sync upstream and deploy frontend**.
-4. O agendamento consulta alterações aproximadamente a cada 15 minutos. O GitHub pode atrasar execuções; não é uma garantia de prazo.
-5. Se houver novo commit, o workflow busca aquele SHA, testa backend e frontend e atualiza a `main` do fork sem forçar o histórico.
-6. Com as credenciais configuradas, executa a etapa de publicação na Vercel. Confira o resumo e os logs dessa etapa.
-
-Para adiantar a execução: **Run workflow → branch `automation` → Run workflow**. Não selecione `main`: o workflow específico mora em `automation`.
-
-Evite commits próprios na `main` do fork. Eles podem impedir o avanço simples do espelho. Mantenha o código de produto no principal e a configuração exclusiva do fork na `automation`. Não faça merge de `automation` na `main` do principal.
-
-### Alternativa manual pelo GitHub
-
-1. Abra o fork e selecione explicitamente a branch **`main`** (a padrão é `automation`).
-2. Use **Sync fork → Update branch**.
-3. Se houver conflito, resolva-o por PR. Não descarte commits usando force sem revisar a divergência.
-4. Depois rode o workflow pela branch `automation`, para executar os testes e a publicação. Atualizar a branch manualmente não comprova deploy.
-
-### Alternativa por terminal
-
-A opção abaixo usa GitHub CLI autenticado, sem trocar os remotes locais:
-
-```bash
-gh repo sync Gabriellin1227/Squad20_Residencia-III --source Levi-Fabricio/Squad20_Residencia-III --branch main
-gh workflow run sync-and-deploy.yml --repo Gabriellin1227/Squad20_Residencia-III --ref automation
-```
-
-Se falhar por divergência ou permissão, leia a mensagem. Não acrescente `--force` para tentar resolver automaticamente.
-
-## 5. Frontend na Vercel
-
-Projeto: `frotamanager-gestor`, no workspace `gabriel-lins-projects-63c6b5dd`.
-
-Em **Settings → Git**, confira o repositório `Gabriellin1227/Squad20_Residencia-III`. Em **Settings → Environments → Production**, confira **Production Branch = `main`**, pois a branch padrão do fork é `automation`.
-
-Em **Settings → Build and Deployment**, confira:
-
-| Configuração | Valor |
-| --- | --- |
-| Framework | Vite |
-| Root Directory | `frontend` |
-| Node.js | 24.x |
-| Install Command | `npm ci` |
-| Build Command | `npm run typecheck && npm run build:gestor` |
-| Output Directory | `dist/gestor` |
-
-Em **Settings → Environment Variables**, configure para Production:
-
-```text
-VITE_API_URL=https://frotamanager-api.onrender.com
-```
-
-O Vite incorpora essa URL no build. Depois de mudar a variável, faça novo deploy. Nunca coloque `DATABASE_URL`, tokens ou senhas em variáveis `VITE_*`: elas podem ser expostas no JavaScript entregue ao navegador.
-
-### Publicação pelo workflow do fork
-
-O workflow foi preparado para autenticar pela sua conta Vercel e enviar o frontend compilado. Isso também evita depender da autoria dos commits da equipe para a integração Git no plano Hobby.
-
-1. Entre na Vercel e abra **Account Settings → Tokens**.
-2. Crie um token com acesso ao workspace do projeto. Defina uma validade adequada e guarde a data para renová-lo.
-3. No fork, abra **Settings → Secrets and variables → Actions → Secrets → New repository secret**.
-4. Nome: `VERCEL_TOKEN`. Cole o valor diretamente no GitHub; não o envie no chat nem em arquivos do projeto.
-5. Em **Variables**, confira:
-
-```text
-VERCEL_ORG_ID=team_xDBPnKnaMtTCrb1b43fYbFGA
-VERCEL_PROJECT_ID=prj_HphYcowxwp9cDXqZrnYUB9jhKhO0
-```
-
-6. Rode o workflow pela branch `automation`.
-7. Confira a etapa **Publish to the existing Vercel project**: ela deve publicar uma URL, sem aviso de credencial ausente.
-8. Na Vercel, confira o novo deploy como **Ready**, o projeto correto e o domínio de produção.
-9. Abra `/login`, atualize a página nessa rota e teste o acesso com sua conta.
-
-A primeira publicação via token ainda precisa ser validada. Se o envio da pasta compilada herdar Root Directory/Build Command incompatíveis do projeto, a etapa de CLI precisará ser ajustada antes de considerar o fluxo concluído. Não trate apenas o token cadastrado como prova de funcionamento.
-
-A integração Git da Vercel também pode disparar um build ao atualizar `main`. Caso surjam builds duplicados ou restrições de autoria do Hobby, valide primeiro a publicação pelo Actions e depois escolha um único caminho de produção. Não altere autor de commits para contornar restrições.
-
-### Atualização somente no frontend
-
-Faça PR/merge no principal, sincronize o fork e acompanhe o workflow/Vercel. Não precisa reiniciar o Neon nem recriar o administrador. O build do gestor é separado do app motorista: este projeto publica `dist/gestor`.
-
-## 6. Backend no Render
-
-Serviço: `frotamanager-api`.
-
-[Abra o serviço](https://dashboard.render.com/web/srv-dbfkp6ajnfac73cog5sg).
-
-Em **Settings**, confira:
-
-| Configuração | Valor |
-| --- | --- |
-| Repository | `Levi-Fabricio/Squad20_Residencia-III` |
-| Branch | `main` |
-| Root Directory | `backend` |
-| Node.js | 24.x, conforme `.nvmrc` |
-| Build Command | `HUSKY=0 npm ci --include=dev && npm run build` |
-| Start Command | `npm start` |
-| Health Check Path | `/health` |
-| Auto-Deploy | `After CI Checks Pass` |
-
-Em **Environment**, mantenha a conexão `DATABASE_URL` do Neon e as variáveis exigidas pela API. Para a política de CORS, configure `CORS_ORIGINS` com as origens separadas por vírgula, sem barra final, conforme `backend/src/config/cors.ts`. O domínio do frontend de demonstração é:
-
-```text
-https://frotamanager-gestor.vercel.app
-```
-
-CORS libera a origem do navegador; não substitui login nem permissões. Se o domínio do frontend mudar, atualize a lista de origens permitidas no Render. Nunca use `*` como solução automática para erros de autenticação.
-
-### Atualização somente no backend
-
-1. Faça PR/merge para `main` no principal.
-2. Confira o **Backend CI** no GitHub.
-3. No Render, abra **Events/Deploys** e verifique qual commit foi usado.
-4. Aguarde o status **Live**. Se o serviço foi importado apenas por URL pública, sem integração Git, auto-deploy pode não estar disponível: conecte o provedor Git nas configurações.
-5. Teste `https://frotamanager-api.onrender.com/health`.
-6. Teste o login e uma rota funcional. Health 200 não comprova que o esquema do banco e todas as operações estão corretos.
-
-Para repetir uma publicação, use **Manual Deploy → Deploy latest commit**, com a branch `main` correta. O Render não depende de sincronizar o fork neste desenho: ele usa o principal diretamente.
-
-## 7. Banco Neon, migrações e os três veículos SVO
-
-O build do Render listado acima **não aplica migrações automaticamente**. Cada mudança de estrutura precisa de uma migration versionada. Execute-a uma vez no banco correto, antes de publicar código que dependa das novas colunas.
-
-Com o código atualizado e o `.env` local apontando para o Neon desejado:
-
-```bash
-cd backend
-npm ci
-npm run migrate:up
-```
-
-Não copie a URL do banco para o guia, Git ou comandos que serão compartilhados. Não rode `migrate:down` em um banco compartilhado para tentar corrigir falhas: o rollback pode remover colunas e vínculos. Revise o erro ou crie uma migração de correção.
-
-A mudança de frota usa `1793100000000_add-fleet-links.sql`: frota em veículos/motoristas, flag de exclusividade SVO e tabela `motoristas_veiculos`. Cadastros antigos ficam sem frota até serem classificados; nenhuma frota é presumida para eles.
-
-Somente no banco de demonstração, para inserir os registros genéricos:
-
-```bash
-npm run seed:svo-demo
-```
-
-Placas: `SVO0A01`, `SVO0A02`, `SVO0A03`. São dados fictícios, todos SVO e exclusivos SVO. O INSERT usa `ON CONFLICT DO NOTHING`, portanto repetir não duplica as placas nem sobrescreve registros. Eles já foram inseridos no Neon de desenvolvimento durante esta implementação. Não inclua esse seed no start/build de produção.
-
-Regra dos vínculos: motorista comum só vincula veículos da mesma frota; coringa pode vincular veículos de todas as frotas, inclusive SVO. Se mudar frota ou desmarcar coringa, remova primeiro os vínculos incompatíveis. O sistema rejeita a operação se eles permanecerem. Exclusividade SVO não concede permissões de usuário: os perfis e as permissões existentes continuam valendo.
-
-## 8. Como verificar uma publicação completa
-
-- **Código:** o commit esperado chegou à `main` do principal? E à `main` do fork?
-- **Actions:** testes passaram? A etapa de publicação realmente executou ou pulou por falta de token?
-- **Render:** deploy do commit correto está Live? `/health` responde? Login e leituras funcionam?
-- **Vercel:** deploy está Ready e no domínio de produção? `VITE_API_URL` aponta para a API correta?
-- **Banco:** migrations necessárias aplicadas? Cadastro, edição e vínculos persistem depois de recarregar a página?
-- **Navegador:** se houver CORS, confira origem permitida no backend; se houver 401, confira sessão/login; 403 indica falta de permissão. Não resolva esses casos expondo credenciais no frontend.
-
-## 9. Falhas comuns
-
-| Sintoma | O que conferir |
-| --- | --- |
-| Funciona local e falha no CI | `npm ci`, versões do Node, formatação, tipagem e arquivos realmente commitados |
-| Fork não recebe alterações | PR chegou à `main`? Workflow habilitado na `automation`? Divergência na `main` do fork? |
-| Workflow verde, site antigo | Etapa Publish pulou por falta de token? Domínio aponta para o deploy correto? |
-| Vercel reclama de `package.json`/pasta | Root Directory `frontend`; se for envio de artefato via CLI, revisar compatibilidade com settings do projeto |
-| Erro de autor no Hobby | Limitação da integração Git; conferir o caminho autorizado via token/CLI |
-| Render não atualiza | Branch/repositório corretos, CI concluído, Auto-Deploy e integração Git |
-| API acusa coluna/tabela inexistente | Migration não foi aplicada ao banco usado pelo Render |
-| Atualizar página em `/login` retorna 404 | Rewrite de SPA para `/index.html` no projeto Vercel |
-| Vínculo SVO recusado | Frota do motorista, frota do veículo e flag coringa; não remover a proteção do banco |
+A base visual mobile fornecida em ZIP é de Tarcísio Barreto. Integrações de API, sessão e painel estão em [MOBILE-INTEGRATION.md](MOBILE-INTEGRATION.md); suas referências de hospedagem Vercel descrevem a etapa anterior. Configuração Brevo, secrets e destinatários ficam em [EMAIL-ALERTS.md](EMAIL-ALERTS.md).
 
 ## Referências oficiais
 
-- [GitHub: sincronizar um fork](https://docs.github.com/en/pull-requests/how-tos/work-with-forks/syncing-a-fork)
-- [Render: deploys e auto-deploy após CI](https://render.com/docs/deploys)
-- [Vercel: integração Git](https://vercel.com/docs/git)
-- [Vercel CLI: deploy](https://vercel.com/docs/cli/deploy)
-
-## Alertas por e-mail
-
-A configuração do Brevo, os secrets do GitHub Actions e as regras de destinatários estão em [EMAIL-ALERTS.md](EMAIL-ALERTS.md).
-
-## Mobile no Vercel (configuração atualizada em 12/11/2026)
-
-Gestor e motorista são dois projetos Vercel do mesmo repositório, ambos com **Root Directory `frontend`**. Cada projeto recebe suas próprias variáveis e domínio. A configuração em `frontend/vercel.json` agora executa `npm run build:vercel` e publica `dist/vercel`; o script escolhe o app por `FROTAMANAGER_APP`. Sem essa variável, mantém o gestor como padrão.
-
-| Configuração | Gestor | Motorista |
-| --- | --- | --- |
-| Nome sugerido | `frotamanager-gestor` | `frotamanager-motorista` |
-| Framework | Vite | Vite |
-| Root Directory | `frontend` | `frontend` |
-| Install Command | `npm ci` | `npm ci` |
-| Build Command (vercel.json) | `npm run build:vercel` | `npm run build:vercel` |
-| Output Directory (vercel.json) | `dist/vercel` | `dist/vercel` |
-| `FROTAMANAGER_APP` | `gestor` (ou ausente) | `motorista` |
-| `VITE_API_URL` | URL HTTPS da API | A mesma URL HTTPS da API |
-| Production Branch | `main` | `main` |
-
-Crie o segundo projeto por **Add New → Project**, importe o repositório que efetivamente recebe os commits e configure as variáveis para Production e Preview. O gestor atual acompanha o fork: se o mobile também usar esse fork, sincronize nele a release depois de integrar o PR na main oficial. Não presuma que o PR aberto no repositório da equipe já atualizou a main do fork.
-
-O arquivo JSON versionado prevalece sobre o comando/output configurados no painel. Não configure o projeto mobile com `build:motorista` e `dist/motorista` mantendo um JSON que manda construir o gestor; use a seleção `FROTAMANAGER_APP=motorista` com o script compartilhado. O build gera manifest, ícones e service worker do app escolhido. As rewrites existentes permitem abrir e recarregar `/veiculo-sessao` e `/viagens` diretamente.
-
-No backend publicado, acrescente a origem exata do domínio mobile em `CORS_ORIGINS`, mantendo a do gestor. Exemplo ilustrativo (substitua pelo domínio atribuído pelo Vercel):
-
-```text
-CORS_ORIGINS=https://frotamanager-gestor.vercel.app,https://SEU-MOBILE.vercel.app
-```
-
-A API deve executar a versão do PR e as migrations `1793600000000` e `1793700000000` no banco correspondente. A aplicação dessas migrations foi validada apenas no desenvolvimento; não foi aplicada automaticamente em produção. `ENABLE_PANEL_DEMO` deve ficar ausente ou `false` em produção. O banco continua acessível somente pelo backend: não cadastre `DATABASE_URL` nem chave Gemini no Vercel do frontend.
-
-Depois de publicar: confirme o deploy Ready e o SHA, teste login → identificação obrigatória → vínculo, recarregue uma rota interna, teste logout e uma nova sessão e confira a câmera em aparelho físico com HTTPS. Não trate build aprovado como prova de que a API e o CORS de produção estão conectados. O aplicativo permanece online; instalar como PWA não habilita envio offline.
-
-Referências: [monorepos Vercel](https://vercel.com/docs/monorepos), [configuração por vercel.json](https://vercel.com/docs/project-configuration/vercel-json).
+- [Pages: Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/)
+- [Pages: integração com CI](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/)
+- [Pages: monorepos](https://developers.cloudflare.com/pages/configuration/monorepos/)
+- [Pages: arquivos e fallback SPA](https://developers.cloudflare.com/pages/configuration/serving-pages/)
+- [Render: deploys](https://render.com/docs/deploys)
+- [GitHub: sincronizar fork](https://docs.github.com/en/pull-requests/how-tos/work-with-forks/syncing-a-fork)
