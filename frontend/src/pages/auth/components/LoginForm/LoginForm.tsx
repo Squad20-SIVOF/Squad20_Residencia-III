@@ -23,7 +23,7 @@ export function LoginForm({ onSubmit, onForgotPassword }: LoginFormProps) {
         <h1 className={styles.title} id="login-title">
           Login
         </h1>
-        <p className={styles.subtitle}>Acesse sua conta do FrotaManager</p>
+        <p className={styles.subtitle}>Acesse sua conta do SIVOF Manager</p>
       </header>
 
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
