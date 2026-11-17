@@ -237,9 +237,9 @@ export function AtendimentoSVOPage() {
         </section>
 
         {message && (
-          <p className={styles.feedback} role="status">
-            {message}
-          </p>
+        <output className={styles.message}>
+        {message}
+        </output>
         )}
 
         <div className={styles.actions}>
