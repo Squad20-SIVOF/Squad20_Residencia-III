@@ -1,0 +1,109 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: $space-2 $space-3;
+  min-height: $touch-target;
+  padding: $space-3;
+  cursor: pointer;
+  background-color: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-subtle;
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast,
+    box-shadow $transition-fast;
+
+  @include hover {
+    border-color: $color-primary;
+  }
+
+  // O radio fica escondido: o foco do teclado aparece no card inteiro.
+  &:has(.input:focus-visible) {
+    @include focus-ring;
+  }
+}
+
+// Veículo: placa e especificações à esquerda, selo à direita.
+.side {
+  grid-template-areas:
+    'title chevron'
+    'details badge';
+}
+
+// Motorista: detalhes em largura total e, embaixo, selo à esquerda e validade à direita.
+.stacked {
+  grid-template-areas:
+    'title chevron'
+    'details details'
+    'badge aside';
+}
+
+// Borda mais grossa + fundo + selo "Selecionado": o destaque não depende só da cor.
+.selected {
+  background-color: $color-primary-soft;
+  border-color: $color-primary;
+  box-shadow: inset 0 0 0 1px $color-primary;
+}
+
+.input {
+  @include visually-hidden;
+}
+
+.title {
+  grid-area: title;
+  min-width: 0;
+  font-weight: 700;
+  line-height: $line-height-small;
+  color: $color-text;
+  overflow-wrap: anywhere;
+}
+
+.chevron {
+  grid-area: chevron;
+  justify-self: end;
+  color: $color-text-muted;
+}
+
+.details {
+  grid-area: details;
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  min-width: 0;
+  font-size: $font-size-xsmall;
+  line-height: $line-height-small;
+  color: $color-text-muted;
+}
+
+.badge {
+  grid-area: badge;
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  justify-self: end;
+  gap: $space-1;
+  padding: $space-1 $space-2;
+  font-size: $font-size-xsmall;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: $color-success;
+  background-color: $color-success-soft;
+  border-radius: $radius-pill;
+
+  .stacked & {
+    justify-self: start;
+  }
+}
+
+.aside {
+  grid-area: aside;
+  justify-self: end;
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}

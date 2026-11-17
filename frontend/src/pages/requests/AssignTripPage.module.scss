@@ -1,0 +1,69 @@
+@use '../../styles/tokens' as *;
+@use '../../styles/breakpoints' as *;
+@use '../../styles/mixins' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  min-width: 0;
+
+  @include up(md) {
+    gap: $space-4;
+  }
+}
+
+// Título mais contido que o padrão, como no Figma (o link de voltar fica colado nele).
+.header h1 {
+  font-size: $font-size-h3;
+  font-weight: 700;
+  line-height: $line-height-heading;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: $space-1;
+  min-height: $touch-target;
+  margin-bottom: -$space-3;
+  font-size: $font-size-xsmall;
+  font-weight: 600;
+  color: $color-primary;
+  text-decoration: none;
+
+  @include hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+// Celular: uma coluna embaixo da outra. A partir de lg, veículos e motoristas lado a lado.
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
+  align-items: start;
+
+  @include up(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $space-4;
+  }
+}
+
+// Herda a cor do aviso de sucesso; o sublinhado indica que é link sem depender da cor.
+.noticeLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: $touch-target;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
