@@ -27,21 +27,28 @@ export function AssignmentFooter({
   return (
     <footer className={classNames(styles.footer, className)}>
       <p className={styles.selection}>
-        <span className={styles.label}>Seleção para esta viagem:</span>{' '}
-        <span className={vehicleLabel ? styles.value : styles.empty}>
-          {vehicleLabel ?? 'Nenhum veículo selecionado'}
-        </span>
-        <span aria-hidden="true"> + </span>
-        <span className={styles.hidden}> e </span>
-        <span className={driverLabel ? styles.value : styles.empty}>
-          {driverLabel ?? 'Nenhum motorista selecionado'}
+        <span className={styles.label}>Seleção para esta viagem</span>{' '}
+        <span className={styles.values}>
+          <span className={vehicleLabel ? undefined : styles.empty}>
+            {vehicleLabel ?? 'Nenhum veículo selecionado'}
+          </span>
+          <span aria-hidden="true"> + </span>
+          <span className={styles.hidden}> e </span>
+          <span className={driverLabel ? undefined : styles.empty}>
+            {driverLabel ?? 'Nenhum motorista selecionado'}
+          </span>
         </span>
       </p>
       <div className={styles.actions}>
         <ButtonLink variant="secondary" to={cancelTo}>
           Cancelar
         </ButtonLink>
-        <Button onClick={onConfirm} disabled={!canConfirm} isLoading={isSaving}>
+        <Button
+          className={styles.confirm}
+          onClick={onConfirm}
+          disabled={!canConfirm}
+          isLoading={isSaving}
+        >
           Confirmar atribuição
         </Button>
       </div>

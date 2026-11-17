@@ -1,6 +1,5 @@
 import { useId } from 'react'
 import type { ReactNode } from 'react'
-import { Badge } from '@/components/Badge'
 import { classNames } from '@/utils/classNames'
 import styles from './ResourceOption.module.scss'
 
@@ -13,6 +12,10 @@ export interface ResourceOptionProps {
   /** Texto do selo quando marcado ("Selecionado" ou "Selecionada"). */
   selectedLabel: string
   onSelect: (value: string) => void
+  /** "side": selo à direita dos detalhes; "stacked": selo embaixo, com `aside` à direita. */
+  layout?: 'side' | 'stacked'
+  /** Conteúdo alinhado à direita do selo no layout "stacked" (ex.: validade da CNH). */
+  aside?: ReactNode
   children: ReactNode
   className?: string
 }
@@ -28,6 +31,8 @@ export function ResourceOption({
   isSelected,
   selectedLabel,
   onSelect,
+  layout = 'side',
+  aside,
   children,
   className,
 }: ResourceOptionProps) {
@@ -36,7 +41,12 @@ export function ResourceOption({
 
   return (
     <label
-      className={classNames(styles.option, isSelected && styles.selected, className)}
+      className={classNames(
+        styles.option,
+        styles[layout],
+        isSelected && styles.selected,
+        className,
+      )}
     >
       <input
         type="radio"
@@ -48,20 +58,50 @@ export function ResourceOption({
         aria-labelledby={titleId}
         aria-describedby={detailsId}
       />
-      <span className={styles.header}>
-        <span id={titleId} className={styles.title}>
-          {title}
-        </span>
-        <Badge variant={isSelected ? 'info' : 'success'}>
-          <span className={styles.badgeIcon} aria-hidden="true">
-            {isSelected ? '✓' : '●'}
-          </span>
-          {isSelected ? selectedLabel : 'Disponível'}
-        </Badge>
+      <span id={titleId} className={styles.title}>
+        {title}
       </span>
+      <svg
+        className={styles.chevron}
+        viewBox="0 0 16 16"
+        width="16"
+        height="16"
+        aria-hidden="true"
+      >
+        <path
+          d="M6 3l5 5-5 5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
       <span id={detailsId} className={styles.details}>
         {children}
       </span>
+      <span className={styles.badge}>
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+          <circle
+            cx="8"
+            cy="8"
+            r="6.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
+          <path
+            d="M5.25 8.25l1.75 1.75 3.75-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {isSelected ? selectedLabel : 'Disponível'}
+      </span>
+      {layout === 'stacked' && aside && <span className={styles.aside}>{aside}</span>}
     </label>
   )
 }

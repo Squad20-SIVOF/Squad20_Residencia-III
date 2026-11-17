@@ -7,10 +7,10 @@
   flex-direction: column;
   gap: $space-3;
   padding: $space-3;
-  background-color: $color-surface;
+  background-color: $color-card;
   border: 1px solid $color-border;
   border-radius: $radius-lg;
-  box-shadow: $shadow-card;
+  box-shadow: $shadow-subtle;
 
   @include up(md) {
     flex-direction: row;
@@ -21,23 +21,26 @@
 }
 
 .selection {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
   min-width: 0;
-  font-size: $font-size-small;
-  line-height: $line-height-body;
-  color: $color-text;
   overflow-wrap: anywhere;
 }
 
 .label {
-  font-weight: 600;
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
 }
 
-.value {
-  font-weight: 600;
-  color: $color-primary;
+.values {
+  font-size: $font-size-small;
+  font-weight: 700;
+  color: $color-text;
 }
 
 .empty {
+  font-weight: 400;
   font-style: italic;
   color: $color-text-muted;
 }
@@ -46,7 +49,7 @@
   @include visually-hidden;
 }
 
-// No celular os botões ocupam a largura toda, ao alcance do polegar.
+// No celular os botões ocupam a largura toda, com "Confirmar" mais perto do polegar.
 .actions {
   display: flex;
   flex-direction: column-reverse;
@@ -59,9 +62,14 @@
   @include up(sm) {
     flex-direction: row;
     justify-content: flex-end;
+    gap: $space-3;
 
     > * {
       width: auto;
+    }
+
+    .confirm {
+      padding-inline: $space-4;
     }
   }
 }

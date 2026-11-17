@@ -148,7 +148,7 @@ test('mostra o resumo da solicitação real e os recursos disponíveis', async (
     await within(vehicleColumn()).findByText(fullText('2 disponíveis')),
   ).toBeInTheDocument()
   expect(
-    within(vehicleColumn()).getByText('Van · 16 lugares · CNH D'),
+    within(vehicleColumn()).getByText('Van · Capacidade: 16 lugares · CNH D'),
   ).toBeInTheDocument()
   expect(within(vehicleColumn()).getByText('QRS3T45')).toBeInTheDocument()
   expect(

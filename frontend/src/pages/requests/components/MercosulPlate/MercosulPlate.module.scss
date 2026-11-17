@@ -5,9 +5,10 @@
   display: inline-flex;
   flex-direction: column;
   align-self: flex-start;
+  min-width: $plate-min-width;
   overflow: hidden;
   background-color: $color-card;
-  border: 1px solid $color-text;
+  border: 2px solid $color-text;
   border-radius: $radius-sm;
 }
 
@@ -25,10 +26,9 @@
 
 .number {
   padding: 0 $space-2;
-  font-family: $font-family-plate;
-  font-size: $font-size-small;
+  font-size: $font-size-plate;
   font-weight: 700;
-  line-height: $line-height-small;
+  line-height: $line-height-body;
   text-align: center;
   letter-spacing: $letter-spacing-plate;
   color: $color-text;

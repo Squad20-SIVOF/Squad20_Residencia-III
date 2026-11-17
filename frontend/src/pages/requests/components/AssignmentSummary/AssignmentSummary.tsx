@@ -19,23 +19,25 @@ export function AssignmentSummary({ request }: AssignmentSummaryProps) {
 
   return (
     <section className={styles.summary} aria-labelledby={titleId}>
-      <h2 id={titleId} className={styles.title}>
-        Solicitação #{request.code} · {request.sector ?? EMPTY}
-      </h2>
-      <dl className={styles.details}>
-        <div className={styles.item}>
-          <dt>Trajeto</dt>
-          <dd>{formatRoute(request)}</dd>
-        </div>
-        <div className={styles.item}>
-          <dt>Carga / categoria</dt>
-          <dd>{request.cargo ?? EMPTY}</dd>
-        </div>
-        <div className={styles.item}>
-          <dt>Paradas</dt>
-          <dd>{request.stops?.length ? request.stops.join(' · ') : EMPTY}</dd>
-        </div>
-      </dl>
+      <div className={styles.main}>
+        <h2 id={titleId} className={styles.title}>
+          Solicitação #{request.code} · {request.sector ?? EMPTY}
+        </h2>
+        <p className={styles.route}>
+          <span className={styles.hidden}>Trajeto: </span>
+          {formatRoute(request)}
+        </p>
+      </div>
+      <div className={styles.extra}>
+        <p className={styles.cargo}>
+          <span className={styles.hidden}>Carga / categoria: </span>
+          {request.cargo ?? EMPTY}
+        </p>
+        <p className={styles.stops}>
+          <span>Paradas: </span>
+          {request.stops?.length ? request.stops.join(', ') : EMPTY}
+        </p>
+      </div>
     </section>
   )
 }

@@ -164,7 +164,7 @@ function RequestActions({
         </form>
       )}
       <StateMessage
-        title="Aprovação, recusa e atribuição indisponíveis"
+        title="Aprovação e recusa ainda indisponíveis"
         description="Essas ações ainda não estão disponíveis. Nenhuma alteração é simulada."
       />
     </Card>

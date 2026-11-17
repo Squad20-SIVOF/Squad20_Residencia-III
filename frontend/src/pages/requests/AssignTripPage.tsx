@@ -126,6 +126,7 @@ export function AssignTripPage() {
         <span aria-hidden="true">←</span> Voltar para os detalhes da solicitação
       </Link>
       <PageHeader
+        className={styles.header}
         title="Atribuir veículo e motorista"
         subtitle="Selecione os recursos disponíveis para realizar esta viagem."
       />

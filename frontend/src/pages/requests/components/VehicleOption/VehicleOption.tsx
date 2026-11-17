@@ -26,8 +26,8 @@ export function VehicleOption({ vehicle, isSelected, onSelect }: VehicleOptionPr
     >
       <MercosulPlate plate={vehicle.plate} />
       <span className={styles.specs}>
-        {getVehicleKind(vehicle.maxCapacity)} · {vehicle.maxCapacity} lugares · CNH{' '}
-        {getRequiredCnh(vehicle.maxCapacity)}
+        {getVehicleKind(vehicle.maxCapacity)} · Capacidade: {vehicle.maxCapacity} lugares
+        · CNH {getRequiredCnh(vehicle.maxCapacity)}
       </span>
     </ResourceOption>
   )

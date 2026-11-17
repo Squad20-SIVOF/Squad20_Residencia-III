@@ -36,10 +36,7 @@ export default function SolicitacoesPendentesPage() {
         title="Solicitações Pendentes"
         subtitle="Consulte as solicitações que aguardam análise."
       />
-      <p>
-        Aprovação, recusa e atribuição ainda estão indisponíveis. Abra os detalhes para
-        consultar as ações disponíveis.
-      </p>
+      <p>Aprovação e recusa ainda indisponíveis.</p>
       {result.status === 'loading' && (
         <StateMessage title="Carregando solicitações" variant="loading" />
       )}

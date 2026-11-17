@@ -1,6 +1,5 @@
 @use '../../../../styles/tokens' as *;
 @use '../../../../styles/breakpoints' as *;
-@use '../../../../styles/mixins' as *;
 
 .column {
   display: flex;
@@ -8,10 +7,10 @@
   gap: $space-3;
   min-width: 0;
   padding: $space-3;
-  background-color: $color-surface;
+  background-color: $color-card;
   border: 1px solid $color-border;
   border-radius: $radius-lg;
-  box-shadow: $shadow-card;
+  box-shadow: $shadow-subtle;
 
   @include up(md) {
     padding: $space-4;
@@ -26,8 +25,8 @@
 }
 
 .title {
-  font-size: $font-size-card-title;
-  font-weight: 600;
+  font-size: $font-size-body;
+  font-weight: 700;
   line-height: $line-height-heading;
   color: $color-primary;
 }
@@ -36,8 +35,4 @@
   display: flex;
   flex-direction: column;
   gap: $space-2;
-}
-
-.hidden {
-  @include visually-hidden;
 }

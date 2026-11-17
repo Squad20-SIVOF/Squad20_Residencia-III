@@ -40,12 +40,7 @@ export function ResourceColumn({
         <h2 id={headingId} className={styles.title}>
           {title}
         </h2>
-        {count !== undefined && (
-          <Badge variant="info">
-            {count}
-            <span className={styles.hidden}> disponíveis</span>
-          </Badge>
-        )}
+        {count !== undefined && <Badge variant="success">{count} disponíveis</Badge>}
       </header>
       <TextField
         type="search"

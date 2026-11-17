@@ -1,8 +1,10 @@
-@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
 
 .expiry {
   display: inline-flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: $space-1;
+}
+
+.hidden {
+  @include visually-hidden;
 }
