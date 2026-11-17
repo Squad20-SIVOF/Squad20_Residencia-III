@@ -17,10 +17,10 @@ test('cadastra veículo com valores numéricos e prévia da placa', async () => 
   renderWithRouter(
     <VehicleForm vehicle={null} onSave={onSave} onCancel={vi.fn<() => void>()} />,
   )
-  await user.type(screen.getByLabelText('Placa'), 'abc1d23')
-  await user.type(screen.getByLabelText('Modelo'), 'Fiat Fiorino')
-  await user.type(screen.getByLabelText('Combustível'), 'Flex')
-  await user.type(screen.getByLabelText('Capacidade máxima'), '58')
+  await user.type(screen.getByLabelText('Placa Mercosul *'), 'abc1d23')
+  await user.type(screen.getByLabelText('Modelo *'), 'Fiat Fiorino')
+  await user.type(screen.getByLabelText('Combustível *'), 'Flex')
+  await user.type(screen.getByLabelText('Capacidade do tanque (L) *'), '58')
   expect(screen.getByText('ABC1D23')).toBeInTheDocument()
   expect(
     screen.queryByLabelText('Quilometragem do último alerta'),
@@ -53,13 +53,13 @@ test('mantém os dados preenchidos quando a API recusa o cadastro', async () => 
       onCancel={vi.fn<() => void>()}
     />,
   )
-  await user.type(screen.getByLabelText('Placa'), 'abc1d23')
-  await user.type(screen.getByLabelText('Modelo'), 'Fiat Fiorino')
-  await user.type(screen.getByLabelText('Combustível'), 'Flex')
-  await user.type(screen.getByLabelText('Capacidade máxima'), '58')
+  await user.type(screen.getByLabelText('Placa Mercosul *'), 'abc1d23')
+  await user.type(screen.getByLabelText('Modelo *'), 'Fiat Fiorino')
+  await user.type(screen.getByLabelText('Combustível *'), 'Flex')
+  await user.type(screen.getByLabelText('Capacidade do tanque (L) *'), '58')
   await user.click(screen.getByRole('button', { name: 'Cadastrar veículo' }))
   expect(await screen.findByText('Placa já cadastrada.')).toBeInTheDocument()
-  expect(screen.getByLabelText('Placa')).toHaveValue('ABC1D23')
+  expect(screen.getByLabelText('Placa Mercosul *')).toHaveValue('ABC1D23')
 })
 
 test('reaproveita o formulário e envia PUT ao editar', async () => {
@@ -85,7 +85,7 @@ test('reaproveita o formulário e envia PUT ao editar', async () => {
       onCancel={vi.fn<() => void>()}
     />,
   )
-  expect(screen.getByLabelText('Modelo')).toHaveValue('Fiorino')
+  expect(screen.getByLabelText('Modelo *')).toHaveValue('Fiorino')
   await user.click(screen.getByRole('button', { name: 'Salvar alterações' }))
   const options = vi.mocked(api).mock.calls[vi.mocked(api).mock.calls.length - 1]?.[1]
   expect(JSON.parse(options?.body as string).ultimo_km_alertado).toBe(1000)
@@ -117,4 +117,40 @@ test('breadcrumb retorna para a lista em vez de reabrir detalhes na edição', a
   await user.click(link)
   expect(onBackToList).toHaveBeenCalledOnce()
   expect(onCancel).not.toHaveBeenCalled()
+})
+
+test('prévia acompanha a digitação e o interruptor Exclusivo SVO define a frota', async () => {
+  const user = userEvent.setup()
+  vi.mocked(api).mockResolvedValueOnce({})
+  renderWithRouter(
+    <VehicleForm
+      vehicle={null}
+      onSave={vi.fn<() => void>()}
+      onCancel={vi.fn<() => void>()}
+    />,
+  )
+  const preview = screen.getByRole('complementary', { name: 'Prévia do veículo' })
+  expect(within(preview).getByText('Novo cadastro')).toBeInTheDocument()
+  await user.type(screen.getByLabelText('Identificação interna'), 'SVO-01')
+  await user.type(screen.getByLabelText('Marca'), 'Fiat')
+  await user.type(screen.getByLabelText('Modelo *'), 'Fiorino')
+  await user.type(screen.getByLabelText('Placa Mercosul *'), 'abc-1d23')
+  await user.type(screen.getByLabelText('Combustível *'), 'Flex')
+  await user.type(screen.getByLabelText('Capacidade do tanque (L) *'), '58')
+  expect(within(preview).getByText('SVO-01 · Fiat Fiorino')).toBeInTheDocument()
+  expect(within(preview).getByText('ABC1D23')).toBeInTheDocument()
+  expect(within(preview).getByText('Não informada · Flex · 58 L')).toBeInTheDocument()
+
+  const exclusive = screen.getByRole('switch', { name: 'Exclusivo SVO' })
+  await user.click(exclusive)
+  expect(exclusive).toBeChecked()
+  expect(screen.getByLabelText('Frota')).toHaveValue('SVO')
+  await user.click(screen.getByRole('button', { name: 'Cadastrar veículo' }))
+  const options = vi.mocked(api).mock.calls[vi.mocked(api).mock.calls.length - 1]?.[1]
+  expect(JSON.parse(options?.body as string)).toMatchObject({
+    frota: 'SVO',
+    exclusivo_svo: true,
+    marca: 'Fiat',
+    identificacao: 'SVO-01',
+  })
 })

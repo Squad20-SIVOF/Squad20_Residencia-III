@@ -54,7 +54,7 @@ test('detalhes de veículo mostram histórico e vistoria, e breadcrumb volta à 
   await page.goto('/veiculos')
   await page.getByRole('button', { name: /Ver detalhes do veículo/ }).click()
   await expect(
-    page.getByRole('heading', { name: 'Checklist de Vistorias', exact: true }),
+    page.getByRole('heading', { name: 'Checklist de vistorias', exact: true }),
   ).toBeVisible()
   const popupPromise = page.waitForEvent('popup')
   await page.getByRole('button', { name: 'Gerar QR Code para impressão' }).click()

@@ -5,19 +5,23 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
 .item {
   display: flex;
   align-items: center;
   gap: $space-2;
-  font-size: $font-size-small;
+  font-size: $font-size-xsmall;
+  color: $color-text;
 }
 
 .icon {
   flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 .iconOk {
@@ -26,6 +30,11 @@
 
 .iconPending {
   color: $color-danger;
+}
+
+.empty {
+  font-size: $font-size-small;
+  color: $color-text-muted;
 }
 
 .srOnly {

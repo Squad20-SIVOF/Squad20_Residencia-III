@@ -7,9 +7,17 @@ import { CheckboxField } from '@/components/CheckboxField'
 import { Card } from '@/components/Card'
 import { PageHeader } from '@/components/PageHeader'
 import { Alert } from '@/components/Alert'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { classNames } from '@/utils/classNames'
 import styles from './VehicleForm.module.scss'
 import { api } from '@/service/api'
+import { SwitchField } from './components/SwitchField'
+import { VehicleFormAside } from './components/VehicleFormAside'
 import type { Vehicle, Fleet } from './types'
+
+const FLEET_OPTIONS = (
+  ['Não informada', 'Administrativa', 'Assistencial', 'Operacional', 'SVO'] as Fleet[]
+).map((value) => ({ value, label: value }))
 
 interface Props {
   vehicle: Vehicle | null
@@ -18,6 +26,8 @@ interface Props {
   onBackToList?: () => void
 }
 export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) {
+  const title = vehicle ? 'Editar veículo' : 'Cadastrar veículo'
+  useDocumentTitle(title)
   const [values, setValues] = useState({
     placa: vehicle?.plate ?? '',
     identificacao: vehicle?.identification === '—' ? '' : (vehicle?.identification ?? ''),
@@ -65,49 +75,64 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
       setSaving(false)
     }
   }
+  // [campo, rótulo, tipo, exemplo]. Obrigatórios levam " *" no rótulo.
   const fields = [
-    ['identificacao', 'Identificação interna', 'text'],
-    ['marca', 'Marca', 'text'],
-    ['proxima_vistoria', 'Próxima vistoria (opcional)', 'date'],
-    ['placa', 'Placa', 'text'],
-    ['modelo', 'Modelo', 'text'],
-    ['tipo_combustivel', 'Combustível', 'text'],
-    ['capacidade_maxima', 'Capacidade máxima', 'number'],
-    ['quilometragem', 'Quilometragem atual', 'number'],
-    ['teto_gasto_mensal', 'Teto de gasto mensal (opcional)', 'number'],
+    ['identificacao', 'Identificação interna', 'text', 'Ex.: SVO-01'],
+    ['marca', 'Marca', 'text', 'Ex.: Fiat'],
+    ['proxima_vistoria', 'Próxima vistoria (opcional)', 'date', ''],
+    ['modelo', 'Modelo', 'text', 'Ex.: Fiorino 1.4'],
+    ['placa', 'Placa Mercosul', 'text', 'ABC1D23'],
+    ['tipo_combustivel', 'Combustível', 'text', 'Ex.: Flex (gasolina e etanol)'],
+    ['capacidade_maxima', 'Capacidade do tanque (L)', 'number', 'Ex.: 58'],
+    ['quilometragem', 'Quilometragem atual (km)', 'number', ''],
+    ['teto_gasto_mensal', 'Teto mensal de abastecimento (R$)', 'number', 'Opcional'],
   ] as const
+  const OPTIONAL_FIELDS: readonly string[] = [
+    'teto_gasto_mensal',
+    'identificacao',
+    'marca',
+    'proxima_vistoria',
+  ]
   function renderFields(keys: (typeof fields)[number][0][]) {
     return fields
       .filter(([key]) => keys.includes(key))
-      .map(([key, label, type]) => (
-        <TextField
-          key={key}
-          id={`vehicle-${key}`}
-          label={label}
-          type={type}
-          min={key === 'capacidade_maxima' ? 1 : 0}
-          step={key === 'teto_gasto_mensal' ? '0.01' : '1'}
-          value={values[key]}
-          onChange={(value) =>
-            setValues((current) => ({
-              ...current,
-              [key]: key === 'placa' ? value.toUpperCase() : value,
-            }))
-          }
-          disabled={saving}
-          required={
-            !['teto_gasto_mensal', 'identificacao', 'marca', 'proxima_vistoria'].includes(
-              key,
-            )
-          }
-        />
-      ))
+      .map(([key, label, type, placeholder]) => {
+        const isRequired = !OPTIONAL_FIELDS.includes(key)
+        return (
+          <TextField
+            key={key}
+            id={`vehicle-${key}`}
+            label={isRequired ? `${label} *` : label}
+            type={type}
+            placeholder={placeholder || undefined}
+            min={key === 'capacidade_maxima' ? 1 : 0}
+            step={key === 'teto_gasto_mensal' ? '0.01' : '1'}
+            inputMode={
+              type !== 'number'
+                ? undefined
+                : key === 'teto_gasto_mensal'
+                  ? 'decimal'
+                  : 'numeric'
+            }
+            value={values[key]}
+            onChange={(value) =>
+              setValues((current) => ({
+                ...current,
+                [key]: key === 'placa' ? value.toUpperCase() : value,
+              }))
+            }
+            disabled={saving}
+            required={isRequired}
+          />
+        )
+      })
   }
 
   return (
     <div className={styles.page}>
       <PageHeader
-        title={vehicle ? 'Editar veículo' : 'Cadastrar veículo'}
+        className={styles.header}
+        title={title}
         breadcrumb={
           <Breadcrumb
             items={[
@@ -116,45 +141,48 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
             ]}
           />
         }
-        subtitle="Adicione um veículo e defina as condições iniciais de operação."
+        subtitle={
+          vehicle
+            ? 'Atualize os dados e as condições de operação do veículo.'
+            : 'Adicione um veículo e defina as condições iniciais de operação.'
+        }
       />
       <div className={styles.layout}>
         <form onSubmit={submit} className={styles.form} aria-busy={saving}>
           {error && <Alert variant="danger">{error}</Alert>}
           <Card title="Identificação do veículo" className={styles.card}>
-            <p className={styles.hint}>Confira a placa e o modelo antes de salvar.</p>
-            <div className={styles.grid}>
-              {renderFields(['identificacao', 'marca', 'modelo', 'placa'])}
+            <p className={styles.hint}>Campos com * são obrigatórios.</p>
+            <div className={classNames(styles.grid, styles.gridThree)}>
+              {renderFields(['identificacao', 'marca'])}
+              <span className={styles.spacer} aria-hidden="true" />
+              {renderFields(['modelo', 'placa'])}
               <fieldset disabled={saving} className={styles.controls}>
                 <SelectField
                   label="Frota"
                   value={fleet}
-                  options={(
-                    [
-                      'Não informada',
-                      'Administrativa',
-                      'Assistencial',
-                      'Operacional',
-                      'SVO',
-                    ] as Fleet[]
-                  ).map((value) => ({ value, label: value }))}
+                  options={FLEET_OPTIONS}
                   onChange={(value) => {
                     setFleet(value)
                     if (value !== 'SVO') setExclusiveSvo(false)
                   }}
                 />
               </fieldset>
-              <CheckboxField
-                label="Exclusivo SVO"
-                description="Este veículo pertence exclusivamente à frota SVO."
-                checked={exclusiveSvo}
-                onChange={(checked) => {
-                  setExclusiveSvo(checked)
-                  if (checked) setFleet('SVO')
-                }}
-                disabled={saving}
-              />
             </div>
+            <SwitchField
+              className={styles.switch}
+              label="Exclusivo SVO"
+              description={
+                exclusiveSvo
+                  ? 'Ativado · veículo reservado à frota SVO'
+                  : 'Desativado · pode atender qualquer frota'
+              }
+              checked={exclusiveSvo}
+              onChange={(checked) => {
+                setExclusiveSvo(checked)
+                if (checked) setFleet('SVO')
+              }}
+              disabled={saving}
+            />
           </Card>
           <Card title="Operação e limites" className={styles.card}>
             <p className={styles.hint}>
@@ -170,27 +198,35 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
             </div>
           </Card>
           <Card title="Vistoria do veículo" className={styles.card}>
-            <div className={styles.grid}>{renderFields(['proxima_vistoria'])}</div>
             <p className={styles.hint}>
               Registre os itens verificados. Itens desmarcados ficam pendentes; sem itens,
               nenhuma vistoria é registrada.
             </p>
-            {checklist.map((item, index) => (
-              <CheckboxField
-                key={item.id}
-                label={item.label}
-                checked={item.isOk}
-                disabled={saving}
-                onChange={(isOk) =>
-                  setChecklist((current) =>
-                    current.map((entry, i) => (i === index ? { ...entry, isOk } : entry)),
-                  )
-                }
-              />
-            ))}
+            <div className={styles.grid}>{renderFields(['proxima_vistoria'])}</div>
+            {checklist.length > 0 && (
+              <div className={styles.checklist}>
+                {checklist.map((item, index) => (
+                  <CheckboxField
+                    key={item.id}
+                    variant="plain"
+                    label={item.label}
+                    checked={item.isOk}
+                    disabled={saving}
+                    onChange={(isOk) =>
+                      setChecklist((current) =>
+                        current.map((entry, i) =>
+                          i === index ? { ...entry, isOk } : entry,
+                        ),
+                      )
+                    }
+                  />
+                ))}
+              </div>
+            )}
             {!checklist.length && (
               <Button
                 variant="secondary"
+                className={styles.checklistButton}
                 disabled={saving}
                 onClick={() =>
                   setChecklist(
@@ -216,32 +252,17 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
             </div>
           </footer>
         </form>
-        <aside className={styles.preview} aria-label="Prévia do veículo">
-          <Card title="Prévia do veículo" className={styles.card}>
-            <span className={styles.badge}>
-              {vehicle ? 'Em edição' : 'Novo cadastro'}
-            </span>
-            <div className={styles.plate}>
-              <span>BRASIL</span>
-              <strong>{values.placa || 'ABC1D23'}</strong>
-            </div>
-            <p className={styles.model}>{values.modelo || 'Modelo do veículo'}</p>
-            <p className={styles.hint}>
-              {fleet}
-              {exclusiveSvo ? ' · Exclusivo SVO' : ''} ·{' '}
-              {values.tipo_combustivel || 'Combustível não informado'}
-              {values.capacidade_maxima ? ` · ${values.capacidade_maxima} L` : ''}
-            </p>
-          </Card>
-          <Card title="Dados do cadastro" className={styles.card}>
-            <p className={styles.hint}>
-              As informações serão vinculadas ao histórico do veículo.
-            </p>
-            <p className={styles.hint}>
-              Marca, identificação interna e vistoria ficam salvas no cadastro.
-            </p>
-          </Card>
-        </aside>
+        <VehicleFormAside
+          isEditing={vehicle !== null}
+          identification={values.identificacao}
+          brand={values.marca}
+          model={values.modelo}
+          plate={values.placa}
+          fleet={fleet}
+          isExclusiveSvo={exclusiveSvo}
+          fuelType={values.tipo_combustivel}
+          capacity={values.capacidade_maxima}
+        />
       </div>
     </div>
   )

@@ -4,22 +4,27 @@
   display: flex;
   flex-direction: column;
   gap: $space-4;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
 .item {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: $space-1;
 }
 
-.type {
-  margin-bottom: $space-2;
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-2;
 }
 
 .description {
   font-size: $font-size-small;
-  font-weight: 600;
+  color: $color-text;
 }
 
 .meta {
@@ -28,9 +33,23 @@
 }
 
 .cost {
-  margin-top: $space-1;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: $font-size-body;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.estimate {
+  font-weight: 400;
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: $touch-target;
+  font-size: $font-size-small;
+  font-weight: 600;
+  color: $color-primary;
 }
 
 .empty {
