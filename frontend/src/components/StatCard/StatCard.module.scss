@@ -66,3 +66,42 @@
     color: $color-primary;
   }
 }
+
+/* Etiquetas inferiores dos indicadores - Figma */
+
+.row {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.hint {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.success .hint {
+  background-color: #e5f5e9;
+  color: #25843a;
+}
+
+.warning .hint {
+  background-color: #fff1d2;
+  color: #986000;
+}
+
+.info .hint {
+  background-color: #e6efff;
+  color: #245ba3;
+}
+
+.danger .hint {
+  background-color: #ffe5e5;
+  color: #c62d2d;
+}
