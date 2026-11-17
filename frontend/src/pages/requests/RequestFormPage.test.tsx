@@ -1,8 +1,10 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useLocation } from 'react-router-dom'
-import { expect, test, vi } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 import { AppRoutes } from '@/App'
+import { REDIRECT_DELAY_MS } from './RequestFormPage'
+import { createRequest } from './services/requestService'
 
 // Expõe a URL atual para conferir redirecionamentos e navegações.
 function CurrentPath() {
@@ -97,10 +99,9 @@ test('limita os passageiros à lotação do veículo escolhido', async () => {
   ).toBeInTheDocument()
 })
 
-test('envia a solicitação e abre o acompanhamento da rota', async () => {
-  const user = userEvent.setup()
-  renderAt('/viagens/solicitar')
+const SENT_MESSAGE = 'Solicitação enviada! Aguardando aprovação do gestor.'
 
+async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText('Destino'), 'Hospital de Urgência de Sergipe')
   await user.type(screen.getByLabelText('Data da solicitação'), '31122099')
   await user.type(screen.getByLabelText('Horário de saída'), '0830')
@@ -112,16 +113,79 @@ test('envia a solicitação e abre o acompanhamento da rota', async () => {
   )
   await user.click(screen.getByRole('checkbox', { name: 'Marcar como importante' }))
   await user.click(screen.getByRole('button', { name: 'Enviar Solicitação' }))
+}
 
+// O aviso usa role="status" para ser anunciado pelo leitor de tela.
+async function findSentNotice() {
+  const message = await screen.findByText(SENT_MESSAGE)
+  const notice = message.closest<HTMLElement>('[role="status"]')
+  expect(notice).not.toBeNull()
+  return notice as HTMLElement
+}
+
+function currentPath() {
+  return screen.getByRole('status', { name: 'URL atual' })
+}
+
+afterEach(() => {
+  vi.useRealTimers()
+})
+
+test('mostra o aviso de envio e redireciona para as solicitações pendentes', async () => {
+  vi.useFakeTimers({ shouldAdvanceTime: true })
+  const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+  renderAt('/viagens/solicitar')
+
+  await fillAndSubmit(user)
+
+  await findSentNotice()
+  expect(createRequest).toHaveBeenCalledOnce()
+  // O aviso aparece antes do redirecionamento.
+  expect(currentPath()).toHaveTextContent('/viagens/solicitar')
+
+  await act(() => vi.advanceTimersByTimeAsync(REDIRECT_DELAY_MS))
+
+  expect(currentPath()).toHaveTextContent(/^\/viagens\/solicitacoes$/)
   expect(
-    await screen.findByRole('heading', { level: 1, name: 'SIVOF' }),
+    await screen.findByRole('heading', { level: 1, name: 'Solicitações Pendentes' }),
   ).toBeInTheDocument()
-  const driverCard = await screen.findByRole('region', { name: 'Motorista' })
-  expect(within(driverCard).getByText('Rafael Mendes')).toBeInTheDocument()
-  expect(within(driverCard).getByText('Chevrolet Spin · QWE-4J18')).toBeInTheDocument()
-  expect(screen.getByRole('status', { name: 'URL atual' }).textContent).toMatch(
-    /^\/viagens\/(?!solicitar$)[^/]+$/,
+})
+
+test('o link do aviso leva às solicitações pendentes na hora', async () => {
+  const user = userEvent.setup()
+  renderAt('/viagens/solicitar')
+
+  await fillAndSubmit(user)
+  const notice = await findSentNotice()
+  await user.click(
+    within(notice).getByRole('link', { name: 'Ver solicitações pendentes' }),
   )
+
+  expect(currentPath()).toHaveTextContent(/^\/viagens\/solicitacoes$/)
+  expect(
+    await screen.findByRole('heading', { level: 1, name: 'Solicitações Pendentes' }),
+  ).toBeInTheDocument()
+})
+
+test('mostra o erro de envio e permanece na tela', async () => {
+  vi.mocked(createRequest).mockRejectedValueOnce(new Error('Falha na conexão.'))
+  const user = userEvent.setup()
+  renderAt('/viagens/solicitar')
+
+  await fillAndSubmit(user)
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('Falha na conexão.')
+  expect(screen.queryByText(SENT_MESSAGE)).not.toBeInTheDocument()
+  expect(currentPath()).toHaveTextContent('/viagens/solicitar')
+  expect(screen.getByRole('button', { name: 'Enviar Solicitação' })).toBeEnabled()
+})
+
+vi.mock('./services/requestService', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./services/requestService')>()
+  return {
+    ...actual,
+    createRequest: vi.fn<typeof actual.createRequest>(actual.createRequest),
+  }
 })
 
 vi.mock('@/components/RequireAuth/RequireAuth', async () => {

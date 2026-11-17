@@ -88,6 +88,16 @@
   }
 }
 
+// Herda a cor do aviso de sucesso; o sublinhado indica que é link sem depender da cor.
+.noticeLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: $touch-target;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+}
+
 .breadcrumbLinks {
   display: flex;
   flex-wrap: wrap;
