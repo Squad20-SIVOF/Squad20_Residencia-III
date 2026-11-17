@@ -14,6 +14,7 @@ import { MaintenanceCard } from './components/MaintenanceCard'
 import { TripHistoryCard } from './components/TripHistoryCard'
 import { VehicleHeroCard } from './components/VehicleHeroCard'
 import { VehicleSummaryCard } from './components/VehicleSummaryCard'
+import { VehicleQrPrintButton } from './components/VehicleQrPrintButton'
 import { useVehicleDetails } from './hooks/useVehicleDetails'
 import {
   formatMonthLong,
