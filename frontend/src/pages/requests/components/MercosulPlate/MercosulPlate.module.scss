@@ -1,0 +1,39 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.plate {
+  display: inline-flex;
+  flex-direction: column;
+  align-self: flex-start;
+  overflow: hidden;
+  background-color: $color-card;
+  border: 1px solid $color-text;
+  border-radius: $radius-sm;
+}
+
+.band {
+  padding-inline: $space-2;
+  font-size: $font-size-plate-band;
+  font-weight: 700;
+  line-height: $line-height-small;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: $letter-spacing-plate;
+  color: $color-on-primary;
+  background-color: $color-primary;
+}
+
+.number {
+  padding: 0 $space-2;
+  font-family: $font-family-plate;
+  font-size: $font-size-small;
+  font-weight: 700;
+  line-height: $line-height-small;
+  text-align: center;
+  letter-spacing: $letter-spacing-plate;
+  color: $color-text;
+}
+
+.hidden {
+  @include visually-hidden;
+}

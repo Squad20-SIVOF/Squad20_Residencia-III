@@ -1,0 +1,8 @@
+@use '../../../../styles/tokens' as *;
+
+.expiry {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-1;
+}

@@ -1,0 +1,58 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/breakpoints' as *;
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: $space-3;
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  border-left: $space-1 solid $color-primary;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+
+  @include up(md) {
+    padding: $space-4;
+  }
+}
+
+.title {
+  font-size: $font-size-card-title;
+  font-weight: 600;
+  line-height: $line-height-heading;
+  color: $color-primary;
+  overflow-wrap: anywhere;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
+  margin: 0;
+
+  @include up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  dt {
+    font-size: $font-size-xsmall;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: $color-text-label;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 500;
+    color: $color-text;
+    overflow-wrap: anywhere;
+  }
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  min-width: 0;
+}

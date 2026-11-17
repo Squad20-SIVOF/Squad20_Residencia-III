@@ -1,0 +1,67 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/breakpoints' as *;
+@use '../../../../styles/mixins' as *;
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: $space-3;
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+
+  @include up(md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: $space-3 $space-4;
+  }
+}
+
+.selection {
+  min-width: 0;
+  font-size: $font-size-small;
+  line-height: $line-height-body;
+  color: $color-text;
+  overflow-wrap: anywhere;
+}
+
+.label {
+  font-weight: 600;
+}
+
+.value {
+  font-weight: 600;
+  color: $color-primary;
+}
+
+.empty {
+  font-style: italic;
+  color: $color-text-muted;
+}
+
+.hidden {
+  @include visually-hidden;
+}
+
+// No celular os botões ocupam a largura toda, ao alcance do polegar.
+.actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: $space-2;
+
+  > * {
+    width: 100%;
+  }
+
+  @include up(sm) {
+    flex-direction: row;
+    justify-content: flex-end;
+
+    > * {
+      width: auto;
+    }
+  }
+}

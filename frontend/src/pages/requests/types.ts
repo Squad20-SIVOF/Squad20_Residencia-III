@@ -118,3 +118,22 @@ export interface RequestTrackingResponse {
   veiculo: { modelo: string; placa: string }
   ponto_embarque: { endereco: string; instrucoes: string }
 }
+
+// ---------- Atribuição de veículo e motorista ----------
+
+/** Resumo da solicitação exibido na tela de atribuição; `null` = a API não informa. */
+export interface AssignmentRequestSummary {
+  id: string
+  code: string
+  sector: string | null
+  origin: string | null
+  destination: string | null
+  cargo: string | null
+  stops: string[] | null
+}
+
+export interface TripAssignment {
+  requestId: string
+  vehicleId: string
+  driverId: string
+}

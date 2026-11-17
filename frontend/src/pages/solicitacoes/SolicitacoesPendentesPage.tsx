@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/Badge'
 import { Button } from '@/components/Button'
+import { ButtonLink } from '@/components/ButtonLink'
 import { Card } from '@/components/Card'
 import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
@@ -102,9 +103,13 @@ export default function SolicitacoesPendentesPage() {
                   <Button variant="secondary" disabled>
                     Recusar
                   </Button>
-                  <Button variant="secondary" disabled>
+                  <ButtonLink
+                    variant="secondary"
+                    to={`/viagens/solicitacoes/${encodeURIComponent(request.id)}/atribuir`}
+                    aria-label={`Atribuir veículo e motorista à solicitação #${request.id.slice(0, 8)}`}
+                  >
                     Atribuir
-                  </Button>
+                  </ButtonLink>
                   <Link
                     className={styles.detailsLink}
                     to={`/viagens/solicitacoes/${encodeURIComponent(request.id)}`}
