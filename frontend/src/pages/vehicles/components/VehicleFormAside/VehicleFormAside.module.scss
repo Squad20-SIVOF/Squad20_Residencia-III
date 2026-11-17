@@ -1,0 +1,97 @@
+@use '../../../../styles/tokens' as *;
+
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  min-width: 0;
+}
+
+// Prefixado com .aside para vencer o estilo base do Card independente da ordem do CSS.
+.aside .card {
+  gap: 0.75rem;
+  padding: $space-3;
+  background-color: $color-card;
+
+  > h2 {
+    font-size: $font-size-body;
+    font-weight: 700;
+  }
+}
+
+.badge {
+  align-self: flex-start;
+}
+
+.plate {
+  align-self: center;
+  margin-block: $space-2;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.name {
+  font-size: $font-size-small;
+  color: $color-text;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.stepTitle {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  font-size: $font-size-small;
+  color: $color-text;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: $icon-size;
+  height: $icon-size;
+  color: $color-primary-dark;
+}
+
+.availability {
+  font-size: $font-size-xsmall;
+  font-weight: 600;
+  color: $color-text-label;
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-2;
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.noteIcon {
+  flex-shrink: 0;
+  width: $icon-size;
+  height: $icon-size;
+  color: $color-success;
+}

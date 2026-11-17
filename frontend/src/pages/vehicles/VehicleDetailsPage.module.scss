@@ -4,17 +4,34 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: $space-4;
+  gap: $space-3;
 }
 
+// xs: título e ações empilhados; md+: ações à direita.
 .header {
   display: flex;
   flex-direction: column;
+  gap: $space-3;
+
+  @include up(md) {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
   gap: $space-1;
+  min-width: 0;
 }
 
 .title {
-  font-weight: 500;
+  font-size: $font-size-h3;
+  font-weight: 700;
+  line-height: $line-height-heading;
+  color: $color-text;
 
   &:focus {
     outline: none;
@@ -22,49 +39,93 @@
 }
 
 .subtitle {
-  font-size: $font-size-small;
+  font-size: $font-size-xsmall;
   color: $color-text-muted;
 }
 
-// xs: cards empilhados em uma coluna.
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+
+  > * {
+    flex: 1 1 auto;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  @include up(md) {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+
+    > * {
+      flex: none;
+    }
+
+    button {
+      width: auto;
+    }
+  }
+}
+
+// Seções em uma coluna; cada linha decide quantas colunas usa.
 .grid {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+
+  @include up(md) {
+    gap: $space-4;
+  }
+}
+
+// Cartão escuro + resumo: lado a lado a partir do md.
+.top {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: $space-3;
 
-  > * {
-    min-width: 0;
-  }
-
-  // md: duas colunas; o checklist ocupa a linha inteira.
   @include up(md) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: $space-4;
-
-    > :last-child {
-      grid-column: 1 / -1;
-    }
   }
 
-  // lg: três colunas, como no protótipo (hero ocupa duas).
-  @include up(lg) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-
-    > :last-child {
-      grid-column: auto;
-    }
+  @include up(xl) {
+    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
   }
 }
 
-.hero {
-  display: flex;
-  flex-direction: column;
+// Um card sozinho (sem permissão para o outro) ocupa a linha inteira.
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: $space-3;
 
-  > * {
-    flex: 1;
+  @include up(md) {
+    gap: $space-4;
   }
+}
+
+.history {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
 
   @include up(lg) {
-    grid-column: span 2;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 13.5rem);
+    gap: $space-4;
+  }
+}
+
+// Cards no estilo do protótipo: fundo branco e título forte.
+// Prefixado com .grid para vencer o estilo base do Card independente da ordem do CSS.
+.grid .panel {
+  background-color: $color-card;
+
+  > h2 {
+    font-size: $font-size-body;
+    font-weight: 700;
   }
 }

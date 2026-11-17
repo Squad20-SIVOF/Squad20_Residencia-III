@@ -32,19 +32,15 @@ export function useVehicleFilters(vehicles: Vehicle[]) {
     currentPage * VEHICLES_PAGE_SIZE,
   )
 
-  // Qualquer mudança de filtro volta para a primeira página.
-  function setSearch(value: string) {
-    setSearchState(value)
-    setPage(1)
-  }
-
-  function setStatus(value: VehicleStatusFilter) {
-    setStatusState(value)
-    setPage(1)
-  }
-
-  function setFleet(value: FleetFilter) {
-    setFleetState(value)
+  // Aplicar filtros sempre volta para a primeira página.
+  function applyFilters(values: {
+    search: string
+    status: VehicleStatusFilter
+    fleet: FleetFilter
+  }) {
+    setSearchState(values.search)
+    setStatusState(values.status)
+    setFleetState(values.fleet)
     setPage(1)
   }
 
@@ -52,9 +48,7 @@ export function useVehicleFilters(vehicles: Vehicle[]) {
     search,
     status,
     fleet,
-    setSearch,
-    setStatus,
-    setFleet,
+    applyFilters,
     filteredVehicles,
     pageVehicles,
     currentPage,

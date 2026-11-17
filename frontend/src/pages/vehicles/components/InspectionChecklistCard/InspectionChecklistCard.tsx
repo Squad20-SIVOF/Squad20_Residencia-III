@@ -6,18 +6,22 @@ import styles from './InspectionChecklistCard.module.scss'
 export interface InspectionChecklistCardProps {
   items: InspectionItem[]
   unavailable?: boolean
+  className?: string
 }
 
 export function InspectionChecklistCard({
   items,
   unavailable = false,
+  className,
 }: InspectionChecklistCardProps) {
   return (
-    <Card title="Checklist de Vistorias">
+    <Card title="Checklist de vistorias" className={className}>
       {unavailable ? (
-        <p>O registro de vistorias ainda não está integrado à API.</p>
+        <p className={styles.empty}>
+          O registro de vistorias ainda não está integrado à API.
+        </p>
       ) : items.length === 0 ? (
-        <p>Nenhuma vistoria registrada para este veículo.</p>
+        <p className={styles.empty}>Nenhuma vistoria registrada para este veículo.</p>
       ) : (
         <ul className={styles.list}>
           {items.map((item) => (

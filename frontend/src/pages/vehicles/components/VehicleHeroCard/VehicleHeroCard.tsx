@@ -1,4 +1,5 @@
 import type { Vehicle } from '../../types'
+import { vehicleDisplayName } from '../../utils/vehicleRules'
 import { VanIllustration } from '../VanIllustration'
 import { VehicleStatusBadge } from '../VehicleStatusBadge'
 import styles from './VehicleHeroCard.module.scss'
@@ -12,8 +13,8 @@ export function VehicleHeroCard({ vehicle }: VehicleHeroCardProps) {
     <figure className={styles.hero}>
       <VanIllustration className={styles.illustration} />
       <figcaption className={styles.footer}>
-        <span className={styles.identification}>{vehicle.identification}</span>
-        <VehicleStatusBadge status={vehicle.status} />
+        <span className={styles.identification}>{vehicleDisplayName(vehicle)}</span>
+        <VehicleStatusBadge status={vehicle.status} labelSet="situation" />
       </figcaption>
     </figure>
   )

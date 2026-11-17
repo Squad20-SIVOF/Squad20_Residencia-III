@@ -1,0 +1,70 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  min-width: 0;
+}
+
+.label {
+  font-size: $font-size-small;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.description {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+// Trilho de 2.5 rem dentro de uma área de toque de 44 px (margem vertical).
+.input {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 1.5rem;
+  margin: calc(($touch-target - 1.5rem) / 2) 0;
+  cursor: pointer;
+  appearance: none;
+  background-color: $color-placeholder;
+  border-radius: $radius-pill;
+  transition: background-color $transition-fast;
+
+  &::before {
+    position: absolute;
+    top: 0.1875rem;
+    left: 0.1875rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    content: '';
+    background-color: $color-card;
+    border-radius: $radius-full;
+    transition: transform $transition-fast;
+  }
+
+  &:checked {
+    background-color: $color-primary;
+
+    &::before {
+      transform: translateX(1rem);
+    }
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}

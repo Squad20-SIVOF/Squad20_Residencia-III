@@ -2,40 +2,46 @@
 @use '../../../../styles/breakpoints' as *;
 
 .hero {
-  --van-fill: #{$color-primary-dark};
+  --van-fill: #{$color-navy};
 
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: $space-3;
-  min-height: 12rem;
+  height: 100%;
+  min-height: 11rem;
   padding: $space-3;
-  color: $color-surface;
-  background-color: $color-primary-dark;
-  border-bottom: 4px solid $color-warning;
+  margin: 0;
+  color: $color-on-navy;
+  background-color: $color-navy;
+  border-bottom: 4px solid $color-accent-yellow;
   border-radius: $radius-lg;
   box-shadow: $shadow-card;
 
   @include up(md) {
-    min-height: 14rem;
-    padding: $space-4;
+    min-height: 11.25rem;
+    padding: $space-4 $space-4 $space-3;
   }
 }
 
 .illustration {
-  width: min(60%, 11rem);
-  margin-inline: auto;
-  margin-top: $space-3;
+  width: min(70%, 9rem);
+  margin-left: $space-4;
+
+  @include up(lg) {
+    width: min(60%, 9.5rem);
+  }
 }
 
 .footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: $space-2;
 }
 
 .identification {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: $font-size-h4;
+  font-weight: 700;
 }
