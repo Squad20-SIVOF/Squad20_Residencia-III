@@ -1,174 +1,261 @@
-import { useState } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import styles from './AtendimentoSVOPage.module.scss'
 
+type FormDataSVO = {
+  nome: string
+  cpf: string
+  nascimento: string
+  obito: string
+  endereco: string
+  bairro: string
+  cidade: string
+  uf: string
+  solicitante: string
+  telefone: string
+  parentesco: string
+}
+
+const initialData: FormDataSVO = {
+  nome: '',
+  cpf: '',
+  nascimento: '',
+  obito: '',
+  endereco: '',
+  bairro: '',
+  cidade: '',
+  uf: '',
+  solicitante: '',
+  telefone: '',
+  parentesco: '',
+}
+
+type FieldName = keyof FormDataSVO
+
 export function AtendimentoSVOPage() {
-  const [nome, setNome] = useState('')
-  const [cpf, setCpf] = useState('')
-  const [nascimento, setNascimento] = useState('')
-  const [obito, setObito] = useState('')
-  const [endereco, setEndereco] = useState('')
-  const [bairro, setBairro] = useState('')
-  const [cidade, setCidade] = useState('')
-  const [uf, setUf] = useState('')
-  const [solicitante, setSolicitante] = useState('')
-  const [telefone, setTelefone] = useState('')
-  const [parentesco, setParentesco] = useState('')
+  const [form, setForm] = useState<FormDataSVO>(initialData)
+  const [expanded, setExpanded] = useState([true, true, true, true])
+  const [documents, setDocuments] = useState<File[]>([])
+  const [message, setMessage] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const updateField = (field: FieldName, value: string) => {
+    setForm((previous) => ({ ...previous, [field]: value }))
+  }
+
+  const toggleSection = (index: number) => {
+    setExpanded((previous) =>
+      previous.map((value, position) =>
+        position === index ? !value : value
+      )
+    )
+  }
+
+  const resetForm = () => {
+    setForm({ ...initialData })
+    setDocuments([])
+    setExpanded([true, true, true, true])
+    setMessage('')
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setMessage(
+      'Formulário validado. O registro definitivo ainda precisa ser conectado ao backend.'
+    )
+  }
+
+  const renderField = (
+    field: FieldName,
+    label: string,
+    placeholder: string,
+    type: string = 'text'
+  ) => (
+    <div className={styles.field} key={field}>
+      <label htmlFor={field}>{label}</label>
+      <input
+        id={field}
+        name={field}
+        type={type}
+        placeholder={placeholder}
+        value={form[field]}
+        maxLength={field === 'uf' ? 2 : undefined}
+        onChange={(event) =>
+          updateField(
+            field,
+            field === 'uf'
+              ? event.target.value.toUpperCase()
+              : event.target.value
+          )
+        }
+        required
+      />
+    </div>
+  )
 
   return (
-    <div className={styles.page}>
+    <main className={styles.page}>
       <header className={styles.header}>
+        <a href="/painel-viagens" className={styles.backLink}>
+  ← Voltar para o Painel de Viagens
+</a>
+
         <h1>Atendimento SVO</h1>
         <p>Registro de solicitação de óbito e encaminhamento de remoção.</p>
+
+        <div className={styles.headerBottom}>
+          <span className={styles.newBadge}>NOVO ATENDIMENTO</span>
+          <span className={styles.stepCount}>
+            4 etapas · preenchimento obrigatório
+          </span>
+        </div>
       </header>
 
-      <form className={styles.form} onSubmit={(event) => event.preventDefault()}>
+      <form className={styles.form} onSubmit={handleSubmit}>
         <section className={styles.section}>
-          <h2>1. Dados do Falecido</h2>
+          <button
+            type="button"
+            className={styles.sectionHeading}
+            onClick={() => toggleSection(0)}
+            aria-expanded={expanded[0]}
+          >
+            <span>1. Dados do falecido</span>
+            <span>{expanded[0] ? 'Expandido ⌃' : 'Expandir ⌄'}</span>
+          </button>
 
-          <div>
-            <label htmlFor="nome">Nome completo</label>
-            <input
-              id="nome"
-              type="text"
-              placeholder="Ex.: João da Silva"
-              value={nome}
-              onChange={(event) => setNome(event.target.value)}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="cpf">CPF</label>
-            <input
-              id="cpf"
-              type="text"
-              placeholder="000.000.000-00"
-              value={cpf}
-              onChange={(event) => setCpf(event.target.value)}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="nascimento">Data de nascimento</label>
-            <input
-              id="nascimento"
-              type="date"
-              value={nascimento}
-              onChange={(event) => setNascimento(event.target.value)}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="obito">Data do óbito</label>
-            <input
-              id="obito"
-              type="date"
-              value={obito}
-              onChange={(event) => setObito(event.target.value)}
-            />
-          </div>
+          {expanded[0] && (
+            <div className={styles.fieldGrid}>
+              {renderField('nome', 'Nome completo', 'Ex.: João da Silva')}
+              {renderField('cpf', 'CPF', '000.000.000-00')}
+              {renderField('nascimento', 'Data de nascimento', '', 'date')}
+              {renderField('obito', 'Data do óbito', '', 'date')}
+            </div>
+          )}
         </section>
+
         <section className={styles.section}>
-          <h2>2. Endereço de Remoção</h2>
+          <button
+            type="button"
+            className={styles.sectionHeading}
+            onClick={() => toggleSection(1)}
+            aria-expanded={expanded[1]}
+          >
+            <span>2. Endereço da remoção</span>
+            <span>{expanded[1] ? 'Expandido ⌃' : 'Expandir ⌄'}</span>
+          </button>
 
-          <div>
-            <label htmlFor="endereco">Endereço de origem</label>
-            <input
-              id="endereco"
-              type="text"
-              placeholder="Rua, número, complemento"
-              value={endereco}
-              onChange={(event) => setEndereco(event.target.value)}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="bairro">Bairro</label>
-            <input
-              id="bairro"
-              type="text"
-              placeholder="Bairro"
-              value={bairro}
-              onChange={(event) => setBairro(event.target.value)}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="cidade">Cidade</label>
-            <input
-              id="cidade"
-              type="text"
-              placeholder="Cidade"
-              value={cidade}
-              onChange={(event) => setCidade(event.target.value)}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="uf">UF</label>
-            <input
-              id="uf"
-              type="text"
-              placeholder="Ex.: SE"
-              maxLength={2}
-              value={uf}
-              onChange={(event) => setUf(event.target.value)}
-            />
-          </div>
+          {expanded[1] && (
+            <div className={styles.fieldGrid}>
+              {renderField(
+                'endereco',
+                'Endereço de origem',
+                'Rua, Número, Complemento'
+              )}
+              {renderField('bairro', 'Bairro', 'Bairro')}
+              {renderField('cidade', 'Cidade', 'Cidade')}
+              {renderField('uf', 'UF', 'UF')}
+            </div>
+          )}
         </section>
+
         <section className={styles.section}>
-          <h2>3. Dados do Solicitante</h2>
+          <button
+            type="button"
+            className={styles.sectionHeading}
+            onClick={() => toggleSection(2)}
+            aria-expanded={expanded[2]}
+          >
+            <span>3. Dados do solicitante</span>
+            <span>{expanded[2] ? 'Expandido ⌃' : 'Expandir ⌄'}</span>
+          </button>
 
-          <div>
-            <label htmlFor="solicitante">Nome do solicitante</label>
-            <input
-              id="solicitante"
-              type="text"
-              placeholder="Nome completo do familiar/responsável"
-              value={solicitante}
-              onChange={(event) => setSolicitante(event.target.value)}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="telefone">Telefone de contato</label>
-            <input
-              id="telefone"
-              type="tel"
-              placeholder="(00) 00000-0000"
-              value={telefone}
-              onChange={(event) => setTelefone(event.target.value)}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="parentesco">Parentesco</label>
-            <input
-              id="parentesco"
-              type="text"
-              placeholder="Ex.: Filho(a), Cônjuge"
-              value={parentesco}
-              onChange={(event) => setParentesco(event.target.value)}
-            />
-          </div>
+          {expanded[2] && (
+            <div className={`${styles.fieldGrid} ${styles.threeColumns}`}>
+              {renderField(
+                'solicitante',
+                'Nome do solicitante',
+                'Nome completo do familiar/responsável'
+              )}
+              {renderField(
+                'telefone',
+                'Telefone de contato',
+                '(00) 00000-0000',
+                'tel'
+              )}
+              {renderField(
+                'parentesco',
+                'Parentesco',
+                'Ex.: Filho(a), Cônjuge'
+              )}
+            </div>
+          )}
         </section>
-        <section>
-          <h2>4. Laudo e Documentação</h2>
 
-          <div>
-            <label htmlFor="documentos">Upload de documentos</label>
+        <section className={styles.section}>
+          <button
+            type="button"
+            className={styles.sectionHeading}
+            onClick={() => toggleSection(3)}
+            aria-expanded={expanded[3]}
+          >
+            <span>4. Laudo e documentação</span>
+            <span>{expanded[3] ? 'Expandido ⌃' : 'Expandir ⌄'}</span>
+          </button>
 
-            <input id="documentos" type="file" accept=".pdf,.jpg,.jpeg,.png" multiple />
+          {expanded[3] && (
+            <div className={styles.uploadArea}>
+              <label htmlFor="documentos" className={styles.uploadLabel}>
+                <span className={styles.uploadIcon}>↑</span>
+                <strong>Upload de documentos</strong>
+                <span>
+                  Arraste os arquivos para esta área ou clique para selecionar
+                </span>
+                <small>PDF, JPG ou PNG</small>
+              </label>
 
-            <p>Anexe os arquivos e certidões necessários para o atendimento.</p>
-          </div>
+              <input
+                ref={fileInputRef}
+                id="documentos"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                multiple
+                className={styles.fileInput}
+                onChange={(event) =>
+                  setDocuments(Array.from(event.target.files ?? []))
+                }
+              />
+
+              {documents.length > 0 && (
+                <ul className={styles.fileList}>
+                  {documents.map((file, index) => (
+                    <li key={`${file.name}-${index}`}>{file.name}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </section>
+
+        {message && (
+          <p className={styles.feedback} role="status">
+            {message}
+          </p>
+        )}
 
         <div className={styles.actions}>
-          <button type="reset">Cancelar</button>
+          <button
+            type="button"
+            className={styles.cancelButton}
+            onClick={resetForm}
+          >
+            Cancelar
+          </button>
 
-          <button type="submit">Registrar Atendimento</button>
+          <button type="submit" className={styles.submitButton}>
+            + Registrar Atendimento
+          </button>
         </div>
       </form>
-    </div>
+    </main>
   )
 }
