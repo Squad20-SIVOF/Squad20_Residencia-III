@@ -6,12 +6,15 @@ import { VehicleForm } from './VehicleForm'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/Button'
 import { StateMessage } from '@/components/StateMessage'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { VehiclePagination } from './components/VehiclePagination'
+import { VehicleStats } from './components/VehicleStats'
 import { VehicleTable } from './components/VehicleTable'
 import { VehicleToolbar } from './components/VehicleToolbar'
 import { useVehicleFilters } from './hooks/useVehicleFilters'
 import { useVehicles } from './hooks/useVehicles'
 import type { Vehicle } from './types'
+import { summarizeFleet } from './utils/vehicleRules'
 import styles from './VehiclesPage.module.scss'
 
 // Divisão de código: a tela de detalhes só é baixada quando o usuário abre um veículo.
@@ -24,6 +27,7 @@ const VehicleDetailsPage = lazy(() =>
 const NO_VEHICLES: Vehicle[] = []
 
 export function VehiclesPage() {
+  useDocumentTitle('Veículos')
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null)
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null | undefined>(
     undefined,
@@ -111,6 +115,7 @@ export function VehiclesPage() {
       >
         <VehicleDetailsPage
           vehicleId={selectedVehicleId}
+          canManage={canManage}
           onEdit={handleEdit}
           onBack={() => setSelectedVehicleId(null)}
         />
@@ -118,7 +123,7 @@ export function VehiclesPage() {
     )
   }
 
-  function renderList() {
+  function renderListState() {
     if (vehiclesRequest.status === 'loading') {
       return <StateMessage variant="loading" title="Carregando veículos..." />
     }
@@ -154,53 +159,74 @@ export function VehiclesPage() {
       )
     }
 
-    return (
-      <>
-        <VehicleTable
-          vehicles={filters.pageVehicles}
-          onView={(vehicle) => setSelectedVehicleId(vehicle.id)}
-          onEdit={handleEdit}
-          onDelete={setVehicleToDelete}
-          canManage={canManage}
-        />
-        <VehiclePagination
-          shownCount={filters.pageVehicles.length}
-          totalCount={filters.filteredVehicles.length}
-          hasPrevious={filters.currentPage > 1}
-          hasNext={filters.currentPage < filters.totalPages}
-          onPrevious={filters.goToPreviousPage}
-          onNext={filters.goToNextPage}
-        />
-      </>
-    )
+    return null
   }
+
+  const listState = renderListState()
+  const isLoaded = vehiclesRequest.status === 'success'
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 ref={headingRef} tabIndex={-1} className={styles.title}>
-          Controle de Veículos
-        </h1>
-        <p className={styles.subtitle}>
-          Cadastro, disponibilidade e situação operacional da frota
-        </p>
+        <div className={styles.heading}>
+          <h1 ref={headingRef} tabIndex={-1} className={styles.title}>
+            Controle de Veículos
+          </h1>
+          <p className={styles.subtitle}>
+            Cadastro, disponibilidade e situação operacional da frota
+          </p>
+        </div>
+        {canManage && (
+          <Button
+            className={styles.createButton}
+            onClick={handleCreate}
+            iconStart={
+              <svg viewBox="0 0 16 16" width="16" height="16">
+                <path
+                  d="M8 3v10M3 8h10"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                />
+              </svg>
+            }
+          >
+            Cadastrar Novo
+          </Button>
+        )}
       </header>
+
+      {isLoaded && <VehicleStats summary={summarizeFleet(vehicles)} />}
 
       <VehicleToolbar
         search={filters.search}
         status={filters.status}
         fleet={filters.fleet}
-        onSearchChange={filters.setSearch}
-        onStatusChange={filters.setStatus}
-        onFleetChange={filters.setFleet}
-        onCreate={handleCreate}
-        canManage={canManage}
+        onApply={filters.applyFilters}
       />
 
       {deleteError && <Alert variant="danger">{deleteError}</Alert>}
-      <section className={styles.list} aria-label="Veículos">
-        {renderList()}
-      </section>
+      <div className={styles.list}>
+        <VehicleTable
+          vehicles={filters.pageVehicles}
+          {...(isLoaded ? { recordCount: filters.filteredVehicles.length } : {})}
+          state={listState}
+          onView={(vehicle) => setSelectedVehicleId(vehicle.id)}
+          onEdit={handleEdit}
+          onDelete={setVehicleToDelete}
+          canManage={canManage}
+        />
+        {!listState && (
+          <VehiclePagination
+            shownCount={filters.pageVehicles.length}
+            totalCount={filters.filteredVehicles.length}
+            hasPrevious={filters.currentPage > 1}
+            hasNext={filters.currentPage < filters.totalPages}
+            onPrevious={filters.goToPreviousPage}
+            onNext={filters.goToNextPage}
+          />
+        )}
+      </div>
       <ConfirmDialog
         isOpen={vehicleToDelete !== null}
         title="Excluir veículo?"

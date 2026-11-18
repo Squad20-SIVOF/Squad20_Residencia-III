@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useParams } from 'react-router-dom'
 import { beforeEach, expect, test, vi } from 'vitest'
 import SolicitacoesPendentesPage from './SolicitacoesPendentesPage'
 import { api } from '@/service/api'
@@ -45,8 +45,13 @@ test('consulta pendentes reais e abre detalhes pelo UUID, sem ações simuladas'
   expect(
     screen.getByRole('link', { name: 'Ver detalhes da solicitação #11111111' }),
   ).toHaveAttribute('href', `/viagens/solicitacoes/${id}`)
-  for (const action of ['Aprovar', 'Recusar', 'Atribuir'])
+  for (const action of ['Aprovar', 'Recusar'])
     expect(screen.getByRole('button', { name: action })).toBeDisabled()
+  expect(
+    screen.getByRole('link', {
+      name: 'Atribuir veículo e motorista à solicitação #11111111',
+    }),
+  ).toHaveAttribute('href', `/viagens/solicitacoes/${id}/atribuir`)
   expect(screen.getByText('21 pendentes')).toBeInTheDocument()
 })
 test('paginação consulta a próxima página na API', async () => {
@@ -77,4 +82,21 @@ test('lista vazia é mostrada sem os exemplos antigos', async () => {
   mount()
   expect(await screen.findByText('Nenhuma solicitação pendente.')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Próxima' })).toBeDisabled()
+})
+test('o botão Atribuir abre a tela de atribuir veículo e motorista', async () => {
+  function AssignRoute() {
+    return <p>Atribuindo {useParams().id}</p>
+  }
+  render(
+    <MemoryRouter initialEntries={['/viagens/solicitacoes']}>
+      <Routes>
+        <Route path="/viagens/solicitacoes" element={<SolicitacoesPendentesPage />} />
+        <Route path="/viagens/solicitacoes/:id/atribuir" element={<AssignRoute />} />
+      </Routes>
+    </MemoryRouter>,
+  )
+  await userEvent.click(
+    await screen.findByRole('link', { name: /^Atribuir veículo e motorista/ }),
+  )
+  expect(screen.getByText(`Atribuindo ${id}`)).toBeInTheDocument()
 })

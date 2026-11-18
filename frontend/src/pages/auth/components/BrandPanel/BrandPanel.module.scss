@@ -1,12 +1,14 @@
 @use '../../../../styles/tokens' as *;
 @use '../../../../styles/breakpoints' as *;
 
+// Coluna: marca no topo, chamada no meio e aviso de segurança no rodapé.
 .root {
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .top {
-  grid-area: brand;
   background-color: $color-navy;
   color: $color-on-navy;
 }
@@ -80,7 +82,7 @@
 }
 
 .hero {
-  grid-area: hero;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -156,24 +158,23 @@
 }
 
 .secure {
-  grid-area: secure;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: $space-2;
   min-height: $touch-min;
   margin: 0;
-  padding: $space-2 $space-gutter-xs $space-4;
+  padding: 0 $space-gutter-xs $space-3;
   font-size: 0.875rem;
   line-height: 1.4;
-  color: $color-text-muted;
-  background-color: $color-surface;
+  color: $color-on-navy-muted;
+  background-color: $color-navy;
+
+  @include up(sm) {
+    padding-inline: $space-4;
+  }
 
   @include up(lg) {
-    justify-content: flex-start;
     padding: $space-4 4rem $space-5;
-    color: $color-on-navy-muted;
-    background-color: $color-navy;
   }
 }
 

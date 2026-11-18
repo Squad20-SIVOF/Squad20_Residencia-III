@@ -12,6 +12,17 @@ html {
   text-size-adjust: 100%;
 }
 
+// Gestor: barra de rolagem invisível; a rolagem segue por mouse, toque e teclado.
+// O atributo fica no index.html do gestor, então o app do motorista não muda.
+[data-app='gestor'],
+[data-app='gestor'] * {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 body {
   margin: 0;
   min-height: 100dvh;

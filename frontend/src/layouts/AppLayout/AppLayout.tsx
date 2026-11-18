@@ -1,3 +1,4 @@
+import { getAlertCount } from '@/service/alertService'
 import { currentUser, logout, type SessionUser } from '@/service/authService'
 import { useEffect, useId, useState } from 'react'
 import type { ReactNode } from 'react'
@@ -8,31 +9,64 @@ import {
   useLocation,
   useOutletContext,
 } from 'react-router-dom'
+import { Avatar } from '@/components/Avatar'
 import { classNames } from '@/utils/classNames'
+import { SidebarIcon, type SidebarIconName } from './SidebarIcon'
 import styles from './AppLayout.module.scss'
 
 interface NavItem {
   to: string
   label: string
+  icon: SidebarIconName
   permission?: string
   anyPermission?: string[]
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/', label: 'Início' },
-  { to: '/veiculos', label: 'Veículos', permission: 'veiculos:ler' },
-  { to: '/motoristas', label: 'Motoristas', permission: 'motoristas:ler' },
-  { to: '/abastecimentos', label: 'Abastecimentos', permission: 'abastecimentos:ler' },
-  { to: '/manutencoes', label: 'Manutenções' },
-  { to: '/viagens', label: 'Viagens' },
-  { to: '/relatorios', label: 'Relatórios' },
-  { to: '/perfil', label: 'Perfil' },
+  { to: '/', label: 'Início', icon: 'home' },
+  { to: '/veiculos', label: 'Veículos', icon: 'vehicles', permission: 'veiculos:ler' },
+  {
+    to: '/motoristas',
+    label: 'Motoristas',
+    icon: 'drivers',
+    permission: 'motoristas:ler',
+  },
+  {
+    to: '/abastecimentos',
+    label: 'Abastecimentos',
+    icon: 'fuel',
+    permission: 'abastecimentos:ler',
+  },
+  { to: '/manutencoes', label: 'Manutenções', icon: 'maintenance' },
+  { to: '/viagens', label: 'Viagens', icon: 'trips' },
+  { to: '/relatorios', label: 'Relatórios', icon: 'reports' },
+  { to: '/perfil', label: 'Perfil', icon: 'profile' },
   {
     to: '/usuarios',
     label: 'Usuários e permissões',
+    icon: 'users',
     anyPermission: ['usuarios:delegar-permissoes', 'usuarios:gerenciar'],
   },
 ]
+
+// A escolha de recolher vale só para a sessão da aba.
+const COLLAPSED_KEY = 'sivof:menu-recolhido'
+
+function readIsCollapsed(): boolean {
+  try {
+    return sessionStorage.getItem(COLLAPSED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function saveIsCollapsed(isCollapsed: boolean) {
+  try {
+    sessionStorage.setItem(COLLAPSED_KEY, isCollapsed ? '1' : '0')
+  } catch {
+    // Sem armazenamento (aba privada): a escolha vale só até recarregar.
+  }
+}
 
 export interface AppLayoutProps {
   /** Sem `children`, renderiza a rota filha (<Outlet />). */
@@ -48,10 +82,20 @@ export function AppLayout({ children }: AppLayoutProps) {
       .then(setUser)
       .catch(() => {})
   }, [session])
+  const [alertCount, setAlertCount] = useState(0)
+  const canReadAlerts = Boolean(user?.permissoes.includes('manutencoes:ler'))
+  useEffect(() => {
+    if (!canReadAlerts) return
+    getAlertCount()
+      .then(setAlertCount)
+      .catch(() => {})
+  }, [canReadAlerts])
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(readIsCollapsed)
   const panelId = useId()
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const userName = user?.nome ?? 'Usuário'
 
   useEffect(() => {
     if (!isMenuOpen) return
@@ -64,6 +108,12 @@ export function AppLayout({ children }: AppLayoutProps) {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isMenuOpen])
 
+  function handleToggleCollapsed() {
+    const next = !isCollapsed
+    setIsCollapsed(next)
+    saveIsCollapsed(next)
+  }
+
   async function handleLogout() {
     setIsMenuOpen(false)
     try {
@@ -74,18 +124,30 @@ export function AppLayout({ children }: AppLayoutProps) {
   }
 
   return (
-    <div className={styles.layout}>
+    <div className={classNames(styles.layout, isCollapsed && styles.layoutCollapsed)}>
       <aside className={styles.sidebar}>
         <div className={styles.brandRow}>
           <div className={styles.brand}>
             <span className={styles.logo} aria-hidden="true">
-              FM
+              SM
             </span>
             <span className={styles.brandText}>
-              <span className={styles.brandName}>FrotaManager</span>
+              <span className={styles.brandName}>SIVOF Manager</span>
               <span className={styles.brandTagline}>Gestão de Frota · FSPH</span>
             </span>
           </div>
+
+          <button
+            type="button"
+            className={styles.collapseToggle}
+            aria-expanded={!isCollapsed}
+            aria-controls={panelId}
+            aria-label={isCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+            title={isCollapsed ? 'Expandir menu' : 'Recolher menu'}
+            onClick={handleToggleCollapsed}
+          >
+            <SidebarIcon name={isCollapsed ? 'expand' : 'collapse'} />
+          </button>
 
           <button
             type="button"
@@ -95,23 +157,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             aria-label={isMenuOpen ? 'Fechar menu' : 'Abrir menu'}
             onClick={() => setIsMenuOpen((isOpen) => !isOpen)}
           >
-            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-              {isMenuOpen ? (
-                <path
-                  d="M6 6l12 12M18 6L6 18"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              ) : (
-                <path
-                  d="M4 7h16M4 12h16M4 17h16"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              )}
-            </svg>
+            <SidebarIcon name={isMenuOpen ? 'close' : 'menu'} className={styles.icon} />
           </button>
         </div>
 
@@ -131,26 +177,71 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <NavLink
                     to={item.to}
                     end={item.to === '/'}
+                    aria-label={isCollapsed ? item.label : undefined}
                     className={({ isActive }) =>
-                      classNames(styles.navItem, isActive && styles.navItemActive)
+                      classNames(
+                        styles.navItem,
+                        styles.hasTooltip,
+                        isActive && styles.navItemActive,
+                      )
                     }
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    {item.label}
+                    <SidebarIcon name={item.icon} className={styles.icon} />
+                    <span className={styles.label}>{item.label}</span>
                   </NavLink>
                 </li>
               ))}
             </ul>
           </nav>
 
-          <div className={styles.userBox}>
-            <span className={styles.avatar} aria-hidden="true" />
-            <span className={styles.userText}>
-              <span className={styles.userName}>{user?.nome ?? 'Usuário'}</span>
-              <button type="button" className={styles.logout} onClick={handleLogout}>
-                Sair
-              </button>
-            </span>
+          <div className={styles.footer}>
+            {/* A troca de tema chega junto com o tema escuro. */}
+            <button
+              type="button"
+              className={classNames(styles.footerItem, styles.hasTooltip)}
+              aria-disabled="true"
+              aria-label={isCollapsed ? 'Modo claro' : undefined}
+            >
+              <SidebarIcon name="sun" className={styles.icon} />
+              <span className={styles.label}>Modo claro</span>
+            </button>
+
+            <p
+              className={classNames(
+                styles.footerItem,
+                styles.footerItemStrong,
+                styles.hasTooltip,
+              )}
+            >
+              <span className={styles.iconWrap}>
+                <SidebarIcon name="alert" className={styles.icon} />
+                {alertCount > 0 ? (
+                  <span className={styles.badge}>
+                    {alertCount}
+                    <span className={styles.visuallyHidden}>
+                      {alertCount === 1 ? ' alerta' : ' alertas'}
+                    </span>
+                  </span>
+                ) : null}
+              </span>
+              <span className={styles.label}>Notificações</span>
+            </p>
+
+            <div className={styles.userBox}>
+              <Avatar name={userName} className={styles.avatar} />
+              <span className={styles.userText}>
+                <span className={styles.userName}>{userName}</span>
+                <button
+                  type="button"
+                  className={classNames(styles.logout, styles.hasTooltip)}
+                  onClick={handleLogout}
+                >
+                  <SidebarIcon name="logout" className={styles.logoutIcon} />
+                  <span className={styles.label}>Sair</span>
+                </button>
+              </span>
+            </div>
           </div>
         </div>
       </aside>

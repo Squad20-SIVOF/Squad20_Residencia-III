@@ -2,15 +2,15 @@ import styles from './BrandPanel.module.scss'
 
 export function BrandPanel() {
   return (
-    <aside className={styles.root} aria-label="FrotaManager">
+    <aside className={styles.root} aria-label="SIVOF Manager">
       <div className={styles.top}>
         <div className={styles.gradient} aria-hidden="true" />
         <div className={styles.brand}>
           <span className={styles.logo} aria-hidden="true">
-            FM
+            SM
           </span>
           <div className={styles.brandText}>
-            <p className={styles.product}>FrotaManager</p>
+            <p className={styles.product}>SIVOF Manager</p>
             <p className={styles.tagline}>Gestão de Frota · FSPH</p>
           </div>
         </div>

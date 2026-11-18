@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Alert } from '@/components/Alert'
 import { PageHeader } from '@/components/PageHeader'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useVehicles } from '@/pages/vehicles/hooks/useVehicles'
@@ -9,10 +11,15 @@ import { createRequest } from './services/requestService'
 import type { RequestInput } from './types'
 import styles from './RequestFormPage.module.scss'
 
+const PENDING_REQUESTS_PATH = '/viagens/solicitacoes'
+// Tempo para o aviso de envio ser lido (e anunciado) antes do redirecionamento.
+export const REDIRECT_DELAY_MS = 2000
+
 /** Solicitação de veículo (`/viagens/solicitar`). */
 export function RequestFormPage() {
   useDocumentTitle('Solicitar Veículo')
   const navigate = useNavigate()
+  const [isSent, setIsSent] = useState(false)
   const vehiclesRequest = useVehicles()
   // Só veículos disponíveis podem ser indicados como preferência.
   const vehicles =
@@ -21,11 +28,17 @@ export function RequestFormPage() {
       : []
 
   async function handleSubmit(input: RequestInput) {
-    const request = await createRequest(input)
-    navigate(`/viagens/${request.id}`)
+    await createRequest(input)
+    setIsSent(true)
   }
 
   const form = useRequestForm(vehicles, handleSubmit)
+
+  useEffect(() => {
+    if (!isSent) return
+    const timer = setTimeout(() => navigate(PENDING_REQUESTS_PATH), REDIRECT_DELAY_MS)
+    return () => clearTimeout(timer)
+  }, [isSent, navigate])
 
   return (
     <div className={styles.page}>
@@ -69,6 +82,20 @@ export function RequestFormPage() {
         vehicles={vehicles}
         vehiclesStatus={vehiclesRequest.status}
         onReloadVehicles={vehiclesRequest.reload}
+        notice={
+          isSent && (
+            <Alert
+              variant="success"
+              action={
+                <Link to={PENDING_REQUESTS_PATH} className={styles.noticeLink}>
+                  Ver solicitações pendentes
+                </Link>
+              }
+            >
+              Solicitação enviada! Aguardando aprovação do gestor.
+            </Alert>
+          )
+        }
       />
     </div>
   )

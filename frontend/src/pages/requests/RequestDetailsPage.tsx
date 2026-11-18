@@ -2,6 +2,7 @@ import { useCallback, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Button } from '@/components/Button'
 import { Badge } from '@/components/Badge'
+import { ButtonLink } from '@/components/ButtonLink'
 import { Card } from '@/components/Card'
 import { CheckboxField } from '@/components/CheckboxField'
 import { TextField } from '@/components/TextField'
@@ -9,6 +10,7 @@ import { TextAreaField } from '@/components/TextAreaField'
 import { StateMessage } from '@/components/StateMessage'
 import { useAsync } from '@/hooks/useAsync'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useCanAssignTrip } from './hooks/useCanAssignTrip'
 import {
   cancelRequest,
   getRequestDetails,
@@ -162,7 +164,7 @@ function RequestActions({
         </form>
       )}
       <StateMessage
-        title="Aprovação, recusa e atribuição indisponíveis"
+        title="Aprovação e recusa ainda indisponíveis"
         description="Essas ações ainda não estão disponíveis. Nenhuma alteração é simulada."
       />
     </Card>
@@ -174,6 +176,7 @@ export function RequestDetailsPage() {
   const { id = '' } = useParams()
   const load = useCallback(() => getRequestDetails(id), [id])
   const result = useAsync(load)
+  const canAssign = useCanAssignTrip()
   return (
     <section className={styles.page}>
       <Link to="/viagens/solicitacoes" className={styles.back}>
@@ -200,6 +203,11 @@ export function RequestDetailsPage() {
               <p>Solicitada em {dateTime(result.data.criado_em)}</p>
             </div>
             <Badge variant="info">{result.data.status}</Badge>
+            {canAssign && (
+              <ButtonLink to={`/viagens/solicitacoes/${encodeURIComponent(id)}/atribuir`}>
+                Atribuir veículo e motorista
+              </ButtonLink>
+            )}
           </header>
           <div className={styles.grid}>
             <Card title="Solicitação" className={styles.card}>

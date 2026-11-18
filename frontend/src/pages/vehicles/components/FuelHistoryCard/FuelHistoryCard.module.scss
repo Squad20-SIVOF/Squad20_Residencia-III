@@ -1,0 +1,42 @@
+@use '../../../../styles/tokens' as *;
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.title {
+  font-size: $font-size-small;
+  color: $color-text;
+}
+
+.meta,
+.summary {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.total {
+  font-size: $font-size-body;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.summary {
+  margin-top: auto;
+}
+
+.empty {
+  font-size: $font-size-small;
+  color: $color-text-muted;
+}

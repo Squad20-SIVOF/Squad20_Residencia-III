@@ -45,7 +45,7 @@
   grid-area: header;
 
   h1 {
-    font-weight: 700;
+    font-weight: 500;
   }
 
   @include up(lg) {
@@ -86,6 +86,16 @@
   @include up(lg) {
     padding: 0 $space-4 $space-4;
   }
+}
+
+// Herda a cor do aviso de sucesso; o sublinhado indica que é link sem depender da cor.
+.noticeLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: $touch-target;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
 }
 
 .breadcrumbLinks {

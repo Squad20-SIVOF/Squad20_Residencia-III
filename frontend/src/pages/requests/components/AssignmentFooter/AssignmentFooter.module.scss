@@ -1,0 +1,75 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/breakpoints' as *;
+@use '../../../../styles/mixins' as *;
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: $space-3;
+  background-color: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-subtle;
+
+  @include up(md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: $space-3 $space-4;
+  }
+}
+
+.selection {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.label {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.values {
+  font-size: $font-size-small;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.empty {
+  font-weight: 400;
+  font-style: italic;
+  color: $color-text-muted;
+}
+
+.hidden {
+  @include visually-hidden;
+}
+
+// No celular os botões ocupam a largura toda, com "Confirmar" mais perto do polegar.
+.actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: $space-2;
+
+  > * {
+    width: 100%;
+  }
+
+  @include up(sm) {
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: $space-3;
+
+    > * {
+      width: auto;
+    }
+
+    .confirm {
+      padding-inline: $space-4;
+    }
+  }
+}

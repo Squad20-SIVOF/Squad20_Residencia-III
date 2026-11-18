@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, expect, test, vi } from 'vitest'
 import { RequestDetailsPage } from './RequestDetailsPage'
 import { api } from '@/service/api'
+import { currentUser } from '@/service/authService'
 vi.mock('@/service/api', () => ({ api: vi.fn<typeof api>() }))
 const id = '11111111-1111-4111-8111-111111111111'
 let status: string
@@ -106,3 +107,31 @@ test('edição envia somente os campos suportados pela API', async () => {
     }),
   )
 })
+test('quem gerencia viagens vê o botão de atribuir veículo e motorista', async () => {
+  vi.mocked(currentUser).mockResolvedValue({
+    id: 'gestor',
+    nome: 'Gestor',
+    email: 'gestor@example.com',
+    permissoes: ['viagens:gerenciar'],
+  })
+  mount()
+  expect(
+    await screen.findByRole('link', { name: 'Atribuir veículo e motorista' }),
+  ).toHaveAttribute('href', `/viagens/solicitacoes/${id}/atribuir`)
+})
+test('sem permissão de gerenciar viagens o botão de atribuir não aparece', async () => {
+  vi.mocked(currentUser).mockResolvedValue({
+    id: 'solicitante',
+    nome: 'Solicitante',
+    email: 'solicitante@example.com',
+    permissoes: ['solicitacoes:criar'],
+  })
+  mount()
+  expect(await screen.findByText('Maria Real')).toBeInTheDocument()
+  expect(
+    screen.queryByRole('link', { name: 'Atribuir veículo e motorista' }),
+  ).not.toBeInTheDocument()
+})
+vi.mock('@/service/authService', () => ({
+  currentUser: vi.fn<typeof currentUser>(),
+}))

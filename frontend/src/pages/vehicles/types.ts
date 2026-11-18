@@ -69,6 +69,19 @@ export interface Maintenance {
   date: string // "AAAA-MM-DD"
   mileageKm: number | null
   cost: number
+  status?: string // "Agendada", "Em Andamento", "Concluída"…
+  workshop?: string
+}
+
+export interface Fueling {
+  id: string
+  date: string // ISO 8601
+  fuel: string | null
+  liters: number
+  total: number
+  station: string | null
+  mileageKm: number
+  driverName: string | null
 }
 
 export interface InspectionItem {
@@ -78,12 +91,19 @@ export interface InspectionItem {
 }
 
 export interface VehicleDetails {
-  availability?: { trips: boolean; checklist: boolean; maintenance: boolean }
+  availability?: {
+    trips: boolean
+    checklist: boolean
+    maintenance: boolean
+    fuel?: boolean
+  }
   vehicle: Vehicle
   trips: Trip[]
   tripsError?: string
   maintenances: Maintenance[]
   checklist: InspectionItem[]
+  fuelings?: Fueling[]
+  fuelError?: string
 }
 
 export type VehicleStatusFilter = VehicleStatus | 'todos'

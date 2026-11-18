@@ -1,0 +1,78 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.plate {
+  display: inline-flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-align: center;
+  background-color: $color-card;
+  border: 2px solid $color-navy;
+  border-radius: $radius-sm * 0.5;
+}
+
+.band {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0.125rem $space-2;
+  font-weight: 700;
+  line-height: 1;
+  color: $color-on-primary;
+  background-color: $color-primary;
+}
+
+.region {
+  justify-self: start;
+  font-size: 0.4375rem;
+  letter-spacing: 0.04em;
+}
+
+.country {
+  grid-column: 2;
+  letter-spacing: 0.08em;
+}
+
+.flag {
+  justify-self: end;
+  width: 0.875rem;
+  height: 0.5625rem;
+  background-color: $color-success;
+  border-radius: 1px;
+}
+
+.characters {
+  font-weight: 800;
+  line-height: 1.1;
+  color: $color-text;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.sm {
+  .band {
+    font-size: 0.4375rem;
+  }
+
+  .characters {
+    padding: 0.125rem 0.375rem;
+    font-size: 1.125rem;
+  }
+}
+
+.md {
+  width: min(100%, 10.75rem);
+
+  .band {
+    font-size: 0.625rem;
+  }
+
+  .characters {
+    padding: 0.375rem $space-2;
+    font-size: 1.875rem;
+  }
+}
+
+.srOnly {
+  @include visually-hidden;
+}

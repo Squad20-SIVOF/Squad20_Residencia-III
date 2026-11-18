@@ -1,31 +1,44 @@
 @use '../../../../styles/tokens' as *;
-@use '../../../../styles/mixins' as *;
+@use '../../../../styles/breakpoints' as *;
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: $space-4;
+  gap: $space-3;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+// Resumo: viagens lado a lado a partir do sm.
+.listSummary {
+  @include up(sm) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: $space-4;
+  }
 }
 
 .item {
   display: flex;
   flex-direction: column;
+  gap: $space-2;
+  min-width: 0;
 }
 
 .code {
   font-size: $font-size-small;
-  font-weight: 600;
+  color: $color-text;
 }
 
-.route,
-.time {
+.detail {
   font-size: $font-size-xsmall;
   line-height: $line-height-small;
   color: $color-text-muted;
 }
 
-.srOnly {
-  @include visually-hidden;
+.viewAll {
+  align-self: flex-start;
 }
 
 .empty {

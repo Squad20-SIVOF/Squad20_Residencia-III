@@ -1,0 +1,62 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/breakpoints' as *;
+@use '../../../../styles/mixins' as *;
+
+// Celular: tudo em coluna. A partir de md, trajeto à esquerda e carga/paradas à direita.
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: $space-3;
+  background-color: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-subtle;
+
+  @include up(md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: $space-3 $space-4;
+  }
+}
+
+.main,
+.extra {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  min-width: 0;
+}
+
+.title {
+  font-size: $font-size-xsmall;
+  font-weight: 600;
+  line-height: $line-height-small;
+  color: $color-primary;
+}
+
+.route {
+  font-size: $font-size-card-title;
+  font-weight: 700;
+  line-height: $line-height-heading;
+  color: $color-text;
+  overflow-wrap: anywhere;
+}
+
+.cargo {
+  font-size: $font-size-small;
+  font-weight: 700;
+  color: $color-text;
+  overflow-wrap: anywhere;
+}
+
+.stops {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+  overflow-wrap: anywhere;
+}
+
+.hidden {
+  @include visually-hidden;
+}
