@@ -131,7 +131,7 @@ export function DriversPage() {
             <Alert
               variant="danger"
               action={
-                <Button variant="outline-danger" onClick={filters.toggleOnlyAlerts}>
+                <Button variant="secondary" onClick={filters.toggleOnlyAlerts}>
                   {filters.onlyAlerts ? 'Mostrar todos' : 'Revisar alertas'}
                 </Button>
               }
