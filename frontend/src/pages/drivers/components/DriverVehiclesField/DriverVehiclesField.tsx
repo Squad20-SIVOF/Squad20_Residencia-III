@@ -59,14 +59,9 @@ export function DriverVehiclesField({
               onChange={setSelected}
               className={styles.select}
             />
-            <button
-              type="button"
-              className={styles.addBtn}
-              onClick={handleAdd}
-              disabled={!selected}
-            >
-              + adicionar
-            </button>
+            <button type="button" className={styles.addBtn} onClick={handleAdd} disabled={!selected} aria-label="Adicionar">
+  + adicionar
+</button>
           </div>
         </div>
       </div>
