@@ -43,7 +43,7 @@ test('filtra os veículos pela frota e libera todas para coringa', async () => {
   render(
     <DriverForm onSubmit={vi.fn<() => Promise<void>>()} onCancel={vi.fn<() => void>()} />,
   )
-  await user.selectOptions(screen.getByLabelText('Frota'), 'Administrativa')
+  await user.selectOptions(screen.getByLabelText('Frota *'), 'Administrativa')
   await waitFor(() =>
     expect(screen.getByRole('option', { name: 'ADM0A01' })).toBeInTheDocument(),
   )
@@ -57,10 +57,10 @@ test('mantém o vínculo ao trocar a frota e avisa que deve ser removido', async
   render(
     <DriverForm onSubmit={vi.fn<() => Promise<void>>()} onCancel={vi.fn<() => void>()} />,
   )
-  await user.selectOptions(screen.getByLabelText('Frota'), 'SVO')
+  await user.selectOptions(screen.getByLabelText('Frota *'), 'SVO')
   await user.selectOptions(screen.getByLabelText('Escolher veículo'), 'SVO0A01')
   await user.click(screen.getByRole('button', { name: 'Adicionar' }))
-  await user.selectOptions(screen.getByLabelText('Frota'), 'Administrativa')
+  await user.selectOptions(screen.getByLabelText('Frota *'), 'Administrativa')
   expect(screen.getByText(/Remova os veículos incompatíveis/)).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Remover SVO0A01' })).toBeInTheDocument()
 })

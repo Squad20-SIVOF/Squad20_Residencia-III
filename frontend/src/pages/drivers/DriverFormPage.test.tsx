@@ -20,7 +20,7 @@ test('não salva um cadastro vazio e foca o primeiro campo inválido', async () 
   const user = userEvent.setup()
   renderAt('/motoristas/novo')
 
-  await user.click(await screen.findByRole('button', { name: 'Salvar' }))
+  await user.click(await screen.findByRole('button', { name: /salvar/i }))
 
   expect(screen.getByText('Corrija os campos destacados.')).toBeInTheDocument()
   expect(screen.getByText('Informe o nome completo.')).toBeInTheDocument()
@@ -37,7 +37,7 @@ test('cadastra um motorista e volta para a lista com a confirmação', async () 
   await user.type(screen.getByLabelText('Nº da CNH *'), '11122233344')
   await user.selectOptions(screen.getByLabelText('Categoria *'), 'D')
   await user.type(screen.getByLabelText('Validade *'), '31122030')
-  await user.click(screen.getByRole('button', { name: 'Salvar' }))
+  await user.click(screen.getByRole('button', { name: /salvar/i }))
 
   expect(await screen.findByText(/motorista cadastrado com sucesso/i)).toBeInTheDocument()
   expect(await screen.findByText('Paulo Henrique')).toBeInTheDocument()
@@ -52,7 +52,7 @@ test('impede duas CNHs iguais', async () => {
   await user.type(screen.getByLabelText('Nº da CNH *'), '01234567890') // já usada no seed
   await user.selectOptions(screen.getByLabelText('Categoria *'), 'D')
   await user.type(screen.getByLabelText('Validade *'), '31122030')
-  await user.click(screen.getByRole('button', { name: 'Salvar' }))
+  await user.click(screen.getByRole('button', { name: /salvar/i }))
 
   expect(
     await screen.findByText('Já existe um motorista com essa CNH.'),
@@ -69,7 +69,7 @@ test('edita um motorista existente', async () => {
 
   await user.clear(nameField)
   await user.type(nameField, 'João Pedro da Silva')
-  await user.click(screen.getByRole('button', { name: 'Salvar' }))
+  await user.click(screen.getByRole('button', { name: /salvar/i }))
 
   expect(await screen.findByText(/motorista atualizado com sucesso/i)).toBeInTheDocument()
   expect(await screen.findByText('João Pedro da Silva')).toBeInTheDocument()
