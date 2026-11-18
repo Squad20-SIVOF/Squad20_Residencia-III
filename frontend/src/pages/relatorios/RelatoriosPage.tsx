@@ -60,11 +60,12 @@ export function RelatoriosPage() {
 
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
+
     link.href = url
     link.download = `relatorio-${name.toLowerCase()}.csv`
     link.click()
-    URL.revokeObjectURL(url)
 
+    URL.revokeObjectURL(url)
     setMessage('CSV de demonstração exportado.')
   }
 
@@ -97,7 +98,9 @@ export function RelatoriosPage() {
           Tipo de Relatório
           <select value={kind} onChange={(e) => setKind(e.target.value as Kind)}>
             {kinds.map((k) => (
-              <option key={k.name}>{k.name}</option>
+              <option key={k.name} value={k.name}>
+                {k.name}
+              </option>
             ))}
           </select>
         </label>
@@ -192,11 +195,11 @@ export function RelatoriosPage() {
               </div>
             </div>
 
-            <div
-              className={styles.chart}
-              role="img"
-              aria-label="Gráfico de barras com sete colunas"
-            >
+            <p className={styles.srOnly}>
+              Gráfico de barras com sete colunas ilustrativas.
+            </p>
+
+            <div className={styles.chart}>
               {bars.map((value, i) => (
                 <div
                   className={styles.bar}
@@ -236,11 +239,7 @@ export function RelatoriosPage() {
         </section>
       </div>
 
-      {message && (
-        <p role="status" className={styles.notice}>
-          {message}
-        </p>
-      )}
+      <output className={styles.notice}>{message}</output>
     </main>
   )
 }

@@ -68,11 +68,7 @@ export function AtendimentoSVOPage() {
 
   return (
     <main className={styles.page}>
-      <button
-        type="button"
-        className={styles.back}
-        onClick={() => navigate('/viagens')}
-      >
+      <button type="button" className={styles.back} onClick={() => navigate('/viagens')}>
         ← Voltar para o Painel de Viagens
       </button>
 
@@ -95,19 +91,15 @@ export function AtendimentoSVOPage() {
               onClick={() => toggle(index)}
               aria-expanded={!collapsed.includes(index)}
             >
-              <strong>{index + 1}. {group.title}</strong>
-              <span>
-                {collapsed.includes(index) ? 'Expandir +' : 'Expandido −'}
-              </span>
+              <strong>
+                {index + 1}. {group.title}
+              </strong>
+              <span>{collapsed.includes(index) ? 'Expandir +' : 'Expandido −'}</span>
             </button>
 
             {!collapsed.includes(index) && (
-              <div
-                className={`${styles.fields} ${
-                  index === 2 ? styles.three : ''
-                }`}
-              >
-                {group.fields.map(field => (
+              <div className={`${styles.fields} ${index === 2 ? styles.three : ''}`}>
+                {group.fields.map((field) => (
                   <label key={field.name}>
                     {field.label}
                     <input
@@ -116,8 +108,8 @@ export function AtendimentoSVOPage() {
                       placeholder={field.placeholder}
                       required={field.required}
                       value={data[field.name] ?? ''}
-                      onChange={e =>
-                        setData(old => ({
+                      onChange={(e) =>
+                        setData((old) => ({
                           ...old,
                           [field.name]: e.target.value,
                         }))
@@ -138,36 +130,26 @@ export function AtendimentoSVOPage() {
             aria-expanded={!collapsed.includes(3)}
           >
             <strong>4. Laudo e documentação</strong>
-            <span>
-              {collapsed.includes(3) ? 'Expandir +' : 'Expandido −'}
-            </span>
+            <span>{collapsed.includes(3) ? 'Expandir +' : 'Expandido −'}</span>
           </button>
 
           {!collapsed.includes(3) && (
             <label className={styles.dropzone}>
               ⬆ &nbsp;
               <strong>Upload de documentos</strong>
-              <small>
-                Arraste ou selecione os arquivos de laudo e outros documentos
-              </small>
+              <small>Arraste ou selecione os arquivos de laudo e outros documentos</small>
               <input
                 type="file"
                 multiple
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={upload}
               />
-              {files.length > 0 && (
-                <span>{files.map(f => f.name).join(', ')}</span>
-              )}
+              {files.length > 0 && <span>{files.map((f) => f.name).join(', ')}</span>}
             </label>
           )}
         </section>
 
-        {notice && (
-          <p role="status" className={styles.notice}>
-            {notice}
-          </p>
-        )}
+        {notice && <output className={styles.notice}>{notice}</output>}
 
         <footer className={styles.actions}>
           <button type="button" onClick={() => navigate('/viagens')}>
