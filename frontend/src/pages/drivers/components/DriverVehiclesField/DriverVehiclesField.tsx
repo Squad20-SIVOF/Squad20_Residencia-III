@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Badge } from '@/components/Badge'
-import { Button } from '@/components/Button'
 import { SelectField } from '@/components/SelectField'
 import type { SelectOption } from '@/components/SelectField'
 import styles from './DriverVehiclesField.module.scss'
