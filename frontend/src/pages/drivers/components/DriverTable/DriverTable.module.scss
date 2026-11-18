@@ -1,0 +1,25 @@
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.btnOutlineBlue {
+  color: #2563eb !important;
+  border: 1px solid #93c5fd !important;
+  background-color: transparent !important;
+
+  &:hover {
+    background-color: #eff6ff !important;
+  }
+}
+
+.btnOutlineRed {
+  color: #dc2626 !important;
+  border: 1px solid #fca5a5 !important;
+  background-color: transparent !important;
+
+  &:hover {
+    background-color: #fef2f2 !important;
+  }
+}

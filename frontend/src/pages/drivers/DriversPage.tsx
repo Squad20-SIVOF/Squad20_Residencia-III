@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
+import { ButtonLink } from '@/components/ButtonLink'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { PageHeader } from '@/components/PageHeader'
 import { Pagination } from '@/components/Pagination'
@@ -33,7 +34,6 @@ export function DriversPage() {
 
   async function handleConfirmDelete() {
     if (!driverToDelete) return
-
     try {
       await deleteDriver(driverToDelete.id)
       setDeleteError(null)
@@ -66,14 +66,15 @@ export function DriversPage() {
     }
 
     if (filters.filteredDrivers.length === 0) {
-      const hasDrivers = drivers.length > 0
       return (
         <StateMessage
           title={
-            hasDrivers ? 'Nenhum motorista encontrado.' : 'Nenhum motorista cadastrado.'
+            drivers.length > 0
+              ? 'Nenhum motorista encontrado.'
+              : 'Nenhum motorista cadastrado.'
           }
           description={
-            hasDrivers
+            drivers.length > 0
               ? 'Ajuste a busca ou os filtros para ver outros resultados.'
               : 'Cadastre o primeiro motorista da frota para começar.'
           }
@@ -101,10 +102,15 @@ export function DriversPage() {
 
   return (
     <div className={styles.page}>
-      <PageHeader
-        title="Gerenciamento de Motoristas"
-        subtitle="Motoristas cadastrados, vínculos com veículos e situação da CNH"
-      />
+      <div className={styles.headerContainer}>
+        <PageHeader
+          title="Gerenciamento de Motoristas"
+          subtitle="Motoristas cadastrados, vínculos com veículos e situação da CNH"
+        />
+        <ButtonLink to="/motoristas/novo" className={styles.btnPrimary}>
+          + Novo Motorista
+        </ButtonLink>
+      </div>
 
       {flash.message && (
         <Alert variant="success" onDismiss={flash.dismiss}>
@@ -125,13 +131,15 @@ export function DriversPage() {
             <Alert
               variant="danger"
               action={
-                <Button variant="secondary" onClick={filters.toggleOnlyAlerts}>
+                <Button variant="outline-danger" onClick={filters.toggleOnlyAlerts}>
                   {filters.onlyAlerts ? 'Mostrar todos' : 'Revisar alertas'}
                 </Button>
               }
             >
-              {alertCount} motorista{alertCount > 1 ? 's' : ''} com CNH vencida ou a
-              vencer em 30 dias — ficam bloqueados para novas viagens.
+              <span className={styles.alertText}>
+                ⚠️ {alertCount} motorista{alertCount > 1 ? 's' : ''} com CNH vencida ou a
+                vencer em 30 dias — ficam bloqueados para novas viagens.
+              </span>
             </Alert>
           )}
 
@@ -147,6 +155,12 @@ export function DriversPage() {
       )}
 
       <section className={styles.list} aria-label="Motoristas">
+        <div className={styles.tableHeader}>
+          <h2 className={styles.tableTitle}>Motoristas cadastrados</h2>
+          <span className={styles.tableCount}>
+            {filters.filteredDrivers.length} registros
+          </span>
+        </div>
         {renderList()}
       </section>
 

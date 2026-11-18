@@ -7,6 +7,7 @@ import type { Driver } from '../../types'
 import { getEffectiveStatus } from '../../utils/driverRules'
 import { CnhExpiry } from '../CnhExpiry'
 import { DriverStatusBadge } from '../DriverStatusBadge'
+import styles from './DriverTable.module.scss' // Crie este arquivo
 
 const COLUMNS: DataTableColumn<Driver>[] = [
   { key: 'name', header: 'Nome', isPrimary: true, render: (driver) => driver.name },
@@ -47,9 +48,10 @@ export function DriverTable({ drivers, onDelete }: DriverTableProps) {
       columns={COLUMNS}
       getRowKey={(driver) => driver.id}
       renderActions={(driver) => (
-        <>
+        <div className={styles.actions}>
           <ButtonLink
             variant="secondary"
+            className={styles.btnOutlineBlue}
             to={`/motoristas/${driver.id}`}
             aria-label={`Ver detalhes de ${driver.name}`}
           >
@@ -57,6 +59,7 @@ export function DriverTable({ drivers, onDelete }: DriverTableProps) {
           </ButtonLink>
           <ButtonLink
             variant="secondary"
+            className={styles.btnOutlineBlue}
             to={`/motoristas/editar/${driver.id}`}
             aria-label={`Editar ${driver.name}`}
           >
@@ -64,12 +67,13 @@ export function DriverTable({ drivers, onDelete }: DriverTableProps) {
           </ButtonLink>
           <Button
             variant="secondary"
+            className={styles.btnOutlineRed}
             aria-label={`Excluir ${driver.name}`}
             onClick={() => onDelete(driver)}
           >
             Excluir
           </Button>
-        </>
+        </div>
       )}
     />
   )

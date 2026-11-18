@@ -23,7 +23,6 @@ const CATEGORY_OPTIONS: SelectOption<CnhCategory | ''>[] = [
 const fieldId = (field: string) => `${DRIVER_FIELD_ID_PREFIX}${field}`
 
 export interface DriverFormProps {
-  /** Motorista em edição; sem ele o formulário é de cadastro. */
   initial?: Driver | undefined
   onSubmit: (input: DriverInput) => Promise<void>
   onCancel: () => void
@@ -73,9 +72,13 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                 onChange={(photo) => setField('photo', photo)}
               />
             </aside>
+
             <div className={styles.sections}>
               <fieldset className={styles.section}>
-                <legend className={styles.legend}>Dados pessoais</legend>
+                <div className={styles.sectionHeader}>
+                  <legend className={styles.legend}>Dados pessoais</legend>
+                  <span className={styles.sectionHint}>Identificação e contato</span>
+                </div>
                 <div className={styles.grid2}>
                   <TextField
                     id={fieldId('name')}
@@ -98,7 +101,7 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                   />
                   <TextField
                     id={fieldId('phone')}
-                    label="Telefone"
+                    label="Telefone *"
                     type="tel"
                     placeholder="(79) 00000-0000"
                     value={values.phone}
@@ -108,7 +111,7 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                   />
                   <TextField
                     id={fieldId('email')}
-                    label="E-mail"
+                    label="E-mail *"
                     type="email"
                     placeholder="email@exemplo.com"
                     value={values.email}
@@ -117,13 +120,15 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                     errorMessage={errors.email}
                   />
                 </div>
-                <p className={styles.helper}>
-                  Contato e foto são opcionais e ficam salvos no cadastro.
-                </p>
               </fieldset>
 
               <fieldset className={styles.section}>
-                <legend className={styles.legend}>Habilitação (CNH)</legend>
+                <div className={styles.sectionHeader}>
+                  <legend className={styles.legend}>Habilitação (CNH)</legend>
+                  <span className={styles.sectionHint}>
+                    Documento obrigatório para viagens
+                  </span>
+                </div>
                 <div className={styles.grid3}>
                   <TextField
                     id={fieldId('cnh')}
@@ -161,14 +166,19 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
               </fieldset>
 
               <fieldset className={styles.section}>
-                <legend className={styles.legend}>Vínculo com a frota</legend>
+                <div className={styles.sectionHeader}>
+                  <legend className={styles.legend}>Vínculo com a frota</legend>
+                  <span className={styles.sectionHint}>
+                    Alocação e disponibilidade operacional
+                  </span>
+                </div>
                 <div className={styles.grid2}>
                   <SelectField
                     id={fieldId('fleet')}
-                    label="Frota"
+                    label="Frota *"
                     value={values.fleet}
                     options={[
-                      { value: '', label: 'Selecione a frota' },
+                      { value: '', label: 'Selecione (Administrativa, SVO...)' },
                       ...DRIVER_FLEETS.map((value) => ({ value, label: value })),
                     ]}
                     onChange={(value) => setField('fleet', value)}
@@ -180,32 +190,14 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                     onChange={(value) => setField('vehicles', value)}
                   />
                 </div>
-                {vehiclesRequest.status === 'loading' && (
-                  <p className={styles.helper}>Carregando veículos...</p>
-                )}
-                {vehiclesRequest.status === 'error' && (
-                  <Alert
-                    variant="danger"
-                    action={
-                      <Button variant="secondary" onClick={vehiclesRequest.reload}>
-                        Tentar novamente
-                      </Button>
-                    }
-                  >
-                    Não foi possível carregar os veículos. Os vínculos existentes serão
-                    mantidos.
-                  </Alert>
-                )}
+
                 {incompatible.length > 0 && (
                   <Alert variant="warning">
                     Remova os veículos incompatíveis com a frota selecionada:{' '}
-                    {incompatible.join(', ')}. Ou marque motorista coringa.
+                    {incompatible.join(', ')}.
                   </Alert>
                 )}
-                <p className={styles.helper}>
-                  Veículos exclusivos SVO só podem ser vinculados a motoristas SVO ou
-                  coringas. A API valida todos os vínculos ao salvar.
-                </p>
+
                 <div className={styles.wildcard}>
                   <CheckboxField
                     label="Motorista coringa — pode atuar em todas as frotas (inclusive SVO)"
@@ -213,13 +205,14 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                     checked={values.isWildcard}
                     onChange={(checked) => setField('isWildcard', checked)}
                   />
+                  <span className={styles.infoIcon}>ⓘ</span>
                 </div>
               </fieldset>
 
               <div className={styles.footer}>
                 <fieldset disabled className={styles.status}>
                   <SelectField
-                    label="Status"
+                    label="Status *"
                     value={values.status}
                     options={[
                       { value: 'ativo', label: 'Ativo' },
@@ -229,14 +222,16 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                     ]}
                     onChange={() => {}}
                   />
-                  <p className={styles.helper}>Status gerenciado pelo sistema.</p>
+                  <p className={styles.helper}>
+                    O motorista ficará disponível para novos vínculos após a validação.
+                  </p>
                 </fieldset>
                 <div className={styles.actions}>
                   <Button variant="secondary" onClick={onCancel}>
                     Cancelar
                   </Button>
                   <Button type="submit" isLoading={form.isSubmitting}>
-                    Salvar
+                    ✓ Salvar
                   </Button>
                 </div>
               </div>
