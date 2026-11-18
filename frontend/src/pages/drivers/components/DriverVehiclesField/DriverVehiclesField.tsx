@@ -64,6 +64,7 @@ export function DriverVehiclesField({
               className={styles.addBtn}
               onClick={handleAdd}
               disabled={!selected}
+              aria-label="Adicionar"
             >
               + adicionar
             </button>
