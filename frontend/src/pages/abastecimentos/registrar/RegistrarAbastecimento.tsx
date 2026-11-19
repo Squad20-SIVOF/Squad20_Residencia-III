@@ -297,7 +297,7 @@ function FuelForm({
 
             <div className={styles.row}>
               <div className={styles.formGroup}>
-                <label htmlFor="litros">Volume abastecido *</label>
+                <label htmlFor="litros">Volume abastecido (L) *</label>
                 <input
                   id="litros"
                   type="number"
