@@ -1,5 +1,6 @@
 @use '../../styles/tokens' as *;
 @use '../../styles/breakpoints' as *;
+
 .page,
 .list {
   display: flex;
@@ -7,20 +8,302 @@
   gap: $space-4;
   min-width: 0;
 }
-.statsGrid,
+
+.headerContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $space-4;
+  flex-wrap: wrap;
+}
+
+.btnPrimary {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #1d4ed8;
+  }
+}
+
 .filterGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: $space-3;
-}
-.filterGrid {
   align-items: end;
 }
-.sectionTitle {
-  font-size: $font-size-h3;
-  font-weight: 500;
-  color: $color-primary;
+
+.filterBtn {
+  height: 40px;
+  padding: 0 1.5rem;
+  background-color: #2563eb !important;
+  color: white !important;
+  font-weight: 600;
+  border: none;
 }
+
+/* Cards KPI */
+.statsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
+}
+
+.statCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  border-left-width: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.borderGreen {
+  border-left-color: #10b981;
+}
+.borderYellow {
+  border-left-color: #f59e0b;
+}
+.borderRed {
+  border-left-color: #ef4444;
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.statValue {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.75rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.bgGreen {
+  background: #dcfce7;
+  color: #166534;
+}
+.bgYellow {
+  background: #fef3c7;
+  color: #92400e;
+}
+.bgRed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Card do Teto (Sempre visível com transição) */
+.tetoCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease-in-out;
+}
+
+.tetoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  min-height: 40px;
+}
+
+.tetoTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.tetoSubtitle {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.tetoBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tetoBadgeWarning {
+  background: #fef3c7;
+  color: #b45309;
+}
+.tetoBadgeDanger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.tetoBadgeMuted {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.tetoValues {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+
+  h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+  }
+
+  span {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+}
+
+.progressBarBg {
+  width: 100%;
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progressBarWarning {
+  height: 100%;
+  background: #f59e0b;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progressBarDanger {
+  height: 100%;
+  background: #ef4444;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tetoFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+.tetoWarningText {
+  color: #b45309;
+  font-weight: 500;
+}
+
+/* Efeito de hover na tabela */
+.hoverArea {
+  cursor: help;
+  transition: color 0.2s;
+
+  &:hover strong {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+}
+
+/* Tabela */
+.tableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 1rem 1.25rem 0;
+  border-radius: 8px 8px 0 0;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.tableCount {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.tableWrapper {
+  background: #ffffff;
+  border-radius: 0 0 8px 8px;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  overflow-x: auto;
+
+  :global(thead) {
+    background-color: #eff6ff !important;
+  }
+
+  :global(th) {
+    color: #1e40af !important;
+    font-weight: 600 !important;
+    padding: 1rem !important;
+    text-align: left;
+    border-bottom: 1px solid #bfdbfe !important;
+  }
+
+  :global(td) {
+    padding: 1rem !important;
+    vertical-align: middle;
+    color: #334155;
+    border-bottom: 1px solid #e2e8f0;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.btnOutlineBlue {
+  color: #2563eb !important;
+  border: 1px solid #93c5fd !important;
+  background-color: transparent !important;
+  font-weight: 500;
+
+  &:hover {
+    background-color: #eff6ff !important;
+  }
+}
+
+.btnOutlineRed {
+  color: #dc2626 !important;
+  border: 1px solid #fca5a5 !important;
+  background-color: transparent !important;
+  font-weight: 500;
+
+  &:hover {
+    background-color: #fef2f2 !important;
+  }
+}
+
 .muted,
 .secondary {
   color: $color-text-muted;
@@ -30,15 +313,13 @@
   display: block;
   font-weight: 400;
 }
+
 @include up(md) {
   .statsGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .filterGrid {
     grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
-  }
-  .filterGrid > :last-child {
-    justify-self: start;
   }
 }
 @include up(xl) {
