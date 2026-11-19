@@ -1,4 +1,3 @@
-
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from './AtendimentoSVOPage.module.scss'
@@ -15,7 +14,12 @@ const groups: { title: string; fields: Field[] }[] = [
   {
     title: 'Dados do falecido',
     fields: [
-      { name: 'nomeFalecido', label: 'Nome completo', placeholder: 'Ex.: João da Silva', required: true },
+      {
+        name: 'nomeFalecido',
+        label: 'Nome completo',
+        placeholder: 'Ex.: João da Silva',
+        required: true,
+      },
       { name: 'cpf', label: 'CPF', placeholder: '000.000.000-00' },
       { name: 'nascimento', label: 'Data de nascimento', type: 'date' },
       { name: 'obito', label: 'Data do óbito', type: 'date' },
@@ -24,7 +28,12 @@ const groups: { title: string; fields: Field[] }[] = [
   {
     title: 'Endereço da remoção',
     fields: [
-      { name: 'endereco', label: 'Endereço de origem', placeholder: 'Rua, Número, Complemento', required: true },
+      {
+        name: 'endereco',
+        label: 'Endereço de origem',
+        placeholder: 'Rua, Número, Complemento',
+        required: true,
+      },
       { name: 'bairro', label: 'Bairro', placeholder: 'Bairro' },
       { name: 'cidade', label: 'Cidade', placeholder: 'Cidade' },
       { name: 'uf', label: 'UF', placeholder: 'UF' },
@@ -33,7 +42,12 @@ const groups: { title: string; fields: Field[] }[] = [
   {
     title: 'Dados do solicitante',
     fields: [
-      { name: 'solicitante', label: 'Nome do solicitante', placeholder: 'Nome completo do familiar/responsável', required: true },
+      {
+        name: 'solicitante',
+        label: 'Nome do solicitante',
+        placeholder: 'Nome completo do familiar/responsável',
+        required: true,
+      },
       { name: 'telefone', label: 'Telefone de contato', placeholder: '(00) 00000-0000' },
       { name: 'parentesco', label: 'Parentesco', placeholder: 'Ex.: Filho(a), Cônjuge' },
     ],
@@ -48,10 +62,8 @@ export function AtendimentoSVOPage() {
   const [notice, setNotice] = useState('')
 
   const toggle = (index: number) => {
-    setCollapsed(old =>
-      old.includes(index)
-        ? old.filter(i => i !== index)
-        : [...old, index]
+    setCollapsed((old) =>
+      old.includes(index) ? old.filter((i) => i !== index) : [...old, index],
     )
   }
 
@@ -62,7 +74,7 @@ export function AtendimentoSVOPage() {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setNotice(
-      'Dados preenchidos e validados. A integração com a API de atendimentos SVO ainda precisa ser configurada; nenhum registro foi enviado.'
+      'Dados preenchidos e validados. A integração com a API de atendimentos SVO ainda precisa ser configurada; nenhum registro foi enviado.',
     )
   }
 
