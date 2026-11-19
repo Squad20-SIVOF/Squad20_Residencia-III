@@ -56,7 +56,7 @@ test('navega pelo menu lateral e marca o item ativo', async () => {
   await user.click(screen.getByRole('link', { name: 'Viagens' }))
 
   expect(
-    screen.getByRole('heading', { level: 1, name: 'Solicitar Veículo' }),
+    screen.getByRole('heading', { level: 1, name: 'Painel de Viagens' }),
   ).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: /abrir menu/i }))
   expect(screen.getByRole('link', { name: 'Viagens' })).toHaveAttribute(
@@ -77,7 +77,7 @@ test('mantém a página provisória nos módulos ainda não implementados', asyn
   expect(screen.getByText(/módulo em construção/i)).toBeInTheDocument()
 })
 
-test('/viagens redireciona para a solicitação enquanto o Painel não existe', async () => {
+test('/viagens abre o Painel de Viagens, sem redirecionar', async () => {
   const user = userEvent.setup()
   render(
     <MemoryRouter initialEntries={['/', '/viagens']} initialIndex={1}>
@@ -87,10 +87,10 @@ test('/viagens redireciona para a solicitação enquanto o Painel não existe', 
   )
 
   expect(
-    screen.getByRole('heading', { level: 1, name: 'Solicitar Veículo' }),
+    screen.getByRole('heading', { level: 1, name: 'Painel de Viagens' }),
   ).toBeInTheDocument()
   expect(screen.getByRole('status', { name: 'URL atual' })).toHaveTextContent(
-    '/viagens/solicitar',
+    /^\/viagens$/,
   )
   await user.click(screen.getByRole('button', { name: /abrir menu/i }))
   expect(screen.getByRole('link', { name: 'Viagens' })).toHaveAttribute(

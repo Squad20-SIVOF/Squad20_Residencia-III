@@ -137,3 +137,37 @@ export interface TripAssignment {
   vehicleId: string
   driverId: string
 }
+
+// ---------- Painel de Viagens ----------
+
+export const TRACKED_TRIP_STATUSES = [
+  'em_viagem',
+  'a_caminho',
+  'atrasada',
+  'programada',
+] as const
+export type TrackedTripStatus = (typeof TRACKED_TRIP_STATUSES)[number]
+
+/** Viagem exibida em "Viagens em acompanhamento"; abre em /viagens/:id. */
+export interface TrackedTrip {
+  id: string
+  routeCode: string // ex.: "101"
+  plate: string
+  driverName: string
+  origin: string
+  destination: string
+  status: TrackedTripStatus
+  delayMinutes: number // só conta quando status = 'atrasada'
+}
+
+/** Resposta planejada de GET /viagens/acompanhamento (ainda não existe no backend). */
+export interface TrackedTripResponse {
+  id: string
+  codigo_rota: number
+  placa: string
+  motorista_nome: string
+  origem: string
+  destino: string
+  status: string
+  atraso_min: number | null
+}
