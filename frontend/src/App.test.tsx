@@ -66,15 +66,18 @@ test('navega pelo menu lateral e marca o item ativo', async () => {
   expect(screen.queryByText(/módulo em construção/i)).not.toBeInTheDocument()
 })
 
-test('mantém a página provisória nos módulos ainda não implementados', async () => {
+test('abre a exportação de relatórios implementada', async () => {
   const user = userEvent.setup()
   renderAt('/')
 
   await user.click(screen.getByRole('button', { name: /abrir menu/i }))
   await user.click(screen.getByRole('link', { name: 'Relatórios' }))
 
-  expect(screen.getByRole('heading', { name: 'Relatórios' })).toBeInTheDocument()
-  expect(screen.getByText(/módulo em construção/i)).toBeInTheDocument()
+  expect(
+    screen.getByRole('heading', { name: 'Exportação de Relatórios' }),
+  ).toBeInTheDocument()
+  expect(screen.getByText(/Gere arquivos gerenciais por período/i)).toBeInTheDocument()
+  expect(screen.queryByText(/módulo em construção/i)).not.toBeInTheDocument()
 })
 
 test('/viagens redireciona para a solicitação enquanto o Painel não existe', async () => {
