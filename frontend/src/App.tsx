@@ -5,7 +5,7 @@ import RegistrarAbastecimento from '@/pages/abastecimentos/registrar/RegistrarAb
 import SolicitacoesPendentesPage from '@/pages/solicitacoes/SolicitacoesPendentesPage'
 import { UsersPage } from '@/pages/users/UsersPage'
 import { RequireAuth } from '@/components/RequireAuth/RequireAuth'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AppLayout } from '@/layouts/AppLayout'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { DriverDetailsPage } from '@/pages/drivers/DriverDetailsPage'
@@ -19,6 +19,7 @@ import { RequestFormPage } from '@/pages/requests/RequestFormPage'
 import { RequestTrackingPage } from '@/pages/requests/RequestTrackingPage'
 import { RequestDetailsPage } from '@/pages/requests/RequestDetailsPage'
 import { AssignTripPage } from '@/pages/requests/AssignTripPage'
+import { TripsPanelPage } from '@/pages/requests/TripsPanelPage'
 import { VehiclesPage } from '@/pages/vehicles/VehiclesPage'
 import {
   ManutencoesPage,
@@ -49,8 +50,7 @@ export function AppRoutes() {
           <Route path="motoristas/novo" element={<DriverFormPage />} />
           <Route path="motoristas/editar/:id" element={<DriverFormPage />} />
           <Route path="motoristas/:id" element={<DriverDetailsPage />} />
-          {/* Enquanto o Painel de Viagens não existe, a entrada do módulo abre a solicitação. */}
-          <Route path="viagens" element={<Navigate to="/viagens/solicitar" replace />} />
+          <Route path="viagens" element={<TripsPanelPage />} />
           <Route path="viagens/solicitar" element={<RequestFormPage />} />
           <Route path="viagens/solicitacoes/:id" element={<RequestDetailsPage />} />
           <Route path="viagens/solicitacoes/:id/atribuir" element={<AssignTripPage />} />

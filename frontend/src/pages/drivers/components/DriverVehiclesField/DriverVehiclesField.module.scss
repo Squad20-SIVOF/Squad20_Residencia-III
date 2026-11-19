@@ -11,40 +11,74 @@
 .label {
   font-size: $font-size-small;
   font-weight: 500;
+  color: #1e293b;
 }
 
-.chips {
+.picker {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  padding: 0.25rem 0.5rem;
+  background: $color-card;
+  min-height: 2.5rem;
+}
+
+.chipsContainer {
   display: flex;
   flex-wrap: wrap;
-  gap: $space-2;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
 }
 
 .chip {
-  gap: $space-1;
+  background-color: #e0e7ff !important;
+  color: #3730a3 !important;
+  font-weight: 500;
+  gap: 0.25rem;
+  border-radius: 4px;
 }
 
 .remove {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  padding: 0;
-  color: inherit;
+  color: #3730a3;
   background: none;
   border: 0;
-  border-radius: 50%;
-
-  @include hover {
-    background-color: rgba($color-primary, 0.15);
-  }
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
 }
 
-.picker {
+.addSelect {
   display: flex;
-  gap: $space-2;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .select {
-  flex: 1;
+  min-width: 120px;
+  border: none !important;
+  background: transparent !important;
+
+  input {
+    border: none !important;
+  }
+}
+
+.addBtn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  &:disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
 }

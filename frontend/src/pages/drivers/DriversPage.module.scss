@@ -7,8 +7,56 @@
   gap: $space-4;
 }
 
+.headerContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $space-4;
+  flex-wrap: wrap; /* Isso substitui o @include down(md) e quebra a linha em telas menores */
+}
+
+.btnPrimary {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #1d4ed8;
+  }
+}
+
+.alertText {
+  font-weight: 500;
+}
+
 .list {
   display: flex;
   flex-direction: column;
-  gap: $space-4;
+  gap: $space-3;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  padding: 1rem;
+}
+
+.tableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.5rem;
+}
+
+.tableTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.tableCount {
+  font-size: 0.85rem;
+  color: #64748b;
 }

@@ -1,0 +1,81 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  min-width: 0;
+  padding: $space-3;
+  background-color: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-subtle;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.iconTile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: $touch-target;
+  height: $touch-target;
+  border-radius: $radius-md;
+  color: $color-primary;
+  background-color: $color-primary-soft;
+}
+
+.title {
+  margin: 0;
+  font-size: $font-size-body;
+  font-weight: 700;
+  line-height: $line-height-heading;
+  color: $color-navy;
+}
+
+.description {
+  flex: 1;
+  margin: 0;
+  font-size: $font-size-small;
+  line-height: $line-height-small;
+  color: $color-text-muted;
+}
+
+.link,
+.soon {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid $color-border-subtle;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  min-height: $touch-target;
+  color: $color-primary;
+  font-size: $font-size-small;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color $transition-fast;
+
+  @include hover {
+    color: $color-primary-hover;
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.arrow {
+  width: $space-3;
+  height: $space-3;
+}

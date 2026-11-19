@@ -60,13 +60,12 @@ test('mostra o link de voltar ao Painel de Viagens acima do título', async () =
     ) & Node.DOCUMENT_POSITION_FOLLOWING,
   ).toBeTruthy()
 
-  // Sem o Painel ainda, /viagens devolve para a solicitação.
   await user.click(backLink)
   expect(screen.getByRole('status', { name: 'URL atual' })).toHaveTextContent(
-    '/viagens/solicitar',
+    /^\/viagens$/,
   )
   expect(
-    await screen.findByRole('heading', { level: 1, name: 'Solicitar Veículo' }),
+    await screen.findByRole('heading', { level: 1, name: 'Painel de Viagens' }),
   ).toBeInTheDocument()
 })
 

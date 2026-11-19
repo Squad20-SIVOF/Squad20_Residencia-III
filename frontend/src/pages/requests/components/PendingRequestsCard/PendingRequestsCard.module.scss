@@ -1,0 +1,186 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/breakpoints' as *;
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  min-width: 0;
+  padding: $space-3;
+  background-color: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-subtle;
+
+  @include up(md) {
+    padding: $space-4;
+  }
+}
+
+// ---------- Cabeçalho ----------
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  @include up(md) {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.headingGroup {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2;
+}
+
+.title {
+  margin: 0;
+  font-size: $font-size-card-title;
+  font-weight: 700;
+  line-height: $line-height-heading;
+  color: $color-primary;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: $font-size-small;
+  color: $color-text-muted;
+}
+
+// ---------- Busca e ordenação ----------
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  @include up(md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.search,
+.sort {
+  position: relative;
+  min-width: 0;
+}
+
+.search {
+  @include up(md) {
+    flex: 0 1 $search-field-width;
+  }
+
+  input {
+    padding-left: $space-3 + $icon-size;
+  }
+}
+
+.searchIcon,
+.sortIcon {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  z-index: 1;
+  width: $space-3;
+  height: $space-3;
+  color: $color-text-muted;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.sort select {
+  padding-left: $space-3 + $icon-size;
+}
+
+// ---------- Tabela (cards no celular) ----------
+// O card já tem borda e sombra: a tabela não repete a moldura a partir do md.
+.card .table {
+  @include up(md) {
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin-inline: -$space-4;
+  }
+
+  td:last-child::before {
+    content: none;
+  }
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  min-width: 0;
+}
+
+.code {
+  font-weight: 700;
+  color: $color-navy;
+}
+
+.type {
+  font-weight: 600;
+}
+
+.muted {
+  margin: 0;
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.important,
+.importantCount {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+  font-size: $font-size-xsmall;
+  font-weight: 600;
+  color: $color-danger;
+}
+
+.smallIcon {
+  width: $space-3;
+  height: $space-3;
+}
+
+.detailsButton {
+  flex: 1;
+
+  @include up(md) {
+    flex: none;
+  }
+}
+
+.visuallyHidden {
+  @include visually-hidden;
+}
+
+// ---------- Rodapé ----------
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2;
+  padding-top: 0.75rem;
+  border-top: 1px solid $color-border-subtle;
+}
+
+.importantCount {
+  margin: 0;
+}

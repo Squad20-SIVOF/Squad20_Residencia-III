@@ -1,6 +1,4 @@
 import { PageHeader } from '@/components/PageHeader'
-import { StatCard } from '@/components/StatCard'
-import { Card } from '@/components/Card'
 import { TextField } from '@/components/TextField'
 import { SelectField } from '@/components/SelectField'
 import { ButtonLink } from '@/components/ButtonLink'
@@ -22,9 +20,11 @@ export default function AbastecimentosPage() {
   })
   const [vehicle, setVehicle] = useState('')
   const [search, setSearch] = useState('')
+  const [hoveredVehicleId, setHoveredVehicleId] = useState<string | null>(null)
   const [removing, setRemoving] = useState<FuelRecord | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
   const loader = useCallback(async () => {
     const [rows, user] = await Promise.all([
       fuelService.list(monthRange(month)),
@@ -32,17 +32,21 @@ export default function AbastecimentosPage() {
     ])
     return { rows, canManage: user.permissoes.includes('abastecimentos:gerenciar') }
   }, [month])
+
   const request = useAsync(loader)
   const all = request.status === 'success' ? request.data.rows : []
   const canManage = request.status === 'success' && request.data.canManage
+
   const monthly = all.filter((row) => !vehicle || row.veiculo_id === vehicle)
   const rows = monthly.filter((row) =>
     `${row.motorista_nome ?? ''} ${row.posto ?? ''} ${row.placa ?? ''}`
       .toLocaleLowerCase('pt-BR')
       .includes(search.toLocaleLowerCase('pt-BR')),
   )
+
   const total = rows.reduce((sum, row) => sum + Number(row.valor_total), 0)
   const volume = rows.reduce((sum, row) => sum + Number(row.litros), 0)
+
   const options = [
     ...new Map(
       all
@@ -56,8 +60,15 @@ export default function AbastecimentosPage() {
         ]),
     ).values(),
   ]
-  const cap = vehicle ? monthly[0]?.teto_gasto_mensal : null
-  const monthlyTotal = monthly.reduce((sum, row) => sum + Number(row.valor_total), 0)
+
+  // Lógica do Hover para o Card de Teto
+  const hoveredRecords = all.filter((r) => r.veiculo_id === hoveredVehicleId)
+  const hoveredVehicleInfo = hoveredRecords[0]
+  const hoveredTotal = hoveredRecords.reduce((sum, r) => sum + Number(r.valor_total), 0)
+  const hoveredCap = Number(hoveredVehicleInfo?.teto_gasto_mensal || 0)
+  const hoveredPercentage =
+    hoveredCap > 0 ? Math.min((hoveredTotal / hoveredCap) * 100, 100) : 0
+
   async function remove() {
     if (!removing || saving) return
     setSaving(true)
@@ -73,16 +84,21 @@ export default function AbastecimentosPage() {
       setSaving(false)
     }
   }
+
   const columns: DataTableColumn<FuelRecord>[] = [
     {
       key: 'vehicle',
       header: 'Veículo / placa',
       isPrimary: true,
       render: (row) => (
-        <>
+        <div
+          onMouseEnter={() => setHoveredVehicleId(row.veiculo_id)}
+          onMouseLeave={() => setHoveredVehicleId(null)}
+          className={styles.hoverArea}
+        >
           <strong>{row.identificacao || row.modelo || 'Veículo removido'}</strong>
           <span className={styles.secondary}>{row.placa ?? '—'}</span>
-        </>
+        </div>
       ),
     },
     {
@@ -122,49 +138,23 @@ export default function AbastecimentosPage() {
       render: (row) => `${row.km_momento_abastecimento.toLocaleString('pt-BR')} km`,
     },
   ]
+
   return (
     <div className={styles.page}>
-      <PageHeader
-        title="Abastecimentos"
-        subtitle="Acompanhe os registros, os volumes e o teto de gastos de cada veículo."
-      />
-      {error && <Alert variant="danger">{error}</Alert>}
-      <div className={styles.filterGrid}>
-        <TextField
-          id="filtroBusca"
-          label="Buscar motorista ou posto"
-          type="search"
-          value={search}
-          onChange={setSearch}
-          placeholder="Buscar nos registros..."
-        />
-        <SelectField
-          id="filtroVeiculo"
-          label="Veículo"
-          value={vehicle}
-          onChange={setVehicle}
-          options={[
-            { value: '', label: 'Todos os veículos' },
-            ...options.map((option) => ({ value: option.id, label: option.label })),
-          ]}
-        />
-        <TextField
-          id="filtroPeriodo"
-          label="Período"
-          type="month"
-          required
-          value={month}
-          onChange={(value) => {
-            if (value) {
-              setMonth(value)
-              setVehicle('')
-            }
-          }}
+      <div className={styles.headerContainer}>
+        <PageHeader
+          title="Abastecimentos"
+          subtitle="Acompanhe os registros, os volumes e o teto de gastos de cada veículo."
         />
         {canManage && (
-          <ButtonLink to="/abastecimentos/registrar">Registrar abastecimento</ButtonLink>
+          <ButtonLink to="/abastecimentos/registrar" className={styles.btnPrimary}>
+            + Registrar abastecimento
+          </ButtonLink>
         )}
       </div>
+
+      {error && <Alert variant="danger">{error}</Alert>}
+
       {request.status === 'loading' ? (
         <StateMessage variant="loading" title="Carregando abastecimentos" />
       ) : request.status === 'error' ? (
@@ -177,73 +167,200 @@ export default function AbastecimentosPage() {
       ) : (
         <>
           <section className={styles.statsGrid} aria-label="Resumo dos abastecimentos">
-            <StatCard
-              label="Gasto no período"
-              value={money(total)}
-              hint={`${rows.length} registros nos filtros selecionados`}
-              variant="info"
-            />
-            <StatCard
-              label="Volume abastecido"
-              value={`${volume.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} L`}
-              variant="success"
-            />
-            <StatCard
-              label="Preço médio por litro"
-              value={volume ? money(total / volume) : '—'}
-              variant="warning"
-            />
+            <div className={`${styles.statCard} ${styles.borderGreen}`}>
+              <p className={styles.statLabel}>Gasto no período</p>
+              <h2 className={styles.statValue}>{money(total)}</h2>
+              <span className={`${styles.badge} ${styles.bgGreen}`}>
+                {rows.length} registros nos filtros selecionados
+              </span>
+            </div>
+            <div className={`${styles.statCard} ${styles.borderYellow}`}>
+              <p className={styles.statLabel}>Volume abastecido</p>
+              <h2 className={styles.statValue}>
+                {volume.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} L
+              </h2>
+              <span className={`${styles.badge} ${styles.bgYellow}`}>
+                Média de {(volume / (rows.length || 1)).toFixed(2)} L / reg
+              </span>
+            </div>
+            <div className={`${styles.statCard} ${styles.borderRed}`}>
+              <p className={styles.statLabel}>Preço médio por litro</p>
+              <h2 className={styles.statValue}>{volume ? money(total / volume) : '—'}</h2>
+              <span className={`${styles.badge} ${styles.bgRed}`}>Média calculada</span>
+            </div>
           </section>
-          {vehicle && cap != null && (
-            <Card title="Teto mensal do veículo">
-              <p>
-                {money(monthlyTotal)} de {money(cap)} ·{' '}
-                {Number(cap) > 0
-                  ? `${Math.round((monthlyTotal / Number(cap)) * 100)}% utilizado`
-                  : 'Teto zero'}
-              </p>
-              <p className={styles.muted}>
-                {monthlyTotal > Number(cap)
-                  ? `Teto excedido em ${money(monthlyTotal - Number(cap))}`
-                  : `Restam ${money(Number(cap) - monthlyTotal)}`}
-              </p>
-            </Card>
-          )}
+
+          {/* CARD DO TETO - SEMPRE VISÍVEL, COM TRANSIÇÃO SUAVE */}
+          <div className={styles.tetoCard}>
+            <div className={styles.tetoHeader}>
+              <div>
+                <h2 className={styles.tetoTitle}>
+                  Teto de abastecimento{' '}
+                  {hoveredVehicleInfo
+                    ? `· ${hoveredVehicleInfo.identificacao || hoveredVehicleInfo.modelo}`
+                    : ''}
+                </h2>
+                <p className={styles.tetoSubtitle}>
+                  {hoveredVehicleInfo
+                    ? `${hoveredVehicleInfo.placa} · ${new Date(month + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`
+                    : 'Passe o mouse sobre um veículo na tabela para ver os detalhes.'}
+                </p>
+              </div>
+
+              {hoveredVehicleInfo &&
+                (hoveredCap > 0 ? (
+                  <span
+                    className={`${styles.tetoBadge} ${hoveredTotal > hoveredCap ? styles.tetoBadgeDanger : styles.tetoBadgeWarning}`}
+                  >
+                    {hoveredTotal > hoveredCap
+                      ? 'Teto excedido'
+                      : `Atenção · ${Math.round((hoveredTotal / hoveredCap) * 100)}% utilizado`}
+                  </span>
+                ) : (
+                  <span className={`${styles.tetoBadge} ${styles.tetoBadgeMuted}`}>
+                    Sem teto definido
+                  </span>
+                ))}
+            </div>
+
+            <div className={styles.tetoValues}>
+              <h3>{money(hoveredVehicleInfo ? hoveredTotal : 0)}</h3>
+              {hoveredVehicleInfo && hoveredCap > 0 && (
+                <span>{Math.round((hoveredTotal / hoveredCap) * 100)}% do teto</span>
+              )}
+            </div>
+
+            {hoveredVehicleInfo && hoveredCap > 0 ? (
+              <>
+                <div className={styles.progressBarBg}>
+                  <div
+                    className={
+                      hoveredTotal > hoveredCap
+                        ? styles.progressBarDanger
+                        : styles.progressBarWarning
+                    }
+                    style={{ width: `${hoveredPercentage}%` }}
+                  />
+                </div>
+                <div className={styles.tetoFooter}>
+                  <span>
+                    de {money(hoveredCap)} ·{' '}
+                    {new Date(month + '-01').toLocaleDateString('pt-BR', {
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </span>
+                  {hoveredTotal > hoveredCap ? (
+                    <span className={styles.tetoWarningText}>
+                      Teto excedido em {money(hoveredTotal - hoveredCap)}.
+                    </span>
+                  ) : (
+                    <span className={styles.tetoWarningText}>
+                      Restam {money(hoveredCap - hoveredTotal)} para abastecimento neste
+                      mês.
+                    </span>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={styles.progressBarBg}>
+                  <div className={styles.progressBarWarning} style={{ width: '0%' }} />
+                </div>
+                <div className={styles.tetoFooter}>
+                  <span>
+                    {hoveredVehicleInfo
+                      ? 'Nenhum limite de gastos configurado para este veículo.'
+                      : '\u00A0'}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className={styles.filterGrid}>
+            <TextField
+              id="filtroBusca"
+              label="Buscar motorista ou posto"
+              type="search"
+              value={search}
+              onChange={setSearch}
+              placeholder="Buscar nos registros..."
+            />
+            <SelectField
+              id="filtroVeiculo"
+              label="Veículo"
+              value={vehicle}
+              onChange={setVehicle}
+              options={[
+                { value: '', label: 'Todos os veículos' },
+                ...options.map((option) => ({ value: option.id, label: option.label })),
+              ]}
+            />
+            <TextField
+              id="filtroPeriodo"
+              label="Período"
+              type="month"
+              required
+              value={month}
+              onChange={(value) => {
+                if (value) {
+                  setMonth(value)
+                  setVehicle('')
+                }
+              }}
+            />
+            <Button variant="primary" onClick={() => {}} className={styles.filterBtn}>
+              Filtrar
+            </Button>
+          </div>
+
           <section className={styles.list} aria-label="Abastecimentos">
-            <h2 className={styles.sectionTitle}>Histórico de abastecimentos</h2>
+            <div className={styles.tableHeader}>
+              <h2 className={styles.sectionTitle}>Histórico de abastecimentos</h2>
+              <span className={styles.tableCount}>{rows.length} registros</span>
+            </div>
             {!rows.length ? (
               <StateMessage
                 title="Nenhum abastecimento encontrado."
                 description="Selecione outro período ou registre um abastecimento."
               />
             ) : (
-              <DataTable
-                caption="Histórico de abastecimentos"
-                rows={rows}
-                columns={columns}
-                getRowKey={(row) => row.id}
-                renderActions={
-                  canManage
-                    ? (row) => (
-                        <>
-                          <ButtonLink
-                            variant="secondary"
-                            to={`/abastecimentos/editar/${row.id}`}
-                          >
-                            Editar
-                          </ButtonLink>
-                          <Button variant="danger" onClick={() => setRemoving(row)}>
-                            Excluir
-                          </Button>
-                        </>
-                      )
-                    : undefined
-                }
-              />
+              <div className={styles.tableWrapper}>
+                <DataTable
+                  caption="Histórico de abastecimentos"
+                  rows={rows}
+                  columns={columns}
+                  getRowKey={(row) => row.id}
+                  renderActions={
+                    canManage
+                      ? (row) => (
+                          <div className={styles.actions}>
+                            <ButtonLink
+                              variant="secondary"
+                              className={styles.btnOutlineBlue}
+                              to={`/abastecimentos/editar/${row.id}`}
+                            >
+                              Editar
+                            </ButtonLink>
+                            <Button
+                              variant="secondary"
+                              className={styles.btnOutlineRed}
+                              onClick={() => setRemoving(row)}
+                            >
+                              Excluir
+                            </Button>
+                          </div>
+                        )
+                      : undefined
+                  }
+                />
+              </div>
             )}
           </section>
         </>
       )}
+
       <ConfirmDialog
         isOpen={!!removing}
         title="Excluir abastecimento?"
