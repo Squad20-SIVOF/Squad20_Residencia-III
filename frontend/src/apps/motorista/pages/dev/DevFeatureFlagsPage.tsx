@@ -49,11 +49,11 @@ export function DevFeatureFlagsPage() {
   return (
     <main className={styles.page}>
       <section className={styles.panel} aria-labelledby="flags-title">
-        <p className={styles.eyebrow}>Somente neste navegador · ambiente local</p>
+        <p className={styles.eyebrow}>Somente neste navegador · ambiente dev</p>
         <h1 id="flags-title">Feature flags</h1>
         <p className={styles.description}>
           Altere o JSON e salve para ativar ou desativar recursos durante o
-          desenvolvimento. As flags não são enviadas ao backend.
+          desenvolvimento. As flags ficam no navegador e não são enviadas ao backend.
         </p>
 
         <div className={styles.flagStatus}>

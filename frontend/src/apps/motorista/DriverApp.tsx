@@ -19,6 +19,7 @@ import { DriverHomePage } from './pages/DriverHomePage'
 import { DriverProfilePage } from './pages/DriverProfilePage'
 import { DriverTripsPage } from './pages/DriverTripsPage'
 import { useFeatureFlag } from './features/useFeatureFlags'
+import { isDevFeatureFlagsEnabled } from './features/featureFlags'
 
 const DevFeatureFlagsPage = lazy(() =>
   import('./pages/dev/DevFeatureFlagsPage').then((module) => ({
@@ -33,7 +34,7 @@ const GpsEventSimulatorPage = lazy(() =>
 
 function FeatureFlaggedGpsSimulator() {
   const enabled = useFeatureFlag('gps_event_simulator')
-  if (!import.meta.env.DEV) return <NotFoundPage />
+  if (!isDevFeatureFlagsEnabled()) return <NotFoundPage />
   return enabled ? (
     <Suspense fallback={<p>Carregando simulador…</p>}>
       <GpsEventSimulatorPage />
@@ -52,7 +53,7 @@ export function DriverRoutes() {
         <Route
           path="/dev/feature-flags"
           element={
-            import.meta.env.DEV ? (
+            isDevFeatureFlagsEnabled() ? (
               <Suspense fallback={<p>Carregando configuração…</p>}>
                 <DevFeatureFlagsPage />
               </Suspense>

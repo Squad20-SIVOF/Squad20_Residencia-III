@@ -8,6 +8,14 @@ const STORAGE_KEY = 'frotamanager.dev.feature-flags'
 const CHANGE_EVENT = 'frotamanager:feature-flags-change'
 const FLAG_KEY_PATTERN = /^[a-z][a-z0-9_]{1,63}$/
 
+export function isDevFeatureFlagsEnabled(): boolean {
+  if (import.meta.env.DEV) return true
+  if (typeof window === 'undefined') return false
+
+  const hostname = window.location.hostname
+  return hostname.startsWith('dev.') && hostname.endsWith('.pages.dev')
+}
+
 function isValidFlags(value: unknown): value is FeatureFlags {
   return (
     typeof value === 'object' &&
@@ -20,7 +28,7 @@ function isValidFlags(value: unknown): value is FeatureFlags {
 }
 
 export function getDevFeatureFlags(): FeatureFlags {
-  if (!import.meta.env.DEV || typeof localStorage === 'undefined') {
+  if (!isDevFeatureFlagsEnabled() || typeof localStorage === 'undefined') {
     return { ...DEFAULT_FEATURE_FLAGS }
   }
 
@@ -38,8 +46,8 @@ export function getDevFeatureFlags(): FeatureFlags {
 }
 
 export function saveDevFeatureFlags(flags: FeatureFlags): void {
-  if (!import.meta.env.DEV) {
-    throw new Error('A edição de feature flags está disponível apenas no ambiente local.')
+  if (!isDevFeatureFlagsEnabled()) {
+    throw new Error('A edição de feature flags está disponível apenas em ambientes dev.')
   }
   if (!isValidFlags(flags)) {
     throw new Error('Use nomes de flags válidos e valores booleanos true ou false.')
@@ -50,7 +58,7 @@ export function saveDevFeatureFlags(flags: FeatureFlags): void {
 }
 
 export function resetDevFeatureFlags(): void {
-  if (!import.meta.env.DEV) return
+  if (!isDevFeatureFlagsEnabled()) return
   localStorage.removeItem(STORAGE_KEY)
   window.dispatchEvent(new Event(CHANGE_EVENT))
 }
