@@ -13,6 +13,7 @@ import { Avatar } from '@/components/Avatar'
 import { classNames } from '@/utils/classNames'
 import { SidebarIcon, type SidebarIconName } from './SidebarIcon'
 import styles from './AppLayout.module.scss'
+import { useFeatureFlag } from '@/apps/motorista/features/useFeatureFlags'
 
 interface NavItem {
   to: string
@@ -84,6 +85,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, [session])
   const [alertCount, setAlertCount] = useState(0)
   const canReadAlerts = Boolean(user?.permissoes.includes('manutencoes:ler'))
+  const notificationsEnabled = useFeatureFlag('gestor_notificacoes')
   useEffect(() => {
     if (!canReadAlerts) return
     getAlertCount()
@@ -207,26 +209,44 @@ export function AppLayout({ children }: AppLayoutProps) {
               <span className={styles.label}>Modo claro</span>
             </button>
 
-            <p
-              className={classNames(
-                styles.footerItem,
-                styles.footerItemStrong,
-                styles.hasTooltip,
-              )}
-            >
-              <span className={styles.iconWrap}>
-                <SidebarIcon name="alert" className={styles.icon} />
-                {alertCount > 0 ? (
-                  <span className={styles.badge}>
-                    {alertCount}
-                    <span className={styles.visuallyHidden}>
-                      {alertCount === 1 ? ' alerta' : ' alertas'}
+            {canReadAlerts && notificationsEnabled ? (
+              <NavLink
+                to="/notificacoes"
+                onClick={() => setIsMenuOpen(false)}
+                className={({ isActive }) =>
+                  classNames(
+                    styles.footerItem,
+                    styles.footerItemStrong,
+                    styles.hasTooltip,
+                    isActive && styles.navItemActive,
+                  )
+                }
+              >
+                <span className={styles.iconWrap}>
+                  <SidebarIcon name="alert" className={styles.icon} />
+                  {alertCount > 0 ? (
+                    <span className={styles.badge}>
+                      {alertCount}
+                      <span className={styles.visuallyHidden}>
+                        {alertCount === 1 ? ' alerta' : ' alertas'}
+                      </span>
                     </span>
-                  </span>
-                ) : null}
-              </span>
-              <span className={styles.label}>Notificações</span>
-            </p>
+                  ) : null}
+                </span>
+                <span className={styles.label}>Notificações</span>
+              </NavLink>
+            ) : (
+              <p
+                className={classNames(
+                  styles.footerItem,
+                  styles.footerItemStrong,
+                  styles.hasTooltip,
+                )}
+              >
+                <SidebarIcon name="alert" className={styles.icon} />
+                <span className={styles.label}>Notificações</span>
+              </p>
+            )}
 
             <div className={styles.userBox}>
               <Avatar name={userName} className={styles.avatar} />

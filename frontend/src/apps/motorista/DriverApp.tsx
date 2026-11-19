@@ -20,6 +20,7 @@ import { DriverProfilePage } from './pages/DriverProfilePage'
 import { DriverTripsPage } from './pages/DriverTripsPage'
 import { useFeatureFlag } from './features/useFeatureFlags'
 import { isDevFeatureFlagsEnabled } from './features/featureFlags'
+import { FeatureFlagRoute } from '@/components/FeatureFlagRoute'
 
 const DevFeatureFlagsPage = lazy(() =>
   import('./pages/dev/DevFeatureFlagsPage').then((module) => ({
@@ -65,31 +66,99 @@ export function DriverRoutes() {
         <Route path="/dev/gps-simulator" element={<FeatureFlaggedGpsSimulator />} />
         <Route element={<TripCaptureProvider />}>
           <Route element={<DriverFlowLayout />}>
-            <Route path="veiculo-sessao" element={<SessionVehiclePage />} />
+            <Route
+              path="veiculo-sessao"
+              element={
+                <FeatureFlagRoute flag="motorista_vinculo_veiculo">
+                  <SessionVehiclePage />
+                </FeatureFlagRoute>
+              }
+            />
           </Route>
           <Route element={<RequireDriverVehicle />}>
             <Route element={<DriverLayout />}>
-              <Route index element={<DriverHomePage />} />
-              <Route path="viagens" element={<DriverTripsPage />} />
-              <Route path="checklist" element={<DriverChecklistPage />} />
-              <Route path="abastecimento" element={<DriverFuelPage />} />
-              <Route path="perfil" element={<DriverProfilePage />} />
+              <Route
+                index
+                element={
+                  <FeatureFlagRoute flag="motorista_viagens">
+                    <DriverHomePage />
+                  </FeatureFlagRoute>
+                }
+              />
+              <Route
+                path="viagens"
+                element={
+                  <FeatureFlagRoute flag="motorista_viagens">
+                    <DriverTripsPage />
+                  </FeatureFlagRoute>
+                }
+              />
+              <Route
+                path="checklist"
+                element={
+                  <FeatureFlagRoute flag="motorista_checklist">
+                    <DriverChecklistPage />
+                  </FeatureFlagRoute>
+                }
+              />
+              <Route
+                path="abastecimento"
+                element={
+                  <FeatureFlagRoute flag="motorista_abastecimento">
+                    <DriverFuelPage />
+                  </FeatureFlagRoute>
+                }
+              />
+              <Route
+                path="perfil"
+                element={
+                  <FeatureFlagRoute flag="motorista_perfil">
+                    <DriverProfilePage />
+                  </FeatureFlagRoute>
+                }
+              />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
             <Route element={<DriverFlowLayout />}>
-              <Route path="viagens/:id" element={<MobileTripPage />} />
+              <Route
+                path="viagens/:id"
+                element={
+                  <FeatureFlagRoute flag="motorista_viagens">
+                    <MobileTripPage />
+                  </FeatureFlagRoute>
+                }
+              />
               <Route
                 path="viagens/:id/inicio/identificar"
-                element={<IdentifyVehiclePage />}
+                element={
+                  <FeatureFlagRoute flag="motorista_viagens">
+                    <IdentifyVehiclePage />
+                  </FeatureFlagRoute>
+                }
               />
-              <Route path="viagens/:id/:action/painel" element={<CapturePanelPage />} />
+              <Route
+                path="viagens/:id/:action/painel"
+                element={
+                  <FeatureFlagRoute flag="motorista_viagens">
+                    <CapturePanelPage />
+                  </FeatureFlagRoute>
+                }
+              />
               <Route
                 path="viagens/:id/:action/corrigir-leitura"
-                element={<CorrectMileagePage />}
+                element={
+                  <FeatureFlagRoute flag="motorista_viagens">
+                    <CorrectMileagePage />
+                  </FeatureFlagRoute>
+                }
               />
               <Route
                 path="viagens/:id/:action/quilometragem"
-                element={<ConfirmMileagePage />}
+                element={
+                  <FeatureFlagRoute flag="motorista_viagens">
+                    <ConfirmMileagePage />
+                  </FeatureFlagRoute>
+                }
               />
             </Route>
           </Route>

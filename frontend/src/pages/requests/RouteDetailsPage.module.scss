@@ -1,0 +1,54 @@
+@use '@/styles/tokens' as *;
+.page {
+  display: grid;
+  gap: 1rem;
+}
+.back {
+  color: $color-primary;
+  font-weight: 700;
+  text-decoration: none;
+}
+.demo {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  color: $color-text-muted;
+  background: $color-background;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+.map {
+  min-height: 20rem;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.cards article {
+  padding: 1rem;
+  background: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+.cards h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+.cards dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 0.75rem;
+  margin: 0;
+}
+.cards dt {
+  color: $color-text-muted;
+}
+.cards dd {
+  margin: 0;
+  text-align: right;
+}
+@media (max-width: 800px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

@@ -41,16 +41,39 @@
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  margin: 1.25rem 0;
+  margin: 0.75rem 0;
   padding: 0.875rem;
   border: 1px solid $color-border;
   border-radius: $radius-md;
+}
+
+.flagList {
+  margin: 1.25rem 0;
+}
+
+.flagInfo {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.flagInfo code,
+.flagInfo > span {
+  color: $color-text-muted;
+  font-size: 0.8rem;
 }
 
 .flagStatus > span:last-child {
   margin-left: auto;
   color: $color-text-muted;
   font-size: 0.875rem;
+  text-align: right;
+}
+
+.available {
+  color: $color-success !important;
+}
+.planned {
+  color: $color-text-muted !important;
 }
 
 .enabled,

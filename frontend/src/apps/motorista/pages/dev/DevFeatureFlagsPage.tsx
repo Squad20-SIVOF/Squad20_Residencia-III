@@ -3,6 +3,7 @@ import { Button } from '@/components/Button'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import {
   DEFAULT_FEATURE_FLAGS,
+  FEATURE_FLAG_REGISTRY,
   getDevFeatureFlags,
   resetDevFeatureFlags,
   saveDevFeatureFlags,
@@ -17,6 +18,12 @@ export function DevFeatureFlagsPage() {
   const [json, setJson] = useState(() => JSON.stringify(getDevFeatureFlags(), null, 2))
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
+  const hostname = window.location.hostname
+  const app =
+    hostname.includes('gestor') || window.location.port === '5173'
+      ? 'gestor'
+      : 'motorista'
+  const appFlags = FEATURE_FLAG_REGISTRY[app]
 
   function applyJson() {
     setError('')
@@ -56,14 +63,31 @@ export function DevFeatureFlagsPage() {
           desenvolvimento. As flags ficam no navegador e não são enviadas ao backend.
         </p>
 
-        <div className={styles.flagStatus}>
-          <span
-            className={
-              currentFlags.gps_event_simulator ? styles.enabled : styles.disabled
-            }
-          />
-          <strong>gps_event_simulator</strong>
-          <span>{currentFlags.gps_event_simulator ? 'Ativada' : 'Desativada'}</span>
+        <div className={styles.flagList}>
+          {appFlags.map((flag) => {
+            const enabled = currentFlags[flag.key] ?? flag.defaultValue
+            return (
+              <div className={styles.flagStatus} key={flag.key}>
+                <span className={enabled ? styles.enabled : styles.disabled} />
+                <div className={styles.flagInfo}>
+                  <strong>{flag.label}</strong>
+                  <code>{flag.key}</code>
+                  <span>{flag.description}</span>
+                </div>
+                <span
+                  className={
+                    flag.status === 'disponivel' ? styles.available : styles.planned
+                  }
+                >
+                  {flag.status === 'disponivel'
+                    ? enabled
+                      ? 'Ativada'
+                      : 'Desativada'
+                    : 'Em desenvolvimento'}
+                </span>
+              </div>
+            )
+          })}
         </div>
 
         <label className={styles.label} htmlFor="feature-flags-json">
@@ -91,6 +115,7 @@ export function DevFeatureFlagsPage() {
         </div>
 
         <p className={styles.hint}>
+          As flags “em desenvolvimento” são apenas um inventário e ainda não ativam telas.
           Exemplo: <code>{'{ "gps_event_simulator": true }'}</code>
         </p>
       </section>

@@ -1,8 +1,174 @@
 export type FeatureFlags = Record<string, boolean>
 
-export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
-  gps_event_simulator: false,
+export type FeatureApp = 'gestor' | 'motorista'
+
+export interface FeatureFlagDefinition {
+  key: string
+  label: string
+  description: string
+  defaultValue: boolean
+  status: 'disponivel' | 'em_desenvolvimento'
 }
+
+export const FEATURE_FLAG_REGISTRY: Record<FeatureApp, FeatureFlagDefinition[]> = {
+  gestor: [
+    {
+      key: 'gestor_dashboard',
+      label: 'Painel inicial',
+      description: 'Resumo da operação e indicadores.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'gestor_veiculos',
+      label: 'Veículos',
+      description: 'Cadastro e consulta da frota.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'gestor_motoristas',
+      label: 'Motoristas',
+      description: 'Cadastro e consulta de motoristas.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'gestor_abastecimentos',
+      label: 'Abastecimentos',
+      description: 'Registros e despesas de combustível.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'gestor_manutencoes',
+      label: 'Manutenções',
+      description: 'Ordens e histórico de manutenção.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'gestor_viagens',
+      label: 'Viagens',
+      description: 'Solicitações e painel de viagens.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'gestor_route_monitoring',
+      label: 'Monitoramento de rotas',
+      description: 'Mapa e lista de deslocamentos demonstrativos.',
+      defaultValue: false,
+      status: 'disponivel',
+    },
+    {
+      key: 'gestor_route_details',
+      label: 'Detalhes da rota',
+      description: 'Dados de solicitante, motorista e trajeto demonstrativos.',
+      defaultValue: false,
+      status: 'disponivel',
+    },
+    {
+      key: 'gestor_relatorios',
+      label: 'Relatórios',
+      description: 'Consultas e exportação de relatórios.',
+      defaultValue: false,
+      status: 'em_desenvolvimento',
+    },
+    {
+      key: 'gestor_usuarios',
+      label: 'Usuários e permissões',
+      description: 'Gerenciamento de contas e acessos.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'gestor_notificacoes',
+      label: 'Notificações',
+      description: 'Alertas ativos de CNH e manutenção.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'gestor_svo',
+      label: 'Atendimento SVO',
+      description: 'Fluxo completo de atendimento SVO.',
+      defaultValue: false,
+      status: 'em_desenvolvimento',
+    },
+  ],
+  motorista: [
+    {
+      key: 'motorista_login',
+      label: 'Login',
+      description: 'Autenticação do motorista.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'motorista_vinculo_veiculo',
+      label: 'Vínculo de veículo',
+      description: 'Identificação do veículo por sessão/QR Code.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'motorista_viagens',
+      label: 'Minhas viagens',
+      description: 'Consulta e execução de viagens atribuídas.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'motorista_checklist',
+      label: 'Checklist',
+      description: 'Checklist operacional do veículo.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'motorista_abastecimento',
+      label: 'Abastecimento',
+      description: 'Registro de abastecimento pelo motorista.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'motorista_perfil',
+      label: 'Perfil',
+      description: 'Dados e preferências da conta.',
+      defaultValue: true,
+      status: 'disponivel',
+    },
+    {
+      key: 'gps_event_simulator',
+      label: 'Simulador GPS por eventos',
+      description: 'Simulação de rota e eventos GPS para desenvolvimento.',
+      defaultValue: false,
+      status: 'disponivel',
+    },
+    {
+      key: 'motorista_historico',
+      label: 'Histórico de viagens',
+      description: 'Consulta consolidada de viagens anteriores.',
+      defaultValue: false,
+      status: 'em_desenvolvimento',
+    },
+    {
+      key: 'motorista_notificacoes',
+      label: 'Notificações',
+      description: 'Avisos em tempo real sobre viagens e ocorrências.',
+      defaultValue: false,
+      status: 'em_desenvolvimento',
+    },
+  ],
+}
+
+export const DEFAULT_FEATURE_FLAGS: FeatureFlags = Object.fromEntries(
+  Object.values(FEATURE_FLAG_REGISTRY)
+    .flat()
+    .map(({ key, defaultValue }) => [key, defaultValue]),
+)
 
 const STORAGE_KEY = 'frotamanager.dev.feature-flags'
 const CHANGE_EVENT = 'frotamanager:feature-flags-change'
@@ -43,6 +209,20 @@ export function getDevFeatureFlags(): FeatureFlags {
   } catch {
     return { ...DEFAULT_FEATURE_FLAGS }
   }
+}
+
+export function getFeatureRegistry(app: FeatureApp): FeatureFlagDefinition[] {
+  return FEATURE_FLAG_REGISTRY[app]
+}
+
+export function getAppFeatureFlags(app: FeatureApp): FeatureFlags {
+  const flags = getDevFeatureFlags()
+  return Object.fromEntries(
+    FEATURE_FLAG_REGISTRY[app].map(({ key, defaultValue }) => [
+      key,
+      flags[key] ?? defaultValue,
+    ]),
+  )
 }
 
 export function saveDevFeatureFlags(flags: FeatureFlags): void {
