@@ -67,6 +67,10 @@ test('navega pelo menu lateral e marca o item ativo', async () => {
 })
 
 test('abre a exportação de relatórios implementada', async () => {
+  localStorage.setItem(
+    'frotamanager.dev.feature-flags',
+    JSON.stringify({ gestor_relatorios: true }),
+  )
   const user = userEvent.setup()
   renderAt('/')
 
