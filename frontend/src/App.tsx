@@ -1,5 +1,3 @@
-import { RelatoriosPage } from '@/pages/relatorios/RelatoriosPage'
-import { AtendimentoSVOPage } from './pages/atendimento-svo/AtendimentoSVOPage'
 import AbastecimentosPage from '@/pages/abastecimentos/AbastecimentosPage'
 import RegistrarAbastecimento from '@/pages/abastecimentos/registrar/RegistrarAbastecimento'
 import SolicitacoesPendentesPage from '@/pages/solicitacoes/SolicitacoesPendentesPage'
@@ -38,13 +36,13 @@ const DevFeatureFlagsPage = lazy(() =>
   })),
 )
 
-// Módulos ainda sem tela própria: mesma página provisória, só muda o título.
+// MÃ³dulos ainda sem tela prÃ³pria: mesma pÃ¡gina provisÃ³ria, sÃ³ muda o tÃ­tulo.
 const COMING_SOON_ROUTES = [
   { path: 'abastecimentos', title: 'Abastecimentos' },
-  { path: 'manutencoes', title: 'Manutenções' },
+  { path: 'manutencoes', title: 'ManutenÃ§Ãµes' },
 ]
 
-/** Rotas da aplicação (separadas do BrowserRouter para poderem ser testadas). */
+/** Rotas da aplicaÃ§Ã£o (separadas do BrowserRouter para poderem ser testadas). */
 export function AppRoutes() {
   return (
     <Routes>
@@ -55,7 +53,7 @@ export function AppRoutes() {
           path="dev/feature-flags"
           element={
             isDevFeatureFlagsEnabled() ? (
-              <Suspense fallback={<p>Carregando configurações…</p>}>
+              <Suspense fallback={<p>Carregando configuraÃ§Ãµesâ€¦</p>}>
                 <DevFeatureFlagsPage />
               </Suspense>
             ) : (
