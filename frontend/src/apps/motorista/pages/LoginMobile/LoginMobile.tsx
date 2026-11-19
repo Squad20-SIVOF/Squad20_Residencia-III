@@ -5,6 +5,7 @@ import { TextField } from '@/components/TextField'
 import { login, currentUser, logout } from '@/service/authService'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { MobileHeader } from '../../components/MobileHeader'
+import { useOnlineStatus } from '../../pwa/useOnlineStatus'
 import styles from './LoginMobile.module.scss'
 export function LoginMobile() {
   const navigate = useNavigate()
@@ -12,10 +13,15 @@ export function LoginMobile() {
   const [password, setPassword] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const isOnline = useOnlineStatus()
   useDocumentTitle('Login do motorista')
   async function submit(event: FormEvent) {
     event.preventDefault()
     if (saving) return
+    if (!isOnline) {
+      setError('Sem conexão com a internet. Conecte-se e tente novamente.')
+      return
+    }
     setSaving(true)
     setError('')
     try {
@@ -67,8 +73,27 @@ export function LoginMobile() {
                 disabled={saving}
               />
             </div>
-            {error && <p role="alert">{error}</p>}
-            <Button type="submit" isFullWidth isLoading={saving}>
+            {error && (
+              <p className={styles.formError} role="alert">
+                {error}
+              </p>
+            )}
+            <Button
+              type="submit"
+              isFullWidth
+              isLoading={saving}
+              iconStart={
+                <svg viewBox="0 0 22 22" width="22" height="22" fill="none">
+                  <path
+                    d="m3.7 11 4.5 4.6L18.3 5.5"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              }
+            >
               Entrar
             </Button>
           </form>
