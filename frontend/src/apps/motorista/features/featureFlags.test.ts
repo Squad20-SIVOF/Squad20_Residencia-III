@@ -18,6 +18,7 @@ describe('feature flags de desenvolvimento', () => {
     saveDevFeatureFlags({ gps_event_simulator: true, nova_tela: false })
 
     expect(getDevFeatureFlags()).toEqual({
+      ...DEFAULT_FEATURE_FLAGS,
       gps_event_simulator: true,
       nova_tela: false,
     })
