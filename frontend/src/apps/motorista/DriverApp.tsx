@@ -1,7 +1,8 @@
+import { lazy, Suspense } from 'react'
 import { RequireDriverVehicle } from './components/RequireDriverVehicle'
 import { SessionVehiclePage } from './pages/flow/SessionVehiclePage'
 import { RequireAuth } from '@/components/RequireAuth/RequireAuth'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { LoginMobile } from './pages/LoginMobile/LoginMobile'
 import { TripCaptureProvider } from './components/TripCaptureContext'
 import { DriverFlowLayout } from './pages/flow/DriverFlowLayout'
@@ -17,6 +18,30 @@ import { DriverFuelPage } from './pages/DriverFuelPage'
 import { DriverHomePage } from './pages/DriverHomePage'
 import { DriverProfilePage } from './pages/DriverProfilePage'
 import { DriverTripsPage } from './pages/DriverTripsPage'
+import { useFeatureFlag } from './features/useFeatureFlags'
+
+const DevFeatureFlagsPage = lazy(() =>
+  import('./pages/dev/DevFeatureFlagsPage').then((module) => ({
+    default: module.DevFeatureFlagsPage,
+  })),
+)
+const GpsEventSimulatorPage = lazy(() =>
+  import('./pages/dev/GpsEventSimulatorPage').then((module) => ({
+    default: module.GpsEventSimulatorPage,
+  })),
+)
+
+function FeatureFlaggedGpsSimulator() {
+  const enabled = useFeatureFlag('gps_event_simulator')
+  if (!import.meta.env.DEV) return <NotFoundPage />
+  return enabled ? (
+    <Suspense fallback={<p>Carregando simulador…</p>}>
+      <GpsEventSimulatorPage />
+    </Suspense>
+  ) : (
+    <Navigate to="/dev/feature-flags" replace />
+  )
+}
 
 /** Rotas do app do motorista (servido na raiz do próprio domínio/porta). */
 export function DriverRoutes() {
@@ -24,6 +49,19 @@ export function DriverRoutes() {
     <Routes>
       <Route path="/login" element={<LoginMobile />} />
       <Route element={<RequireAuth />}>
+        <Route
+          path="/dev/feature-flags"
+          element={
+            import.meta.env.DEV ? (
+              <Suspense fallback={<p>Carregando configuração…</p>}>
+                <DevFeatureFlagsPage />
+              </Suspense>
+            ) : (
+              <NotFoundPage />
+            )
+          }
+        />
+        <Route path="/dev/gps-simulator" element={<FeatureFlaggedGpsSimulator />} />
         <Route element={<TripCaptureProvider />}>
           <Route element={<DriverFlowLayout />}>
             <Route path="veiculo-sessao" element={<SessionVehiclePage />} />
