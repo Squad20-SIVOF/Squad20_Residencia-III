@@ -1,0 +1,227 @@
+@use '@/styles/tokens' as *;
+
+.page {
+  min-height: 100dvh;
+  padding: 1rem;
+  color: #e2e8f0;
+  background: #0f172a;
+}
+
+.header,
+.toolbar,
+.panelHeading,
+.playback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.header {
+  max-width: 90rem;
+  margin: 0 auto 1rem;
+  padding: 0.5rem 0 1rem;
+  border-bottom: 1px solid #334155;
+}
+
+.header h1,
+.header p,
+.panelHeading h2,
+.panelHeading p {
+  margin: 0;
+}
+
+.header h1 {
+  font-size: 1.35rem;
+}
+.header p:last-child,
+.panelHeading p {
+  margin-top: 0.25rem;
+  color: #94a3b8;
+  font-size: 0.8125rem;
+}
+.eyebrow {
+  margin-bottom: 0.25rem !important;
+  color: #60a5fa;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.header a {
+  color: #93c5fd;
+  font-size: 0.875rem;
+}
+
+.toolbar,
+.mapPanel,
+.eventsPanel,
+.playback {
+  max-width: 90rem;
+  margin: 0 auto 0.875rem;
+  padding: 0.875rem;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 0.875rem;
+}
+
+.toolbar label,
+.filter,
+.progress {
+  display: flex;
+  flex: 1 1 12rem;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.toolbar select,
+.filter select {
+  min-height: 2.5rem;
+  padding: 0.4rem 0.6rem;
+  color: #f8fafc;
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 0.5rem;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 1fr);
+  gap: 0.875rem;
+  max-width: 90rem;
+  margin: 0 auto 0.875rem;
+}
+
+.mapPanel,
+.eventsPanel {
+  min-width: 0;
+  margin: 0;
+}
+.map {
+  width: 100%;
+  height: min(55vh, 34rem);
+  min-height: 19rem;
+  border-radius: 0.625rem;
+  background: #334155;
+}
+
+.telemetry {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.telemetry div {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.6rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 0.55rem;
+}
+.telemetry span {
+  color: #94a3b8;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+.telemetry strong {
+  color: #f8fafc;
+  font-size: 0.85rem;
+}
+.arrived {
+  margin: 0.75rem 0 0;
+  color: #86efac;
+  font-weight: 700;
+}
+
+.panelHeading {
+  margin-bottom: 0.75rem;
+}
+.panelHeading h2 {
+  font-size: 0.95rem;
+}
+.filter {
+  margin-bottom: 0.75rem;
+}
+.eventList {
+  display: grid;
+  gap: 0.45rem;
+  max-height: 28rem;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.eventList li {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.6rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 0.5rem;
+}
+.eventList time {
+  color: #94a3b8;
+  font:
+    0.7rem ui-monospace,
+    monospace;
+}
+.eventList strong {
+  color: #93c5fd;
+  font:
+    0.75rem ui-monospace,
+    monospace;
+}
+.eventList span {
+  color: #cbd5e1;
+  font-size: 0.75rem;
+}
+.eventList .empty {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.playback {
+  justify-content: flex-start;
+}
+.progress {
+  flex: 1 1 16rem;
+  flex-direction: row;
+  align-items: center;
+}
+.progress input {
+  flex: 1;
+  accent-color: #3b82f6;
+}
+.progress span {
+  min-width: 2.5rem;
+  color: #bfdbfe;
+  text-align: right;
+}
+.disclaimer {
+  max-width: 90rem;
+  margin: 0 auto;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 800px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+  .telemetry {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .map {
+    height: 54vh;
+  }
+  .playback > button {
+    width: 100%;
+  }
+}

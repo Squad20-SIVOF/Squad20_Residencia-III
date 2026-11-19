@@ -1,0 +1,140 @@
+@use '@/styles/tokens' as *;
+
+.page {
+  min-height: 100dvh;
+  padding: 1rem;
+  background: $color-background;
+}
+
+.panel {
+  width: min(100%, 42rem);
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: $color-primary;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.panel h1 {
+  margin: 0;
+  color: $color-text;
+  font-size: 1.5rem;
+}
+
+.description,
+.hint {
+  color: $color-text-muted;
+  line-height: 1.5;
+}
+
+.flagStatus {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0.75rem 0;
+  padding: 0.875rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.flagList {
+  margin: 1.25rem 0;
+}
+
+.flagInfo {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.flagInfo code,
+.flagInfo > span {
+  color: $color-text-muted;
+  font-size: 0.8rem;
+}
+
+.flagStatus > span:last-child {
+  margin-left: auto;
+  color: $color-text-muted;
+  font-size: 0.875rem;
+  text-align: right;
+}
+
+.available {
+  color: $color-success !important;
+}
+.planned {
+  color: $color-text-muted !important;
+}
+
+.enabled,
+.disabled {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+}
+
+.enabled {
+  background: $color-success;
+}
+.disabled {
+  background: $color-text-muted;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.editor {
+  width: 100%;
+  min-height: 11rem;
+  padding: 0.875rem;
+  resize: vertical;
+  color: $color-text;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.editor:focus-visible {
+  outline: 3px solid rgba(31, 95, 173, 0.25);
+  outline-offset: 1px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.error {
+  color: $color-error;
+}
+.success {
+  color: $color-success;
+}
+
+.hint {
+  margin-bottom: 0;
+  font-size: 0.8125rem;
+}
+
+.hint code {
+  color: $color-primary-dark;
+}

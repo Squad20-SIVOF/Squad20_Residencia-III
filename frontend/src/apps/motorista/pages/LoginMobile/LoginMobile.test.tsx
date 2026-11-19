@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { beforeEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { LoginMobile } from './LoginMobile'
 import { login, currentUser, logout } from '@/service/authService'
 vi.mock('@/service/authService', () => ({
@@ -17,6 +17,9 @@ beforeEach(() => {
     email: 'driver@example.invalid',
     permissoes: ['viagens:ler-proprias'],
   })
+})
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 function mount() {
   render(
@@ -61,4 +64,13 @@ test('conta sem acesso ao app não navega e encerra a sessão', async () => {
   expect(await screen.findByRole('alert')).toHaveTextContent('não possui acesso')
   expect(logout).toHaveBeenCalled()
   expect(screen.queryByText('Área do motorista')).not.toBeInTheDocument()
+})
+
+test('não tenta autenticar sem conexão e orienta o motorista', async () => {
+  vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+  mount()
+  await submit()
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(/sem conexão/i)
+  expect(login).not.toHaveBeenCalled()
 })
