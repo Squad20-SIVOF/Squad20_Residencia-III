@@ -1,5 +1,3 @@
-import { RelatoriosPage } from '@/pages/relatorios/RelatoriosPage'
-import { AtendimentoSVOPage } from './pages/atendimento-svo/AtendimentoSVOPage'
 import AbastecimentosPage from '@/pages/abastecimentos/AbastecimentosPage'
 import RegistrarAbastecimento from '@/pages/abastecimentos/registrar/RegistrarAbastecimento'
 import SolicitacoesPendentesPage from '@/pages/solicitacoes/SolicitacoesPendentesPage'
