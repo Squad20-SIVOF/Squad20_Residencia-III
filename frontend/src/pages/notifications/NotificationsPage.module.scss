@@ -1,0 +1,89 @@
+@use '@/styles/tokens' as *;
+
+.page {
+  display: grid;
+  gap: 1rem;
+}
+.summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.25rem;
+  background: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+.summary strong {
+  color: $color-primary;
+  font-size: 1.5rem;
+}
+.summary > span:last-child {
+  margin-left: auto;
+  color: $color-text-muted;
+  font-size: 0.875rem;
+}
+.groups {
+  display: grid;
+  gap: 1rem;
+}
+.list {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+.item > div {
+  display: grid;
+  gap: 0.25rem;
+}
+.item > div span {
+  color: $color-text-muted;
+  font-size: 0.85rem;
+}
+.item a {
+  color: $color-primary;
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.severity {
+  padding: 0.25rem 0.5rem;
+  color: $color-warning-text;
+  background: $color-warning-soft;
+  border-radius: $radius-full;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.critica {
+  color: $color-error;
+  background: rgba(220, 38, 38, 0.1);
+}
+.alta {
+  color: $color-warning-text;
+}
+.empty {
+  margin: 0;
+  color: $color-text-muted;
+}
+@media (max-width: 640px) {
+  .item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .item a {
+    grid-column: 2;
+  }
+  .summary > span:last-child {
+    margin-left: 0;
+  }
+}

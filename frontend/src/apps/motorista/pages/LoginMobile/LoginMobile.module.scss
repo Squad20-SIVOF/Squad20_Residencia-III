@@ -14,7 +14,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: $space-6;
+  gap: $space-4;
   min-height: calc(100dvh - 4rem);
   padding: $space-4 $space-6 $space-6;
   overflow: hidden;
@@ -61,15 +61,23 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: $space-6;
+  gap: $space-4;
   width: 100%;
 }
 
 .fields {
   display: flex;
   flex-direction: column;
-  gap: $space-6;
+  gap: $space-4;
   width: 100%;
+}
+
+.formError {
+  margin: 0;
+  color: $color-danger;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .helpText {

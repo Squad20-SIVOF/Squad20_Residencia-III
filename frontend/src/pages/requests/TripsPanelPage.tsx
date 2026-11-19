@@ -1,4 +1,6 @@
 import { useId } from 'react'
+import { Link } from 'react-router-dom'
+import { useFeatureFlag } from '@/apps/motorista/features/useFeatureFlags'
 import { Button } from '@/components/Button'
 import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
@@ -43,6 +45,7 @@ const QUICK_ACTIONS: QuickActionCardProps[] = [
 
 /** Entrada do módulo Viagens (`/viagens`): atalhos, solicitações pendentes e rotas em andamento. */
 export function TripsPanelPage() {
+  const monitoringEnabled = useFeatureFlag('gestor_route_monitoring')
   useDocumentTitle('Painel de Viagens')
   const quickActionsId = useId()
   const tripsId = useId()
@@ -96,7 +99,12 @@ export function TripsPanelPage() {
         </h2>
         <div className={styles.quickActions}>
           {QUICK_ACTIONS.map((action) => (
-            <QuickActionCard key={action.title} {...action} />
+            <QuickActionCard
+              key={action.title}
+              {...(action.title === 'Mapa de Rotas' && monitoringEnabled
+                ? { ...action, to: '/viagens/monitoramento' }
+                : action)}
+            />
           ))}
         </div>
       </section>
@@ -113,7 +121,13 @@ export function TripsPanelPage() {
               <span className={styles.count}>{formatTripCount(trips.data.length)}</span>
             )}
           </div>
-          <ComingSoonLink label="Abrir mapa de rotas" />
+          {monitoringEnabled ? (
+            <Link to="/viagens/monitoramento" className={styles.monitoringLink}>
+              Abrir mapa de rotas
+            </Link>
+          ) : (
+            <ComingSoonLink label="Abrir mapa de rotas" />
+          )}
         </div>
         <p className={styles.demoNote}>
           Demonstração: as rotas abaixo são exemplos até a integração com o rastreamento.
