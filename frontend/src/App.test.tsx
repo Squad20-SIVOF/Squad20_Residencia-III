@@ -31,11 +31,9 @@ test('renderiza a página de login em /login', () => {
 test('renderiza o início dentro do menu lateral', async () => {
   renderAt('/')
 
-  expect(
-    screen.getByRole('heading', { name: /bem-vindo ao frotamanager/i }),
-  ).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Dashboard Principal' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: /abrir menu/i })).toBeInTheDocument()
-  expect(await screen.findByText(/motoristas ativos/i)).toBeInTheDocument()
+  expect(await screen.findByText('Veículos disponíveis')).toBeInTheDocument()
 })
 
 test('renderiza a página de perfil em /perfil', async () => {

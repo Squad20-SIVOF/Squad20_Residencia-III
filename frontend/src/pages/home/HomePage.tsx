@@ -1,118 +1,225 @@
+import { useState } from 'react'
 import { Button } from '@/components/Button'
-import { ButtonLink } from '@/components/ButtonLink'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { PageHeader } from '@/components/PageHeader'
-import { StatCard } from '@/components/StatCard'
 import { StateMessage } from '@/components/StateMessage'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
-import { useDrivers } from '@/pages/drivers/hooks/useDrivers'
-import { summarizeDrivers } from '@/pages/drivers/utils/driverRules'
-import { useVehicles } from '@/pages/vehicles/hooks/useVehicles'
+import { formatLongDate } from '@/utils/format'
+import { AlertsCard } from './components/AlertsCard'
+import { AvailabilityCard } from './components/AvailabilityCard'
+import { FleetTodayCard } from './components/FleetTodayCard'
+import { KpiCard } from './components/KpiCard'
+import { OperationalDetailsCard } from './components/OperationalDetailsCard'
+import type { OperationalDetail } from './components/OperationalDetailsCard'
+import { SectionErrorCard } from './components/SectionErrorCard'
+import { UtilizationCard } from './components/UtilizationCard'
+import { useDashboard } from './hooks/useDashboard'
+import type { DashboardData } from './types'
+import {
+  buildFleetAlerts,
+  buildNextActions,
+  buildUtilization,
+  countOpenAlerts,
+  formatSignedNumber,
+  plural,
+  summarizeFleet,
+  summarizeScheduledMaintenances,
+  summarizeTrips,
+} from './utils/dashboardRules'
 import styles from './HomePage.module.scss'
+
+const UNAVAILABLE = '—'
+
+interface DashboardContentProps {
+  data: DashboardData
+  today: Date
+  onRetry: () => void
+}
+
+function DashboardContent({ data, today, onRetry }: DashboardContentProps) {
+  const { vehicles, alerts, maintenances } = data
+  const fleet = vehicles.status === 'ok' ? summarizeFleet(vehicles.data) : null
+  const trips = summarizeTrips(data.trips)
+  const openAlerts = alerts.status === 'ok' ? countOpenAlerts(alerts.data) : null
+  const scheduled =
+    maintenances.status === 'ok'
+      ? summarizeScheduledMaintenances(maintenances.data, today)
+      : null
+  const utilization = buildUtilization(data.weeklyTrips, today)
+  const nextActions = buildNextActions(
+    alerts.status === 'ok' ? alerts.data : null,
+    data.trips,
+  )
+
+  const details: OperationalDetail[] = []
+  if (vehicles.status !== 'forbidden') {
+    details.push(
+      {
+        label: 'Frota ativa',
+        value: fleet ? plural(fleet.active, 'veículo', 'veículos') : UNAVAILABLE,
+      },
+      { label: 'Disponíveis', value: fleet?.available ?? UNAVAILABLE, tone: 'success' },
+      {
+        label: 'Em manutenção',
+        value: fleet?.maintenance ?? UNAVAILABLE,
+        tone: 'warning',
+      },
+      { label: 'Em abastecimento', value: fleet?.refueling ?? UNAVAILABLE, tone: 'info' },
+    )
+  }
+  details.push(
+    { label: 'Viagens concluídas · 7 dias', value: utilization.weeklyTotal },
+    { label: 'Viagens em andamento', value: trips.inProgress, tone: 'info' },
+  )
+  if (alerts.status !== 'forbidden') {
+    details.push({
+      label: 'Alertas operacionais',
+      value: openAlerts?.total ?? UNAVAILABLE,
+      tone: 'danger',
+    })
+  }
+  if (maintenances.status !== 'forbidden') {
+    details.push({
+      label: 'Manutenções agendadas',
+      value: scheduled?.scheduled ?? UNAVAILABLE,
+      tone: 'warning',
+    })
+  }
+
+  return (
+    <>
+      <section className={styles.kpis} aria-label="Indicadores principais">
+        {vehicles.status !== 'forbidden' && (
+          <KpiCard
+            to="/veiculos"
+            variant="success"
+            label="Veículos disponíveis"
+            value={fleet ? `${fleet.available} / ${fleet.active}` : UNAVAILABLE}
+            {...(fleet
+              ? {
+                  hint: formatSignedNumber(data.availableVsYesterday),
+                  detail: 'vs. ontem',
+                }
+              : { detail: 'Não foi possível carregar' })}
+          />
+        )}
+        <KpiCard
+          to="/viagens"
+          variant="info"
+          label="Viagens em andamento"
+          value={trips.inProgress}
+          hint={plural(trips.delayed, 'atrasada', 'atrasadas')}
+          detail={`${trips.onTime} dentro do prazo`}
+        />
+        {alerts.status !== 'forbidden' && (
+          <KpiCard
+            variant="danger"
+            label="Alertas operacionais"
+            value={openAlerts?.total ?? UNAVAILABLE}
+            {...(openAlerts
+              ? {
+                  hint: plural(openAlerts.critical, 'crítico', 'críticos'),
+                  detail: `${openAlerts.total - openAlerts.critical} em análise`,
+                }
+              : { detail: 'Não foi possível carregar' })}
+          />
+        )}
+        {maintenances.status !== 'forbidden' && (
+          <KpiCard
+            to="/manutencoes"
+            variant="warning"
+            label="Manutenções agendadas"
+            value={scheduled?.scheduled ?? UNAVAILABLE}
+            {...(scheduled
+              ? {
+                  hint: `${scheduled.today} hoje`,
+                  detail: `${scheduled.untilFriday} até sexta`,
+                }
+              : { detail: 'Não foi possível carregar' })}
+          />
+        )}
+      </section>
+
+      <div className={styles.panels}>
+        <UtilizationCard utilization={utilization} className={styles.utilization} />
+
+        {fleet && <AvailabilityCard fleet={fleet} className={styles.availability} />}
+        {vehicles.status === 'error' && (
+          <SectionErrorCard
+            title="Disponibilidade da frota"
+            message="Não foi possível carregar os veículos."
+            onRetry={onRetry}
+            className={styles.availability}
+          />
+        )}
+
+        {alerts.status === 'ok' && (
+          <AlertsCard alerts={buildFleetAlerts(alerts.data)} className={styles.alerts} />
+        )}
+        {alerts.status === 'error' && (
+          <SectionErrorCard
+            title="Alertas da frota"
+            message="Não foi possível carregar os alertas."
+            onRetry={onRetry}
+            className={styles.alerts}
+          />
+        )}
+
+        <OperationalDetailsCard
+          details={details}
+          actions={nextActions}
+          className={styles.details}
+        />
+      </div>
+
+      <p className={styles.note}>
+        Viagens, histórico de 7 dias e variação “vs. ontem” usam dados demonstrativos até
+        a API disponibilizar essas informações.
+      </p>
+    </>
+  )
+}
 
 export function HomePage() {
   useDocumentTitle('Início')
-  const vehiclesRequest = useVehicles()
-  const driversRequest = useDrivers()
+  const request = useDashboard()
+  // A data de referência é fixada ao abrir a tela, para todos os blocos usarem o mesmo "hoje".
+  const [today] = useState(() => new Date())
+  const vehicles = request.status === 'success' ? request.data.vehicles : null
 
-  function renderSummary() {
-    if (vehiclesRequest.status === 'loading' || driversRequest.status === 'loading') {
-      return <StateMessage variant="loading" title="Carregando resumo da frota..." />
+  function renderContent() {
+    if (request.status === 'loading') {
+      return <LoadingState label="Carregando dashboard" />
     }
-
-    if (vehiclesRequest.status === 'error' || driversRequest.status === 'error') {
+    if (request.status === 'error') {
       return (
         <StateMessage
           variant="error"
-          title="Não foi possível carregar o resumo da frota."
+          title="Não foi possível carregar o dashboard."
+          description="Verifique sua conexão e tente novamente."
           action={
-            <Button
-              variant="secondary"
-              onClick={() => {
-                vehiclesRequest.reload()
-                driversRequest.reload()
-              }}
-            >
+            <Button variant="secondary" onClick={request.reload}>
               Tentar novamente
             </Button>
           }
         />
       )
     }
-
-    const vehicles = vehiclesRequest.data
-    const drivers = summarizeDrivers(driversRequest.data)
-    const exclusiveSvo = vehicles.filter((vehicle) => vehicle.exclusiveSvo).length
-    const linkedDrivers = driversRequest.data.filter(
-      (driver) => driver.vehicles.length > 0,
-    ).length
-    const availableVehicles = vehicles.filter(
-      (vehicle) => vehicle.status === 'ativo',
-    ).length
-
-    return (
-      <section className={styles.stats} aria-label="Resumo da frota">
-        <StatCard
-          variant="info"
-          label="Veículos na frota"
-          value={vehicles.length}
-          hint={`${availableVehicles} disponíveis`}
-        />
-        <StatCard
-          variant="success"
-          label="Motoristas ativos"
-          value={drivers.active}
-          hint={`de ${drivers.total} cadastrados`}
-        />
-        <StatCard
-          variant="warning"
-          label="CNHs próximas do vencimento"
-          value={drivers.expiring}
-          hint="em até 30 dias"
-        />
-        <StatCard
-          variant="danger"
-          label="Bloqueios operacionais"
-          value={drivers.blocked}
-          hint={`${drivers.expired} CNH vencida${drivers.expired === 1 ? '' : 's'}`}
-        />
-        <StatCard
-          variant="info"
-          label="Veículos SVO"
-          value={vehicles.filter((vehicle) => vehicle.fleet === 'SVO').length}
-          hint={`${exclusiveSvo} exclusivos SVO`}
-        />
-        <StatCard
-          variant="info"
-          label="Motoristas SVO"
-          value={driversRequest.data.filter((driver) => driver.fleet === 'SVO').length}
-          hint={`${driversRequest.data.filter((driver) => driver.isWildcard).length} motoristas coringas (todas as frotas)`}
-        />
-        <StatCard
-          variant="success"
-          label="Motoristas com veículos vinculados"
-          value={linkedDrivers}
-          hint="Vínculos registrados no cadastro"
-        />
-        <StatCard
-          variant="warning"
-          label="Veículos sem frota definida"
-          value={vehicles.filter((vehicle) => vehicle.fleet === 'Não informada').length}
-          hint="Revise os cadastros existentes"
-        />
-      </section>
-    )
+    return <DashboardContent data={request.data} today={today} onRetry={request.reload} />
   }
 
   return (
     <div className={styles.page}>
-      <PageHeader title="Bem-vindo ao FrotaManager" subtitle="Gestão de Frota · FSPH" />
-      {renderSummary()}
-      <div className={styles.shortcuts}>
-        <ButtonLink to="/veiculos">Ir para Veículos</ButtonLink>
-        <ButtonLink to="/motoristas" variant="secondary">
-          Ir para Motoristas
-        </ButtonLink>
+      <div className={styles.top}>
+        <PageHeader
+          title="Dashboard Principal"
+          subtitle={`Visão gerencial completa da operação em ${formatLongDate(today)}`}
+        />
+        {vehicles?.status === 'ok' && (
+          <FleetTodayCard fleet={summarizeFleet(vehicles.data)} />
+        )}
       </div>
+      {renderContent()}
     </div>
   )
 }

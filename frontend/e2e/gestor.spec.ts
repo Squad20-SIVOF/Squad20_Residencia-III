@@ -19,10 +19,10 @@ test('credenciais inválidas não liberam o painel', async ({ page }) => {
 test('login válido carrega a página inicial', async ({ page }) => {
   await signIn(page)
   await expect(
-    page.getByRole('heading', { name: /bem-vindo ao frotamanager/i }),
+    page.getByRole('heading', { name: 'Dashboard Principal', exact: true }),
   ).toBeVisible()
   await expect(page.getByRole('main')).toBeVisible()
-  await expect(page.getByText('Motoristas ativos', { exact: true })).toBeVisible()
+  await expect(page.getByText('Veículos disponíveis', { exact: true })).toBeVisible()
 })
 
 test('detalhes de veículo mostram histórico e vistoria, e breadcrumb volta à lista', async ({
