@@ -48,7 +48,7 @@ export function RouteDetailsPage() {
         ser integrada.
       </p>
       <RouteMap
-        label={`Mapa ilustrativo da rota ${trip.origin} para ${trip.destination}`}
+        label={`Mapa da rota ${trip.origin} para ${trip.destination}`}
         className={styles.map}
       />
       <section className={styles.cards} aria-label="Informações da viagem">

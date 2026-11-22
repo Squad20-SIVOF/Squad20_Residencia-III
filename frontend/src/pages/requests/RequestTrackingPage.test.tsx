@@ -68,6 +68,11 @@ test('mostra motorista, placa, tempo estimado e etapa atual', async () => {
   expect(screen.getByText('Acompanhar rota')).toBeInTheDocument()
   const driverCard = await screen.findByRole('region', { name: 'Motorista' })
   expect(getRequestTracking).toHaveBeenCalledWith('abc')
+  expect(
+    screen.getByRole('region', {
+      name: 'Mapa com a posição do veículo e o ponto de embarque',
+    }),
+  ).toBeInTheDocument()
 
   expect(within(driverCard).getByText('Rafael Mendes')).toBeInTheDocument()
   expect(within(driverCard).getByText('Chevrolet Spin · QWE-4J18')).toBeInTheDocument()
