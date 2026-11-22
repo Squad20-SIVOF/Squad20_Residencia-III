@@ -14,6 +14,7 @@ vi.mock(
   '@/pages/vehicles/services/vehicleService',
   () => import('./fixtures/vehicleService'),
 )
+vi.mock('leaflet', () => import('./fixtures/leaflet'))
 vi.mock('@/service/authService', () => ({
   currentUser: async () => ({
     id: 'test',
