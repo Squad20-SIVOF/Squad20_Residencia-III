@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { StatGrid } from '@/components/StatCard'
 import { formatKm, formatMonthYear } from '@/utils/format'
 import type { Vehicle } from '../../types'
 import { vehicleDisplayName, vehicleFullModel } from '../../utils/vehicleRules'
@@ -20,7 +21,7 @@ export function VehicleSummaryCard({ vehicle }: VehicleSummaryCardProps) {
     vehicle.maxCapacity ? `${vehicle.maxCapacity} L` : null,
     vehicle.exclusiveSvo ? 'Exclusivo SVO' : null,
   ].filter(Boolean)
-  const rows = [
+  const indicators = [
     { label: 'Quilometragem', value: formatKm(vehicle.mileageKm) },
     { label: 'Frota', value: vehicle.fleet },
     {
@@ -60,16 +61,7 @@ export function VehicleSummaryCard({ vehicle }: VehicleSummaryCardProps) {
           }
         />
       </section>
-      <section className={styles.card} aria-label="Indicadores do veículo">
-        <dl className={styles.list}>
-          {rows.map((row) => (
-            <div key={row.label} className={styles.row}>
-              <dt className={styles.label}>{row.label}</dt>
-              <dd className={styles.value}>{row.value}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <StatGrid label="Indicadores do veículo" cards={indicators} />
     </div>
   )
 }

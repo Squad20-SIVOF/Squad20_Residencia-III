@@ -1,3 +1,4 @@
+@use '@/styles/dark';
 @use '../../../../styles/tokens' as *;
 @use '../../../../styles/breakpoints' as *;
 
@@ -129,15 +130,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #fde68a;
+  border: 1px solid light-dark(#fde68a, dark.$warning);
   border-radius: $radius-sm;
-  background: #fef3c7;
+  background: light-dark(#fef3c7, dark.$warning-soft);
   padding: 0.75rem 1rem;
   margin-top: 0.5rem;
 }
 
 .infoIcon {
-  color: #b45309;
+  color: light-dark(#b45309, dark.$warning);
   font-size: 1.2rem;
   font-weight: bold;
 }

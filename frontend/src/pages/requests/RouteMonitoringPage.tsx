@@ -1,108 +1,136 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
+import { Info } from 'lucide-react'
+import { useFeatureFlag } from '@/apps/motorista/features/useFeatureFlags'
+import { Badge } from '@/components/Badge'
+import { Button } from '@/components/Button'
+import { ButtonLink } from '@/components/ButtonLink'
 import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
+import { TextField } from '@/components/TextField'
+import { Toolbar } from '@/components/Toolbar'
 import { useAsync } from '@/hooks/useAsync'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
-import { RouteMap } from './components/RouteMap'
+import { normalizeText } from '@/utils/format'
+import { TrackedTripPreview } from './components/TrackedTripMap'
+import { TripBackLink } from './components/TripBackLink'
+import { DEMO_ROUTES } from './services/demoRoutes'
 import { listTrackedTrips } from './services/trackedTripService'
-import type { TrackedTrip } from './types'
+import {
+  formatTripCount,
+  getTrackedTripStatusLabel,
+  getTrackedTripStatusVariant,
+} from './utils/tripsPanelRules'
 import styles from './RouteMonitoringPage.module.scss'
 
-const EMPTY_TRIPS: TrackedTrip[] = []
-
 export function RouteMonitoringPage() {
-  useDocumentTitle('Monitoramento de rotas')
+  useDocumentTitle('Monitoramento de viagens')
+  const detailsEnabled = useFeatureFlag('gestor_route_details')
   const result = useAsync(listTrackedTrips)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [query, setQuery] = useState('')
-  const trips = result.status === 'success' ? result.data : EMPTY_TRIPS
-  const filteredTrips = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase('pt-BR')
-    if (!normalized) return trips
-    return trips.filter((trip) =>
-      [trip.routeCode, trip.plate, trip.driverName, trip.origin, trip.destination].some(
-        (value) => value.toLocaleLowerCase('pt-BR').includes(normalized),
+  if (result.status === 'loading') return <LoadingState label="Carregando viagens…" />
+
+  const trips = result.status === 'success' ? result.data : []
+  const term = normalizeText(query.replace(/^#/, ''))
+  const filteredTrips = trips.filter((trip) =>
+    normalizeText(
+      [trip.routeCode, trip.plate, trip.driverName, trip.origin, trip.destination].join(
+        ' ',
       ),
-    )
-  }, [query, trips])
+    ).includes(term),
+  )
   const selectedTrip =
     filteredTrips.find((trip) => trip.id === selectedId) ?? filteredTrips[0]
+  const route = selectedTrip && DEMO_ROUTES[selectedTrip.id]
 
   return (
-    <main className={styles.page}>
+    <div className={styles.page}>
       <PageHeader
-        title="Monitoramento de viagens"
-        subtitle="Acompanhe deslocamentos e ocorrências da frota."
+        title="Monitoramento de Viagens"
+        subtitle="Acompanhe deslocamentos e ocorrências da frota com dados demonstrativos."
+        className={styles.header}
+        breadcrumb={<TripBackLink />}
       />
-      <p className={styles.demo}>
-        Demonstração: as posições e rotas são simuladas; não representam GPS ao vivo.
-      </p>
-      <label className={styles.search}>
-        <span className={styles.srOnly}>Buscar veículo, motorista ou rota</span>
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Buscar veículo, motorista ou rota…"
-        />
-        <span>{filteredTrips.length} viagens</span>
-      </label>
-      {result.status === 'loading' && (
-        <StateMessage variant="loading" title="Carregando viagens…" />
-      )}
       {result.status === 'error' && (
         <StateMessage
           variant="error"
           title="Não foi possível carregar as viagens"
-          action={<button onClick={result.reload}>Tentar novamente</button>}
+          action={
+            <Button variant="secondary" onClick={result.reload}>
+              Tentar novamente
+            </Button>
+          }
         />
       )}
       {result.status === 'success' && (
-        <section className={styles.layout}>
-          <div className={styles.list} aria-label="Lista de viagens">
-            {filteredTrips.length ? (
-              filteredTrips.map((trip) => (
-                <button
-                  key={trip.id}
-                  className={`${styles.trip} ${selectedTrip?.id === trip.id ? styles.selected : ''}`}
-                  onClick={() => setSelectedId(trip.id)}
-                >
-                  <strong>Rota #{trip.routeCode}</strong>
-                  <span>
-                    {trip.plate} · {trip.driverName}
-                  </span>
-                  <span>
-                    {trip.origin} → {trip.destination}
-                  </span>
-                </button>
-              ))
-            ) : (
-              <StateMessage title="Nenhuma viagem encontrada" />
-            )}
-          </div>
-          {selectedTrip && (
-            <article className={styles.mapPanel}>
-              <RouteMap
-                label={`Mapa ilustrativo de ${selectedTrip.origin} até ${selectedTrip.destination}`}
+        <>
+          <div className={styles.toolbar}>
+            <Toolbar label="Filtrar viagens" className={styles.search}>
+              <TextField
+                type="search"
+                label="Buscar veículo, motorista ou rota"
+                isLabelHidden
+                placeholder="Buscar veículo, motorista ou rota…"
+                value={query}
+                onChange={setQuery}
               />
-              <div className={styles.mapDetails}>
-                <h2>Rota #{selectedTrip.routeCode}</h2>
-                <p>
-                  {selectedTrip.origin} → {selectedTrip.destination}
-                </p>
-                <p>
-                  Motorista: {selectedTrip.driverName} · {selectedTrip.plate}
-                </p>
-                <Link
-                  to={`/viagens/monitoramento/${encodeURIComponent(selectedTrip.id)}`}
-                >
-                  Ver detalhes da rota
-                </Link>
-              </div>
-            </article>
+            </Toolbar>
+            <output className={styles.tripCount}>
+              {formatTripCount(filteredTrips.length)}
+            </output>
+          </div>
+          {selectedTrip ? (
+            <section className={styles.layout}>
+              <ul className={styles.list} aria-label="Lista de viagens">
+                {filteredTrips.map((trip) => (
+                  <li key={trip.id} className={styles.trip}>
+                    <button
+                      type="button"
+                      aria-pressed={selectedTrip.id === trip.id}
+                      onClick={() => setSelectedId(trip.id)}
+                    >
+                      <span className={styles.tripHeader}>
+                        <strong>Rota #{trip.routeCode}</strong>
+                        <Badge
+                          variant={getTrackedTripStatusVariant(trip.status)}
+                          className={styles.tripBadge}
+                        >
+                          {getTrackedTripStatusLabel(trip)}
+                        </Badge>
+                      </span>
+                      <span className={styles.tripMeta}>
+                        {trip.plate} · {trip.driverName}
+                      </span>
+                      <span className={styles.tripRoute}>
+                        {trip.origin} → {trip.destination}
+                      </span>
+                    </button>
+                    {detailsEnabled && (
+                      <ButtonLink
+                        variant="secondary"
+                        className={styles.detailsLink}
+                        to={`/viagens/monitoramento/${encodeURIComponent(trip.id)}`}
+                        aria-label={`Ver detalhes da rota #${trip.routeCode}`}
+                        iconStart={<Info size={14} />}
+                      >
+                        Ver detalhes
+                      </ButtonLink>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <TrackedTripPreview
+                trip={selectedTrip}
+                route={route}
+                className={styles.map}
+              />
+            </section>
+          ) : (
+            <StateMessage title="Nenhuma viagem encontrada" />
           )}
-        </section>
+        </>
       )}
-    </main>
+    </div>
   )
 }

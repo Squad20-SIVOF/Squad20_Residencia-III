@@ -15,7 +15,6 @@ import { ComingSoonPage } from '@/pages/placeholder/ComingSoonPage'
 import { NotFoundPage } from '@/pages/placeholder/NotFoundPage'
 import ProfilePage from '@/pages/perfil/ProfilePage.module'
 import { RequestFormPage } from '@/pages/requests/RequestFormPage'
-import { RequestTrackingPage } from '@/pages/requests/RequestTrackingPage'
 import { RequestDetailsPage } from '@/pages/requests/RequestDetailsPage'
 import { AssignTripPage } from '@/pages/requests/AssignTripPage'
 import { TripsPanelPage } from '@/pages/requests/TripsPanelPage'
@@ -27,9 +26,19 @@ import {
 import { FeatureFlagRoute } from '@/components/FeatureFlagRoute'
 import { isDevFeatureFlagsEnabled } from '@/apps/motorista/features/featureFlags'
 import { lazy, Suspense } from 'react'
-import { RouteMonitoringPage } from '@/pages/requests/RouteMonitoringPage'
-import { RouteDetailsPage } from '@/pages/requests/RouteDetailsPage'
 import { NotificationsPage } from '@/pages/notifications/NotificationsPage'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
+
+const RouteMonitoringPage = lazy(() =>
+  import('@/pages/requests/RouteMonitoringPage').then((module) => ({
+    default: module.RouteMonitoringPage,
+  })),
+)
+const RouteDetailsPage = lazy(() =>
+  import('@/pages/requests/RouteDetailsPage').then((module) => ({
+    default: module.RouteDetailsPage,
+  })),
+)
 
 const DevFeatureFlagsPage = lazy(() =>
   import('@/apps/motorista/pages/dev/DevFeatureFlagsPage').then((module) => ({
@@ -54,7 +63,7 @@ export function AppRoutes() {
           path="dev/feature-flags"
           element={
             isDevFeatureFlagsEnabled() ? (
-              <Suspense fallback={<p>Carregando configurações…</p>}>
+              <Suspense fallback={<LoadingState label="Carregando configurações…" />}>
                 <DevFeatureFlagsPage />
               </Suspense>
             ) : (
@@ -155,7 +164,9 @@ export function AppRoutes() {
             path="viagens/monitoramento"
             element={
               <FeatureFlagRoute flag="gestor_route_monitoring">
-                <RouteMonitoringPage />
+                <Suspense fallback={<LoadingState label="Carregando monitoramento…" />}>
+                  <RouteMonitoringPage />
+                </Suspense>
               </FeatureFlagRoute>
             }
           />
@@ -163,7 +174,11 @@ export function AppRoutes() {
             path="viagens/monitoramento/:tripId"
             element={
               <FeatureFlagRoute flag="gestor_route_details">
-                <RouteDetailsPage />
+                <Suspense
+                  fallback={<LoadingState label="Carregando detalhes da rota…" />}
+                >
+                  <RouteDetailsPage />
+                </Suspense>
               </FeatureFlagRoute>
             }
           />
@@ -188,14 +203,6 @@ export function AppRoutes() {
             element={
               <FeatureFlagRoute flag="gestor_viagens">
                 <AssignTripPage />
-              </FeatureFlagRoute>
-            }
-          />
-          <Route
-            path="viagens/:id"
-            element={
-              <FeatureFlagRoute flag="gestor_viagens">
-                <RequestTrackingPage />
               </FeatureFlagRoute>
             }
           />

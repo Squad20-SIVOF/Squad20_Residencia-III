@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   gap: $space-2;
-  min-width: $touch-target;
+  min-width: 55px;
   min-height: $touch-target;
   padding: $space-2 $space-3;
   border: 1px solid transparent;
@@ -27,12 +27,12 @@
 }
 
 .primary {
-  color: $color-surface;
-  background-color: $color-primary;
+  color: light-dark(#f7f8fc, #ffffff);
+  background-color: $color-primary-fill;
 
   &:not(:disabled) {
     @include hover {
-      background-color: $color-primary-hover;
+      background-color: $color-primary-fill-hover;
     }
   }
 }
@@ -51,12 +51,12 @@
 }
 
 .danger {
-  color: $color-surface;
-  background-color: $color-danger;
+  color: light-dark(#f7f8fc, #ffffff);
+  background-color: $color-danger-fill;
 
   &:not(:disabled) {
     @include hover {
-      background-color: darken($color-danger, 8%);
+      background-color: $color-danger-fill-hover;
     }
   }
 }

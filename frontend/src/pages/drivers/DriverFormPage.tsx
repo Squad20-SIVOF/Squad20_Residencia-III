@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { Breadcrumb } from '@/components/Breadcrumb'
 import { ButtonLink } from '@/components/ButtonLink'
 import { PageHeader } from '@/components/PageHeader'
@@ -19,6 +20,9 @@ export function DriverFormPage() {
   const title = isEditing ? 'Editar Motorista' : 'Cadastro de Motorista'
   useDocumentTitle(title)
 
+  if (driverRequest.status === 'loading')
+    return <LoadingState label="Carregando motorista..." />
+
   async function handleSubmit(input: DriverInput) {
     if (id) await updateDriver(id, input)
     else await createDriver(input)
@@ -32,11 +36,7 @@ export function DriverFormPage() {
     })
   }
 
-  function renderContent() {
-    if (driverRequest.status === 'loading') {
-      return <StateMessage variant="loading" title="Carregando motorista..." />
-    }
-
+  const renderContent = () => {
     if (driverRequest.status === 'error') {
       return (
         <StateMessage

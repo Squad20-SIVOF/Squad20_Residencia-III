@@ -45,7 +45,6 @@
   background: $color-card;
 }
 .sectionHeader,
-.matrixHeader,
 .permissionFooter {
   display: flex;
   justify-content: space-between;
@@ -55,13 +54,8 @@
 
   h2 {
     margin: 0 0 $space-2;
-    color: $color-navy;
+    color: $color-heading;
     font-size: $font-size-h4;
-  }
-  h3 {
-    margin: 0 0 $space-1;
-    color: $color-navy;
-    font-size: $font-size-body;
   }
   p {
     margin: 0;
@@ -135,7 +129,7 @@
 .userSummary strong,
 .userList strong {
   font-size: $font-size-small;
-  color: $color-navy;
+  color: $color-heading;
 }
 .userSummary div span,
 .userList div > span {
@@ -164,46 +158,18 @@
   padding: $space-2;
   font-size: $font-size-xsmall;
 }
-.matrixWrapper {
-  overflow-x: auto;
-  border: 1px solid $color-border;
-  border-radius: $radius-lg;
-}
 .matrix {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: $font-size-small;
-  th,
-  td {
-    padding: $space-3;
-    vertical-align: middle;
-  }
-  thead th {
-    background: $color-table-header;
-    color: $color-primary;
-    font-size: $font-size-xsmall;
-    font-weight: 600;
-  }
-  th:first-child {
-    text-align: left;
-  }
-  thead th:not(:first-child),
-  td {
+  :is(th, td):not(:first-child) {
     width: 22%;
     text-align: center;
-    border-left: 1px solid $color-border-subtle;
   }
-  tbody tr:not(:last-child) {
-    border-bottom: 1px solid $color-border;
-  }
-  tbody tr:hover {
-    background: $color-surface;
-  }
+
   tbody th strong {
     display: block;
-    color: $color-navy;
+    color: $color-heading;
     font-weight: 600;
   }
+
   tbody th span {
     display: block;
     margin-top: $space-1;
@@ -212,6 +178,7 @@
     font-weight: 400;
   }
 }
+
 .matrixCheckbox {
   justify-content: center;
   min-width: $touch-target;
@@ -242,9 +209,6 @@
   padding: $space-3;
   border: 1px solid $color-border;
   border-radius: $radius-md;
-}
-.srOnly {
-  @include visually-hidden;
 }
 .empty {
   padding: $space-4;
@@ -314,10 +278,6 @@
 }
 
 @media (max-width: 575px) {
-  .matrix th,
-  .matrix td {
-    padding: $space-2;
-  }
   .matrix tbody th span {
     max-width: 10rem;
   }

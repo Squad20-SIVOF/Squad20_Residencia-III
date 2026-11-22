@@ -1,25 +1,31 @@
-.actions {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-}
-
-.btnOutlineBlue {
-  color: #2563eb !important;
-  border: 1px solid #93c5fd !important;
-  background-color: transparent !important;
-
-  &:hover {
-    background-color: #eff6ff !important;
+.table {
+  > table {
+    min-width: 57rem;
+    table-layout: fixed;
   }
-}
 
-.btnOutlineRed {
-  color: #dc2626 !important;
-  border: 1px solid #fca5a5 !important;
-  background-color: transparent !important;
+  :is(th, td):nth-child(2) {
+    width: 7.5rem;
+  }
 
-  &:hover {
-    background-color: #fef2f2 !important;
+  :is(th, td):nth-child(3) {
+    width: 4rem;
+    text-align: center;
+  }
+
+  :is(th, td):nth-child(4) {
+    width: 9.75rem;
+  }
+
+  :is(th, td):nth-child(6) {
+    width: 7.25rem;
+  }
+
+  :is(th, td):last-child {
+    width: 13.5rem;
+  }
+
+  td:last-child > div {
+    width: 100%;
   }
 }

@@ -73,7 +73,7 @@
   font-size: $font-size-small;
   font-weight: 700;
   color: $color-on-primary;
-  background-color: $color-primary;
+  background-color: $color-primary-fill;
   border-radius: $radius-full;
 }
 
@@ -234,12 +234,12 @@
 .navItemActive {
   font-weight: 600;
   color: $color-on-primary;
-  background-color: $color-primary;
+  background-color: $color-primary-fill;
   border-left-color: $color-warning;
 
   @include hover {
     color: $color-on-primary;
-    background-color: $color-primary;
+    background-color: $color-primary-fill;
   }
 }
 
@@ -251,9 +251,12 @@
 
 .footerItem {
   margin: 0;
+}
 
-  &[aria-disabled='true'] {
-    cursor: default;
+button.footerItem {
+  @include hover {
+    color: $color-on-navy;
+    background-color: $color-sidebar-hover;
   }
 }
 
@@ -347,7 +350,7 @@
   width: $sidebar-avatar-size;
   height: $sidebar-avatar-size;
   font-size: $font-size-xsmall;
-  color: $color-navy;
+  color: $color-heading;
   background-color: $color-card;
   border: 0;
 }

@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { Avatar } from '@/components/Avatar'
 import { Breadcrumb } from '@/components/Breadcrumb'
 import { ButtonLink } from '@/components/ButtonLink'
@@ -41,11 +42,10 @@ export function DriverDetailsPage() {
   const driver = driverRequest.status === 'success' ? driverRequest.data : undefined
   useDocumentTitle(driver ? `${driver.name} — Motorista` : 'Detalhes do Motorista')
 
-  function renderContent() {
-    if (driverRequest.status === 'loading') {
-      return <StateMessage variant="loading" title="Carregando motorista..." />
-    }
+  if (driverRequest.status === 'loading')
+    return <LoadingState label="Carregando motorista..." />
 
+  function renderContent() {
     if (driverRequest.status === 'error' || !driver) {
       return (
         <StateMessage

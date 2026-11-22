@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useLocation } from 'react-router-dom'
-import { beforeEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { AppRoutes } from './App'
 
 // Expõe a URL atual para conferir redirecionamentos.
@@ -21,6 +21,24 @@ beforeEach(() => {
   localStorage.clear()
 })
 
+afterEach(() => {
+  delete document.documentElement.dataset.theme
+})
+
+test('alterna o tema pelo menu e salva a preferência', async () => {
+  const user = userEvent.setup()
+  renderAt('/')
+
+  await user.click(screen.getByRole('button', { name: /abrir menu/i }))
+  await user.click(screen.getByRole('button', { name: 'Modo escuro' }))
+  expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
+  expect(localStorage.getItem('sivof:tema')).toBe('dark')
+
+  await user.click(screen.getByRole('button', { name: 'Modo claro' }))
+  expect(document.documentElement).toHaveAttribute('data-theme', 'light')
+  expect(localStorage.getItem('sivof:tema')).toBe('light')
+})
+
 test('renderiza a página de login em /login', () => {
   renderAt('/login')
 
@@ -32,7 +50,7 @@ test('renderiza o início dentro do menu lateral', async () => {
   renderAt('/')
 
   expect(
-    screen.getByRole('heading', { name: /bem-vindo ao frotamanager/i }),
+    await screen.findByRole('heading', { name: /bem-vindo ao frotamanager/i }),
   ).toBeInTheDocument()
   expect(screen.getByRole('button', { name: /abrir menu/i })).toBeInTheDocument()
   expect(await screen.findByText(/motoristas ativos/i)).toBeInTheDocument()
@@ -56,7 +74,7 @@ test('navega pelo menu lateral e marca o item ativo', async () => {
   await user.click(screen.getByRole('link', { name: 'Viagens' }))
 
   expect(
-    screen.getByRole('heading', { level: 1, name: 'Painel de Viagens' }),
+    await screen.findByRole('heading', { level: 1, name: 'Painel de Viagens' }),
   ).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: /abrir menu/i }))
   expect(screen.getByRole('link', { name: 'Viagens' })).toHaveAttribute(
@@ -94,7 +112,7 @@ test('/viagens abre o Painel de Viagens, sem redirecionar', async () => {
   )
 
   expect(
-    screen.getByRole('heading', { level: 1, name: 'Painel de Viagens' }),
+    await screen.findByRole('heading', { level: 1, name: 'Painel de Viagens' }),
   ).toBeInTheDocument()
   expect(screen.getByRole('status', { name: 'URL atual' })).toHaveTextContent(
     /^\/viagens$/,
@@ -106,9 +124,13 @@ test('/viagens abre o Painel de Viagens, sem redirecionar', async () => {
   )
 })
 
-test('o acompanhamento da rota também marca Viagens no menu', async () => {
+test('marca Viagens no menu ao abrir o monitoramento', async () => {
   const user = userEvent.setup()
-  renderAt('/viagens/qualquer-id')
+  localStorage.setItem(
+    'frotamanager.dev.feature-flags',
+    JSON.stringify({ gestor_route_monitoring: true }),
+  )
+  renderAt('/viagens/monitoramento')
 
   await user.click(screen.getByRole('button', { name: /abrir menu/i }))
   expect(screen.getByRole('link', { name: 'Viagens' })).toHaveAttribute(
@@ -117,13 +139,16 @@ test('o acompanhamento da rota também marca Viagens no menu', async () => {
   )
 })
 
-test('mostra a página 404 para rotas desconhecidas', () => {
-  renderAt('/rota-que-nao-existe')
+test.each(['/rota-que-nao-existe', '/viagens/1842'])(
+  'mostra a página 404 em %s',
+  (path) => {
+    renderAt(path)
 
-  expect(
-    screen.getByRole('heading', { name: /página não encontrada/i }),
-  ).toBeInTheDocument()
-})
+    expect(
+      screen.getByRole('heading', { name: /página não encontrada/i }),
+    ).toBeInTheDocument()
+  },
+)
 
 vi.mock('@/components/RequireAuth/RequireAuth', async () => {
   const { Outlet } = await import('react-router-dom')

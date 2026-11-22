@@ -10,6 +10,7 @@ import {
   useOutletContext,
 } from 'react-router-dom'
 import { Avatar } from '@/components/Avatar'
+import { useTheme } from '@/hooks/useTheme'
 import { classNames } from '@/utils/classNames'
 import { SidebarIcon, type SidebarIconName } from './SidebarIcon'
 import styles from './AppLayout.module.scss'
@@ -94,6 +95,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, [canReadAlerts])
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(readIsCollapsed)
+  const { theme, toggleTheme } = useTheme()
+  const themeLabel = theme === 'dark' ? 'Modo claro' : 'Modo escuro'
   const panelId = useId()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -198,15 +201,17 @@ export function AppLayout({ children }: AppLayoutProps) {
           </nav>
 
           <div className={styles.footer}>
-            {/* A troca de tema chega junto com o tema escuro. */}
             <button
               type="button"
               className={classNames(styles.footerItem, styles.hasTooltip)}
-              aria-disabled="true"
-              aria-label={isCollapsed ? 'Modo claro' : undefined}
+              aria-label={isCollapsed ? themeLabel : undefined}
+              onClick={toggleTheme}
             >
-              <SidebarIcon name="sun" className={styles.icon} />
-              <span className={styles.label}>Modo claro</span>
+              <SidebarIcon
+                name={theme === 'dark' ? 'sun' : 'moon'}
+                className={styles.icon}
+              />
+              <span className={styles.label}>{themeLabel}</span>
             </button>
 
             {canReadAlerts && notificationsEnabled ? (

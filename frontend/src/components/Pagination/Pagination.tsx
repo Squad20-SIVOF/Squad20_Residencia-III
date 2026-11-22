@@ -30,10 +30,12 @@ export function Pagination({
       <p className={styles.summary} aria-live="polite">
         Mostrando {shownCount} de {totalCount} {itemLabel}
         {currentPage !== undefined && totalPages !== undefined && (
-          <span className={styles.page}>
-            {' '}
-            · Página {currentPage} de {totalPages}
-          </span>
+          <>
+            <span aria-hidden="true"> · </span>
+            <span>
+              Página {currentPage} de {totalPages}
+            </span>
+          </>
         )}
       </p>
       <div className={styles.buttons}>

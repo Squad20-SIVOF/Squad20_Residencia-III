@@ -6,7 +6,7 @@
   flex-direction: column;
   gap: $space-2;
   min-width: 0;
-  padding: $space-3;
+  padding: 0.875rem $space-3;
   background-color: $color-card;
   border: 1px solid $color-border;
   border-radius: $radius-lg;
@@ -24,8 +24,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: $touch-target;
-  height: $touch-target;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: $radius-md;
   color: $color-primary;
   background-color: $color-primary-soft;
@@ -36,7 +36,7 @@
   font-size: $font-size-body;
   font-weight: 700;
   line-height: $line-height-heading;
-  color: $color-navy;
+  color: $color-heading;
 }
 
 .description {
@@ -51,14 +51,12 @@
 .soon {
   display: flex;
   justify-content: space-between;
-  border-top: 1px solid $color-border-subtle;
 }
 
 .link {
-  display: flex;
   align-items: center;
   gap: $space-2;
-  min-height: $touch-target;
+  min-height: 1.75rem;
   color: $color-primary;
   font-size: $font-size-small;
   font-weight: 600;
@@ -72,6 +70,10 @@
 
   &:focus-visible {
     @include focus-ring;
+  }
+
+  @media (pointer: coarse) {
+    min-height: $touch-target;
   }
 }
 
