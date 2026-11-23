@@ -25,7 +25,7 @@ test('login válido carrega a página inicial', async ({ page }) => {
   await expect(page.getByText('Motoristas ativos', { exact: true })).toBeVisible()
 })
 
-test('detalhes de veículo mostram histórico e vistoria, e breadcrumb volta à lista', async ({
+test('detalhes de veículo mostram histórico e vistoria, e Voltar abre a lista', async ({
   page,
 }) => {
   const vehicle = {
@@ -75,10 +75,12 @@ test('detalhes de veículo mostram histórico e vistoria, e breadcrumb volta à 
   await expect(
     page.getByRole('heading', { name: 'Editar veículo', exact: true }),
   ).toBeVisible()
-  await expect(
-    page.getByRole('link', { name: 'Voltar para Veículos', exact: true }),
-  ).toHaveAttribute('href', '/veiculos')
-  await breadcrumb.getByRole('link', { name: 'Veículos', exact: true }).click()
+  const backToVehicles = page.getByRole('link', {
+    name: 'Voltar para Veículos',
+    exact: true,
+  })
+  await expect(backToVehicles).toHaveAttribute('href', '/veiculos')
+  await backToVehicles.click()
   await expect(
     page.getByRole('heading', { name: 'Controle de Veículos', exact: true }),
   ).toBeVisible()

@@ -13,7 +13,7 @@
     "preview": "concurrently -n gestor,motorista \"npm:preview:gestor\" \"npm:preview:motorista\"",
     "preview:gestor": "vite preview",
     "preview:motorista": "vite preview --config vite.motorista.config.ts",
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "tsc -b --noEmit && tsc -p tsconfig.node.json",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "prettier --write .",
