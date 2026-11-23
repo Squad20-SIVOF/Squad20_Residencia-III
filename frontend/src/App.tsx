@@ -1,3 +1,4 @@
+import { RelatoriosPage } from '@/pages/relatorios/RelatoriosPage'
 import AbastecimentosPage from '@/pages/abastecimentos/AbastecimentosPage'
 import RegistrarAbastecimento from '@/pages/abastecimentos/registrar/RegistrarAbastecimento'
 import SolicitacoesPendentesPage from '@/pages/solicitacoes/SolicitacoesPendentesPage'
@@ -12,7 +13,7 @@ import { DriversPage } from '@/pages/drivers/DriversPage'
 import { HomePage } from '@/pages/home/HomePage'
 import { ComingSoonPage } from '@/pages/placeholder/ComingSoonPage'
 import { NotFoundPage } from '@/pages/placeholder/NotFoundPage'
-import ProfilePage from '@/pages/perfil'
+import ProfilePage from '@/pages/perfil/ProfilePage.module'
 import { RequestFormPage } from '@/pages/requests/RequestFormPage'
 import { RequestTrackingPage } from '@/pages/requests/RequestTrackingPage'
 import { RequestDetailsPage } from '@/pages/requests/RequestDetailsPage'
@@ -36,13 +37,13 @@ const DevFeatureFlagsPage = lazy(() =>
   })),
 )
 
-// MÃ³dulos ainda sem tela prÃ³pria: mesma pÃ¡gina provisÃ³ria, sÃ³ muda o tÃ­tulo.
+// Módulos ainda sem tela própria: mesma página provisória, só muda o título.
 const COMING_SOON_ROUTES = [
   { path: 'abastecimentos', title: 'Abastecimentos' },
-  { path: 'manutencoes', title: 'ManutenÃ§Ãµes' },
+  { path: 'manutencoes', title: 'Manutenções' },
 ]
 
-/** Rotas da aplicaÃ§Ã£o (separadas do BrowserRouter para poderem ser testadas). */
+/** Rotas da aplicação (separadas do BrowserRouter para poderem ser testadas). */
 export function AppRoutes() {
   return (
     <Routes>
@@ -53,7 +54,7 @@ export function AppRoutes() {
           path="dev/feature-flags"
           element={
             isDevFeatureFlagsEnabled() ? (
-              <Suspense fallback={<p>Carregando configuraÃ§Ãµesâ€¦</p>}>
+              <Suspense fallback={<p>Carregando configurações…</p>}>
                 <DevFeatureFlagsPage />
               </Suspense>
             ) : (
@@ -195,6 +196,14 @@ export function AppRoutes() {
             element={
               <FeatureFlagRoute flag="gestor_viagens">
                 <RequestTrackingPage />
+              </FeatureFlagRoute>
+            }
+          />
+          <Route
+            path="relatorios"
+            element={
+              <FeatureFlagRoute flag="gestor_relatorios">
+                <RelatoriosPage />
               </FeatureFlagRoute>
             }
           />

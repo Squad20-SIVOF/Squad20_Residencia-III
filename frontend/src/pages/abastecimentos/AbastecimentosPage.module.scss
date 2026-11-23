@@ -18,7 +18,6 @@
 }
 
 .btnPrimary {
-  background-color: #2563eb;
   color: white;
   padding: 0.6rem 1.2rem;
   border-radius: 6px;
@@ -41,7 +40,6 @@
 .filterBtn {
   height: 40px;
   padding: 0 1.5rem;
-  background-color: #2563eb !important;
   color: white !important;
   font-weight: 600;
   border: none;
@@ -131,7 +129,7 @@
 .tetoTitle {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1e40af;
+  color: #1f5fad;
 }
 
 .tetoSubtitle {
@@ -234,14 +232,14 @@
   justify-content: space-between;
   align-items: center;
   background: #ffffff;
-  padding: 1rem 1.25rem 0;
+  padding: 0.75rem 1.25rem;
   border-radius: 8px 8px 0 0;
 }
 
 .sectionTitle {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1e40af;
+  color: #1f5fad;
 }
 
 .tableCount {
@@ -251,9 +249,8 @@
 
 .tableWrapper {
   background: #ffffff;
-  border-radius: 0 0 8px 8px;
-  border: 1px solid #e2e8f0;
-  border-top: none;
+  border-radius: 12px 12px 12px 12px;
+  border: 0.5px solid #e2e8f0;
   overflow-x: auto;
 
   :global(thead) {
@@ -261,7 +258,6 @@
   }
 
   :global(th) {
-    color: #1e40af !important;
     font-weight: 600 !important;
     padding: 1rem !important;
     text-align: left;
