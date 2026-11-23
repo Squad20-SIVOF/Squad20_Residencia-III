@@ -2,6 +2,8 @@
 @use '../../styles/mixins' as *;
 
 .wrapper {
+  --table-action-min-width: 65px;
+
   width: 100%;
   min-width: 0;
   overflow-x: auto;
@@ -99,7 +101,7 @@
   gap: $space-2;
 
   > :is(a, button) {
-    min-width: 55px;
+    min-width: var(--table-action-min-width);
     padding-inline: $space-2;
     background-color: $color-card;
     color: $color-primary;

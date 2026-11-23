@@ -1,6 +1,8 @@
+@use '@/styles/tokens' as *;
+
 .table {
   > table {
-    min-width: 57rem;
+    min-width: 54rem;
     table-layout: fixed;
   }
 
@@ -9,20 +11,26 @@
   }
 
   :is(th, td):nth-child(3) {
-    width: 4rem;
+    width: 3.5rem;
     text-align: center;
   }
 
   :is(th, td):nth-child(4) {
-    width: 9.75rem;
+    width: 9rem;
+  }
+
+  thead th:nth-child(5) {
+    white-space: normal;
   }
 
   :is(th, td):nth-child(6) {
-    width: 7.25rem;
+    width: 7rem;
   }
 
   :is(th, td):last-child {
-    width: 13.5rem;
+    width: calc(
+      3 * var(--table-action-min-width) + 2 * (#{$space-2} + #{$space-gutter-xs})
+    );
   }
 
   td:last-child > div {

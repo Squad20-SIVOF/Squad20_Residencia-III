@@ -7,7 +7,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useVehicles } from '@/pages/vehicles/hooks/useVehicles'
 import { RequestForm } from './components/RequestForm'
 import { RouteCard } from './components/RouteCard'
-import { TripBackLink } from './components/TripBackLink'
+import { BackLink } from '@/components/BackLink/BackLink'
 import { REQUEST_FORM_ID, requestFieldId, useRequestForm } from './hooks/useRequestForm'
 import { createRequest } from './services/requestService'
 import type { RequestInput } from './types'
@@ -50,7 +50,7 @@ export function RequestFormPage() {
       <div className={styles.header}>
         <PageHeader
           title="Solicitar Veículo"
-          breadcrumb={<TripBackLink />}
+          breadcrumb={<BackLink to="/viagens">Voltar para o Painel de Viagens</BackLink>}
           subtitle="Preencha os dados abaixo para reservar um veículo oficial do setor SVO."
         />
         <p>Envio demonstrativo: este formulário ainda não registra solicitações.</p>

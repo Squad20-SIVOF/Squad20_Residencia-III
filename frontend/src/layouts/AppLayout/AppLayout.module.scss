@@ -1,3 +1,4 @@
+@use 'sass:map';
 @use '../../styles/tokens' as *;
 @use '../../styles/mixins' as *;
 @use '../../styles/breakpoints' as *;
@@ -7,12 +8,19 @@
 // recolhida para mostrar só os ícones (.layoutCollapsed).
 
 .layout {
+  --menu-duration: 260ms;
+  --menu-easing: cubic-bezier(0.25, 0.8, 0.25, 1);
+
   min-height: 100dvh;
 
   @include up(lg) {
     display: grid;
     grid-template-columns: $sidebar-width minmax(0, 1fr);
-    transition: grid-template-columns $transition-fast;
+    transition: grid-template-columns var(--menu-duration) var(--menu-easing);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    --menu-duration: 0ms;
   }
 }
 
@@ -45,13 +53,22 @@
   padding-top: calc(#{$space-2} + env(safe-area-inset-top));
 
   @include up(lg) {
-    padding: $space-4 $space-2 $space-4 $space-3;
+    position: relative;
+    min-height: calc(2 * #{$space-4} + #{$touch-target});
+    align-items: flex-start;
+    padding: calc(#{$space-4} + (#{$touch-target} - #{$sidebar-logo-size}) / 2)
+      calc(#{$touch-target} + 2 * #{$space-2}) $space-3 $space-3;
+    transition:
+      min-height var(--menu-duration) var(--menu-easing),
+      padding var(--menu-duration) var(--menu-easing);
   }
 
   .layoutCollapsed & {
     @include up(lg) {
-      flex-direction: column;
-      padding: $space-4 $space-2 $space-3;
+      min-height: calc(
+        #{$space-4} + #{$sidebar-logo-size} + #{$space-2} + #{$touch-target} + #{$space-3}
+      );
+      padding-inline: calc((#{$sidebar-collapsed-width} - #{$sidebar-logo-size}) / 2) 0;
     }
   }
 }
@@ -82,9 +99,17 @@
   flex-direction: column;
   min-width: 0;
 
+  @include up(lg) {
+    overflow: hidden;
+    transition:
+      opacity var(--menu-duration) var(--menu-easing),
+      transform var(--menu-duration) var(--menu-easing);
+  }
+
   .layoutCollapsed & {
     @include up(lg) {
-      display: none;
+      opacity: 0;
+      transform: translateX(-0.375rem);
     }
   }
 }
@@ -136,7 +161,20 @@
   display: none;
 
   @include up(lg) {
+    position: absolute;
+    top: $space-4;
+    right: $space-2;
     display: inline-flex;
+    transition:
+      top var(--menu-duration) var(--menu-easing),
+      right var(--menu-duration) var(--menu-easing);
+  }
+
+  .layoutCollapsed & {
+    @include up(lg) {
+      top: calc(#{$space-4} + #{$sidebar-logo-size} + #{$space-2});
+      right: calc((#{$sidebar-collapsed-width} - #{$touch-target}) / 2);
+    }
   }
 }
 
@@ -184,6 +222,31 @@
   display: flex;
 }
 
+@media (width < #{map.get($breakpoints, lg)}) {
+  .panel {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+    pointer-events: none;
+    interactivity: inert;
+    transition:
+      opacity var(--menu-duration) var(--menu-easing),
+      transform var(--menu-duration) var(--menu-easing),
+      display var(--menu-duration) allow-discrete;
+  }
+
+  .panelOpen {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    interactivity: auto;
+
+    @starting-style {
+      opacity: 0;
+      transform: translateY(-0.75rem);
+    }
+  }
+}
+
 .navList {
   display: flex;
   flex-direction: column;
@@ -214,12 +277,18 @@
 
   @include up(lg) {
     min-height: $touch-target;
+    transition:
+      padding var(--menu-duration) var(--menu-easing),
+      gap var(--menu-duration) var(--menu-easing);
   }
 
   .layoutCollapsed & {
     @include up(lg) {
-      justify-content: center;
-      padding: 0;
+      gap: 0;
+      padding-inline: calc(
+          (#{$sidebar-collapsed-width} - 2 * #{$space-2} - #{$icon-size} - 4px) / 2
+        )
+        0;
     }
   }
 }
@@ -292,13 +361,31 @@ button.footerItem {
   @include visually-hidden;
 }
 
-// Texto do item. Com o menu recolhido vira dica (tooltip) ao lado do ícone,
-// mostrada no hover e no foco; continua no DOM para leitores de tela.
 .label {
   min-width: 0;
 
+  @include up(lg) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition:
+      opacity var(--menu-duration) var(--menu-easing),
+      transform var(--menu-duration) var(--menu-easing);
+  }
+
   .layoutCollapsed & {
     @include up(lg) {
+      opacity: 0;
+      transform: translateX(-0.375rem);
+    }
+  }
+}
+
+.hasTooltip {
+  position: relative;
+
+  @include up(lg) {
+    &::after {
       position: absolute;
       top: 50%;
       left: calc(100% + #{$space-2});
@@ -311,25 +398,21 @@ button.footerItem {
       background-color: $color-navy-mid;
       border-radius: $radius-sm;
       box-shadow: $shadow-drawer;
+      visibility: hidden;
       opacity: 0;
       pointer-events: none;
       transform: translateY(-50%);
-      transition: opacity $transition-fast;
+      transition: opacity var(--menu-duration) var(--menu-easing);
     }
-  }
-}
 
-.hasTooltip {
-  position: relative;
+    .layoutCollapsed &::after {
+      content: attr(data-tooltip) / '';
+    }
 
-  @include hover {
-    .label {
+    .layoutCollapsed &:is(:hover, :focus-visible)::after {
+      visibility: visible;
       opacity: 1;
     }
-  }
-
-  &:focus-visible .label {
-    opacity: 1;
   }
 }
 
@@ -339,9 +422,17 @@ button.footerItem {
   gap: $space-gutter-xs;
   padding: $space-2 $space-3;
 
+  @include up(lg) {
+    position: relative;
+    min-height: calc(2 * #{$space-2} + #{$sidebar-avatar-size});
+    transition: min-height var(--menu-duration) var(--menu-easing);
+  }
+
   .layoutCollapsed & {
     @include up(lg) {
-      flex-direction: column;
+      min-height: calc(
+        2 * #{$space-2} + #{$sidebar-avatar-size} + #{$space-1} + #{$icon-size}
+      );
     }
   }
 }
@@ -360,6 +451,23 @@ button.footerItem {
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
+
+  @include up(lg) {
+    position: absolute;
+    top: $space-2;
+    right: $space-2;
+    left: calc(#{$space-3} + #{$sidebar-avatar-size} + #{$space-gutter-xs});
+    transition:
+      top var(--menu-duration) var(--menu-easing),
+      left var(--menu-duration) var(--menu-easing);
+  }
+
+  .layoutCollapsed & {
+    @include up(lg) {
+      top: calc(#{$space-2} + #{$sidebar-avatar-size} + #{$space-1});
+      left: $space-3;
+    }
+  }
 }
 
 .userName {
@@ -367,9 +475,21 @@ button.footerItem {
   font-weight: 600;
   line-height: $line-height-small;
 
+  @include up(lg) {
+    max-width: 100%;
+    max-height: 1.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition:
+      opacity var(--menu-duration) var(--menu-easing),
+      max-height var(--menu-duration) var(--menu-easing);
+  }
+
   .layoutCollapsed & {
     @include up(lg) {
-      @include visually-hidden;
+      max-height: 0;
+      opacity: 0;
     }
   }
 }
@@ -394,21 +514,35 @@ button.footerItem {
     outline-color: $color-warning;
   }
 
+  @include up(lg) {
+    max-width: 100%;
+  }
+
   .layoutCollapsed & {
     @include up(lg) {
-      justify-content: center;
+      padding-inline-start: calc((#{$touch-target} - #{$icon-size}) / 2);
     }
   }
 }
 
 .logoutIcon {
   display: none;
-  width: $icon-size;
-  height: $icon-size;
+
+  @include up(lg) {
+    display: block;
+    flex-shrink: 0;
+    width: 0;
+    height: $icon-size;
+    opacity: 0;
+    transition:
+      width var(--menu-duration) var(--menu-easing),
+      opacity var(--menu-duration) var(--menu-easing);
+  }
 
   .layoutCollapsed & {
     @include up(lg) {
-      display: block;
+      width: $icon-size;
+      opacity: 1;
     }
   }
 }

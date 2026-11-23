@@ -1,4 +1,4 @@
-import { Breadcrumb } from '@/components/Breadcrumb'
+import { BackLink } from '@/components/BackLink/BackLink'
 import { LoadingState } from '@/components/LoadingState/LoadingState'
 import type { Vehicle } from './types'
 import { useEffect, useRef, useState } from 'react'
@@ -73,12 +73,9 @@ export function VehicleDetailsPage({
 
   return (
     <div className={styles.page}>
-      <Breadcrumb
-        items={[
-          { label: 'Veículos', to: '/veiculos', onClick: onBack },
-          { label: 'Detalhes' },
-        ]}
-      />
+      <BackLink to="/veiculos" onClick={onBack}>
+        Voltar para Veículos
+      </BackLink>
       <header className={styles.header}>
         <div className={styles.heading}>
           <h1 ref={headingRef} tabIndex={-1} className={styles.title}>

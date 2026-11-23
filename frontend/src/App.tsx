@@ -1,6 +1,7 @@
 import { RelatoriosPage } from '@/pages/relatorios/RelatoriosPage'
 import AbastecimentosPage from '@/pages/abastecimentos/AbastecimentosPage'
 import RegistrarAbastecimento from '@/pages/abastecimentos/registrar/RegistrarAbastecimento'
+import { AtendimentoSVOPage } from '@/pages/atendimento-svo/AtendimentoSVOPage'
 import SolicitacoesPendentesPage from '@/pages/solicitacoes/SolicitacoesPendentesPage'
 import { UsersPage } from '@/pages/users/UsersPage'
 import { RequireAuth } from '@/components/RequireAuth/RequireAuth'
@@ -187,6 +188,14 @@ export function AppRoutes() {
             element={
               <FeatureFlagRoute flag="gestor_viagens">
                 <RequestFormPage />
+              </FeatureFlagRoute>
+            }
+          />
+          <Route
+            path="viagens/atendimento-svo"
+            element={
+              <FeatureFlagRoute flag="gestor_viagens">
+                <AtendimentoSVOPage />
               </FeatureFlagRoute>
             }
           />

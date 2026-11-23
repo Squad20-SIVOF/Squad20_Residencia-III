@@ -183,6 +183,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                     to={item.to}
                     end={item.to === '/'}
                     aria-label={isCollapsed ? item.label : undefined}
+                    data-tooltip={item.label}
                     className={({ isActive }) =>
                       classNames(
                         styles.navItem,
@@ -205,6 +206,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               type="button"
               className={classNames(styles.footerItem, styles.hasTooltip)}
               aria-label={isCollapsed ? themeLabel : undefined}
+              data-tooltip={themeLabel}
               onClick={toggleTheme}
             >
               <SidebarIcon
@@ -217,6 +219,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             {canReadAlerts && notificationsEnabled ? (
               <NavLink
                 to="/notificacoes"
+                data-tooltip="Notificações"
                 onClick={() => setIsMenuOpen(false)}
                 className={({ isActive }) =>
                   classNames(
@@ -247,6 +250,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   styles.footerItemStrong,
                   styles.hasTooltip,
                 )}
+                data-tooltip="Notificações"
               >
                 <SidebarIcon name="alert" className={styles.icon} />
                 <span className={styles.label}>Notificações</span>
@@ -260,6 +264,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <button
                   type="button"
                   className={classNames(styles.logout, styles.hasTooltip)}
+                  data-tooltip="Sair"
                   onClick={handleLogout}
                 >
                   <SidebarIcon name="logout" className={styles.logoutIcon} />

@@ -1,184 +1,215 @@
-@use '@/styles/dark';
 @use '../../styles/tokens' as *;
+@use '../../styles/mixins' as *;
+
+.page,
+.form {
+  display: grid;
+  gap: $space-3;
+  min-width: 0;
+}
 
 .page {
-  max-width: 1160px;
-  margin: 0 auto;
-  padding: 28px 30px 44px;
-  color: light-dark(#192f4c, dark.$text);
+  container-type: inline-size;
+  --section-duration: 240ms;
+
+  @media (prefers-reduced-motion: reduce) {
+    --section-duration: 0ms;
+  }
 }
 
-.back {
-  border: 0;
-  background: transparent;
-  color: light-dark(#1c5c9e, dark.$primary);
-  padding: 0;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.heading {
-  margin: 8px 0 20px;
-
-  h1 {
-    font-size: 28px;
-    margin: 0 0 3px;
-  }
-
-  p {
-    color: light-dark(#778291, dark.$muted);
-    font-size: 13px;
-    margin: 0;
-  }
+.heading h1 {
+  color: $color-heading;
+  font-weight: 500;
 }
 
 .progress {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px;
-  color: light-dark(#748398, dark.$muted);
-  font-size: 11px;
-  margin-bottom: 16px;
+  align-items: center;
+  gap: $space-2;
+  color: $color-text-muted;
+  font-size: $font-size-xsmall;
+}
 
-  span:first-child {
-    color: light-dark(#27619e, dark.$primary);
-    font-weight: 800;
-  }
+.progress .progressBadge {
+  gap: $space-1;
 }
 
 .section {
-  background: light-dark(white, dark.$card);
-  border: 1px solid light-dark(#e1e6ee, dark.$border);
-  border-radius: 9px;
-  margin-bottom: 12px;
-  padding: 14px 16px 16px;
-  box-shadow: 0 2px 7px #102f5010;
+  --section-padding: clamp(0.875rem, 2cqi, 1.25rem);
+
+  display: grid;
+  min-width: 0;
+  padding-inline: var(--section-padding);
+  background-color: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-subtle;
 }
 
 .sectionHeading {
   display: flex;
-  width: 100%;
   justify-content: space-between;
   align-items: center;
-  border: 0;
-  background: none;
-  padding: 0;
-  color: light-dark(#143b66, dark.$primary);
-  cursor: pointer;
+  gap: $space-2;
+  min-height: $touch-target;
+  padding: $space-2 0;
+  color: $color-primary;
   text-align: left;
-  font-size: 13px;
+  background: none;
+  border: 0;
+  border-radius: $radius-sm;
+  font-size: $font-size-small;
 
-  span {
-    color: light-dark(#5383b5, dark.$primary);
-    font-size: 11px;
+  > span {
+    display: flex;
+    align-items: center;
+    gap: $space-1;
+    flex-shrink: 0;
+    font-size: $font-size-xsmall;
   }
+
+  &[aria-expanded='true'] svg {
+    transform: rotate(180deg);
+  }
+
+  svg {
+    transition: transform var(--section-duration) ease;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.sectionPanel {
+  display: grid;
+  grid-template-rows: minmax(0, 0fr);
+  opacity: 0;
+  transition:
+    grid-template-rows var(--section-duration) ease,
+    opacity var(--section-duration) ease;
+}
+
+.sectionHeading[aria-expanded='true'] + .sectionPanel {
+  grid-template-rows: minmax(0, 1fr);
+  opacity: 1;
+}
+
+.sectionBody {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  overflow: clip;
+  overflow-clip-margin: 4px;
+  border: 0;
 }
 
 .fields {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 13px 14px;
-  margin-top: 13px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-2 $space-3;
+  padding-bottom: var(--section-padding);
+
+  @container (width >= 32rem) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
   &.three {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    @container (width >= 44rem) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
   }
 
   label {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    font-size: 11px;
-    color: light-dark(#586477, dark.$muted);
+    gap: $space-1;
+    min-width: 0;
+    color: $color-text;
+    font-size: $font-size-small;
+    font-weight: 600;
   }
 
   input {
-    min-width: 0;
     width: 100%;
-    border: 1px solid light-dark(#d8dfe8, dark.$border);
-    border-radius: 5px;
-    padding: 10px 11px;
-    color: light-dark(#26374c, dark.$text);
-    font: inherit;
-    font-size: 13px;
-    background: light-dark(white, dark.$card);
-  }
+    min-width: 0;
+    max-width: 100%;
+    min-height: $touch-target;
+    padding: $space-2 0.75rem;
+    color: $color-text;
+    background: $color-card;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    font-size: $font-size-body;
+    font-weight: 400;
 
-  input:focus {
-    outline: 2px solid #a8c6ed;
+    @media (pointer: fine) {
+      font-size: $font-size-small;
+    }
+
+    &::placeholder {
+      color: $color-text-muted;
+    }
+
+    &:focus-visible {
+      border-color: $color-focus;
+      outline-offset: -2px;
+    }
   }
 }
 
 .dropzone {
-  margin-top: 13px;
-  min-height: 90px;
-  border: 2px dashed light-dark(#a9bed5, dark.$border);
-  border-radius: 6px;
-  background: light-dark(#fafcff, dark.$surface);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  color: light-dark(#2763a1, dark.$primary);
-  font-size: 12px;
-  cursor: pointer;
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: $space-1;
+  min-height: 4.5rem;
+  margin-bottom: var(--section-padding);
+  padding: $space-2 $space-3;
+  color: $color-primary;
   text-align: center;
-  padding: 12px;
+  background-color: $color-surface;
+  border: 1px dashed $color-primary;
+  border-radius: $radius-md;
+  font-size: $font-size-small;
+  overflow-wrap: anywhere;
+
+  @include hover {
+    background-color: $color-primary-soft;
+  }
+
+  &:focus-within {
+    @include focus-ring;
+    outline-offset: -2px;
+  }
 
   small {
-    color: light-dark(#8490a0, dark.$muted);
+    color: $color-text-muted;
+    font-size: $font-size-xsmall;
   }
 
   input {
-    max-width: 230px;
-    font-size: 11px;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
   }
-}
-
-.notice {
-  padding: 12px;
-  background: light-dark(#edf5ff, dark.$primary-soft);
-  border: 1px solid light-dark(#bdd6f1, dark.$border);
-  border-radius: 6px;
-  font-size: 13px;
 }
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 10px;
-  padding-top: 8px;
+  gap: $space-2;
 
-  button {
-    border: 1px solid light-dark(#d9e0e9, dark.$border);
-    background: light-dark(white, dark.$card);
-    color: light-dark(#253950, dark.$text);
-    border-radius: 6px;
-    padding: 11px 18px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .primary {
-    background: light-dark(#2766b0, dark.$primary-fill);
-    color: white;
-    border-color: light-dark(#2766b0, dark.$primary-fill);
-  }
-}
-
-@media (max-width: 680px) {
-  .page {
-    padding: 18px 14px;
-  }
-
-  .fields,
-  .fields.three {
-    grid-template-columns: 1fr;
-  }
-
-  .progress {
-    flex-wrap: wrap;
+  @container (width < 22rem) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

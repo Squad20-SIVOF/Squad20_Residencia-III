@@ -9,7 +9,7 @@ import { StateMessage } from '@/components/StateMessage'
 import { useAsync } from '@/hooks/useAsync'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { TrackedTripPreview } from './components/TrackedTripMap'
-import { TripBackLink } from './components/TripBackLink'
+import { BackLink } from '@/components/BackLink/BackLink'
 import { DEMO_ROUTES } from './services/demoRoutes'
 import { listTrackedTrips } from './services/trackedTripService'
 import {
@@ -62,13 +62,11 @@ export function RouteDetailsPage() {
         }
         className={styles.header}
         breadcrumb={
-          monitoringEnabled ? (
-            <TripBackLink to="/viagens/monitoramento">
-              Voltar para o Monitoramento de Viagens
-            </TripBackLink>
-          ) : (
-            <TripBackLink />
-          )
+          <BackLink to={monitoringEnabled ? '/viagens/monitoramento' : '/viagens'}>
+            {monitoringEnabled
+              ? 'Voltar para o Monitoramento de Viagens'
+              : 'Voltar para o Painel de Viagens'}
+          </BackLink>
         }
       />
       {result.status === 'error' && (

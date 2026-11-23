@@ -13,6 +13,7 @@ import { StateMessage } from '@/components/StateMessage'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { FuelDetailsDialog } from './FuelDetailsDialog'
 import { fuelService, monthRange, money, type FuelRecord } from './services/fuelService'
 import styles from './AbastecimentosPage.module.scss'
 
@@ -24,6 +25,7 @@ export default function AbastecimentosPage() {
   const [vehicle, setVehicle] = useState('')
   const [search, setSearch] = useState('')
   const [hoveredVehicleId, setHoveredVehicleId] = useState<string | null>(null)
+  const [selected, setSelected] = useState<FuelRecord | null>(null)
   const [removing, setRemoving] = useState<FuelRecord | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -81,6 +83,7 @@ export default function AbastecimentosPage() {
     setError('')
     try {
       await fuelService.remove(removing.id)
+      setSelected((current) => (current?.id === removing.id ? null : current))
       setRemoving(null)
       request.reload()
     } catch (cause) {
@@ -171,7 +174,7 @@ export default function AbastecimentosPage() {
         )}
       </div>
 
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && !selected && <Alert variant="danger">{error}</Alert>}
 
       {request.status === 'error' ? (
         <StateMessage
@@ -343,33 +346,57 @@ export default function AbastecimentosPage() {
                 rows={rows}
                 columns={columns}
                 getRowKey={(row) => row.id}
-                renderActions={
-                  canManage
-                    ? (row) => (
-                        <>
-                          <ButtonLink
-                            variant="secondary"
-                            to={`/abastecimentos/editar/${row.id}`}
-                          >
-                            Editar
-                          </ButtonLink>
-                          <Button
-                            variant="secondary"
-                            data-table-destructive
-                            onClick={() => setRemoving(row)}
-                          >
-                            Excluir
-                          </Button>
-                        </>
-                      )
-                    : undefined
-                }
+                renderActions={(row) => (
+                  <>
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setError('')
+                        setSelected(row)
+                      }}
+                    >
+                      Detalhes
+                    </Button>
+                    {canManage && (
+                      <>
+                        <ButtonLink
+                          variant="secondary"
+                          to={`/abastecimentos/editar/${row.id}`}
+                        >
+                          Editar
+                        </ButtonLink>
+                        <Button
+                          variant="secondary"
+                          data-table-destructive
+                          onClick={() => setRemoving(row)}
+                        >
+                          Excluir
+                        </Button>
+                      </>
+                    )}
+                  </>
+                )}
               />
             )}
           </TablePanel>
         </>
       )}
 
+      {selected && !removing && (
+        <FuelDetailsDialog
+          record={selected}
+          canManage={canManage}
+          error={error}
+          onClose={() => {
+            setSelected(null)
+            setError('')
+          }}
+          onDelete={() => {
+            setError('')
+            setRemoving(selected)
+          }}
+        />
+      )}
       <ConfirmDialog
         isOpen={!!removing}
         title="Excluir abastecimento?"

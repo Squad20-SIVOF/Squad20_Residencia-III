@@ -65,6 +65,18 @@ test('renderiza a página de perfil em /perfil', async () => {
   expect(screen.queryByText(/módulo em construção/i)).not.toBeInTheDocument()
 })
 
+test('abre o formulário de Atendimento SVO pelo Painel de Viagens', async () => {
+  const user = userEvent.setup()
+  renderAt('/viagens')
+
+  await user.click(await screen.findByRole('link', { name: 'Iniciar atendimento' }))
+  expect(screen.getByRole('heading', { name: 'Atendimento SVO', level: 1 })).toBeVisible()
+  expect(screen.getByRole('textbox', { name: 'Endereço de origem' })).toBeVisible()
+
+  await user.click(screen.getByRole('link', { name: /Voltar para o Painel de Viagens/ }))
+  expect(await screen.findByRole('heading', { name: 'Painel de Viagens' })).toBeVisible()
+})
+
 test('navega pelo menu lateral e marca o item ativo', async () => {
   const user = userEvent.setup()
   renderAt('/')

@@ -72,8 +72,12 @@ test('detalhes de veículo mostram histórico e vistoria, e breadcrumb volta à 
   await dialog.getByRole('button', { name: 'Fechar', exact: true }).click()
   await expect(dialog).not.toBeVisible()
   await page.getByRole('button', { name: 'Editar veículo', exact: true }).click()
-  const breadcrumb = page.getByRole('navigation', { name: 'Você está em', exact: true })
-  await expect(breadcrumb.getByText('Editar cadastro')).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Editar veículo', exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('link', { name: 'Voltar para Veículos', exact: true }),
+  ).toHaveAttribute('href', '/veiculos')
   await breadcrumb.getByRole('link', { name: 'Veículos', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: 'Controle de Veículos', exact: true }),

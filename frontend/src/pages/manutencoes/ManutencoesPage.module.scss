@@ -17,22 +17,12 @@
   min-width: 56rem;
 }
 
-.header,
-.actions {
+.header {
   display: flex;
   flex-wrap: wrap;
   gap: $space-3;
   justify-content: space-between;
-}
-
-.header {
   align-items: flex-start;
-}
-
-.actions {
-  align-items: center;
-  justify-content: flex-end;
-  gap: $space-2;
 }
 
 .card {
@@ -46,27 +36,6 @@
   @include up(md) {
     padding: $space-4;
   }
-}
-
-.details {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-  gap: $space-3;
-}
-
-.detailLabel,
-.detailValue {
-  font-size: $font-size-small;
-}
-
-.detailLabel {
-  color: $color-text-muted;
-  font-weight: 500;
-}
-
-.detailValue {
-  min-width: 0;
-  overflow-wrap: anywhere;
 }
 
 .empty {
@@ -84,8 +53,7 @@
 
 .formHeader h1 {
   color: $color-heading;
-  font-size: clamp(1.5rem, 1.15rem + 1vw, 1.875rem);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .form > fieldset {

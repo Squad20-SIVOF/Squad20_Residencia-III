@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { LoadingState } from '@/components/LoadingState/LoadingState'
-import { Breadcrumb } from '@/components/Breadcrumb'
+import { BackLink } from '@/components/BackLink/BackLink'
 import { ButtonLink } from '@/components/ButtonLink'
 import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
@@ -64,20 +64,14 @@ export function DriverFormPage() {
   return (
     <div className={styles.page}>
       <PageHeader
+        className={styles.header}
         title={title}
         subtitle={
           isEditing
             ? 'Atualize os dados do motorista'
             : 'Preencha os dados do novo motorista'
         }
-        breadcrumb={
-          <Breadcrumb
-            items={[
-              { label: 'Motoristas', to: '/motoristas' },
-              { label: isEditing ? 'Editar cadastro' : 'Novo cadastro' },
-            ]}
-          />
-        }
+        breadcrumb={<BackLink to="/motoristas">Voltar para Motoristas</BackLink>}
       />
       {renderContent()}
     </div>

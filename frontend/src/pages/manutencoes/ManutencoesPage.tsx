@@ -10,10 +10,11 @@ import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { SelectField } from '@/components/SelectField'
 import { TextField } from '@/components/TextField'
 import { Toolbar } from '@/components/Toolbar'
-import { ConfirmDialog } from '@/components/ConfirmDialog'
-import { Breadcrumb } from '@/components/Breadcrumb'
+import { RecordDetailsDialog } from '@/components/RecordDetailsDialog/RecordDetailsDialog'
+import detailStyles from '@/components/RecordDetailsDialog/RecordDetailsDialog.module.scss'
+import { BackLink } from '@/components/BackLink/BackLink'
 import { MercosulPlate } from '@/pages/vehicles/components/MercosulPlate'
-import { TriangleAlert, Upload } from 'lucide-react'
+import { CircleCheck, TriangleAlert, Upload } from 'lucide-react'
 import type { Vehicle } from './types/vehicle'
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -89,8 +90,12 @@ export function ManutencoesPage() {
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage = Math.min(page, pageCount)
   const rows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const selectedVehicle =
+    selected && vehicles.find((vehicle) => vehicle.id === selected.vehicleId)
 
   if (loading) return <LoadingState label="Carregando manutenções" />
+
+  const closeDetails = () => setSelected(null)
 
   async function removeSelected() {
     if (
@@ -117,7 +122,7 @@ export function ManutencoesPage() {
   const columns: DataTableColumn<Maintenance>[] = [
     {
       key: 'vehicle',
-      header: 'Veículo / placa',
+      header: 'Placa / veículo',
       isPrimary: true,
       minWidth: 10,
       render: (row) =>
@@ -329,63 +334,89 @@ export function ManutencoesPage() {
         disponibilidade antes de liberar novas viagens.
       </p>
       {selected && (
-        <ConfirmDialog
-          isOpen
+        <RecordDetailsDialog
           title="Detalhes da manutenção"
-          description={vehicleLabel(vehicles.find((v) => v.id === selected.vehicleId))}
-          confirmLabel="Fechar"
-          cancelLabel={null}
-          onConfirm={() => setSelected(null)}
-          onCancel={() => setSelected(null)}
+          description="Informações do serviço e da próxima revisão."
+          titleAccessory={
+            <Badge
+              className={detailStyles.detailBadge}
+              variant={maintenanceStatusVariant[selected.status]}
+            >
+              {selected.status === 'Concluída' && (
+                <CircleCheck size={14} aria-hidden="true" />
+              )}
+              {selected.status}
+            </Badge>
+          }
+          plate={selectedVehicle?.placa}
+          vehicleName={
+            selectedVehicle
+              ? [selectedVehicle.marca, selectedVehicle.modelo]
+                  .filter(Boolean)
+                  .join(' ') || selectedVehicle.codigo
+              : 'Veículo não encontrado'
+          }
+          notice={mutationError && <Alert variant="danger">{mutationError}</Alert>}
+          editTo={canManage ? `/manutencoes/editar/${selected.id}` : undefined}
+          onDelete={canManage ? removeSelected : undefined}
+          deleting={deleting}
+          onClose={closeDetails}
         >
-          {mutationError && <Alert variant="danger">{mutationError}</Alert>}
-          <dl className={styles.details}>
-            <dt className={styles.detailLabel}>Veículo</dt>
-            <dd className={styles.detailValue}>
-              {vehicleLabel(vehicles.find((v) => v.id === selected.vehicleId))}
-            </dd>
-            <dt className={styles.detailLabel}>Serviço</dt>
-            <dd className={styles.detailValue}>{selected.descricao}</dd>
-            <dt className={styles.detailLabel}>Data</dt>
-            <dd className={styles.detailValue}>
-              {date(selected.dataServico)} {selected.horaServico}
-            </dd>
-            <dt className={styles.detailLabel}>Oficina</dt>
-            <dd className={styles.detailValue}>{selected.oficina}</dd>
-            <dt className={styles.detailLabel}>Quilometragem</dt>
-            <dd className={styles.detailValue}>{km(selected.quilometragem)}</dd>
-            <dt className={styles.detailLabel}>Status</dt>
-            <dd className={styles.detailValue}>{selected.status}</dd>
-            <dt className={styles.detailLabel}>Valor</dt>
-            <dd className={styles.detailValue}>{money(selected.valorEstimado)}</dd>
-            <dt className={styles.detailLabel}>Próxima revisão</dt>
-            <dd className={styles.detailValue}>
-              {selected.tipoProximaRevisao}
-              {selected.proximaRevisaoKm ? ` · ${km(selected.proximaRevisaoKm)}` : ''}
-              {selected.proximaRevisaoData
-                ? ` · ${date(selected.proximaRevisaoData)}`
-                : ''}
-            </dd>
-            <dt className={styles.detailLabel}>Comprovante</dt>
-            <dd className={styles.detailValue}>
-              {selected.comprovanteNome ?? 'Não informado'}
-            </dd>
-          </dl>
-          {canManage && (
-            <div className={styles.actions}>
-              <Button
-                variant="danger"
-                type="button"
-
-                disabled={deleting}
-                onClick={removeSelected}
-              >
-                {deleting ? 'Excluindo...' : 'Excluir'}
-              </Button>
-              <ButtonLink to={`/manutencoes/editar/${selected.id}`}>Editar</ButtonLink>
+          <section className={detailStyles.detailService}>
+            <h3>Informações do serviço</h3>
+            <dl className={detailStyles.details}>
+              <div>
+                <dt className={detailStyles.detailLabel}>Serviço</dt>
+                <dd className={detailStyles.detailValue}>{selected.descricao || '—'}</dd>
+              </div>
+              <div>
+                <dt className={detailStyles.detailLabel}>Oficina</dt>
+                <dd className={detailStyles.detailValue}>{selected.oficina || '—'}</dd>
+              </div>
+              <div>
+                <dt className={detailStyles.detailLabel}>Data e horário</dt>
+                <dd className={detailStyles.detailValue}>
+                  {date(selected.dataServico)}
+                  {selected.horaServico && ` às ${selected.horaServico.slice(0, 5)}`}
+                </dd>
+              </div>
+              <div>
+                <dt className={detailStyles.detailLabel}>Quilometragem</dt>
+                <dd className={detailStyles.detailValue}>{km(selected.quilometragem)}</dd>
+              </div>
+            </dl>
+          </section>
+          <dl className={`${detailStyles.details} ${detailStyles.detailHighlight}`}>
+            <div>
+              <dt>Valor da manutenção</dt>
+              <dd className={detailStyles.detailPrice}>
+                {money(selected.valorEstimado)}
+              </dd>
             </div>
-          )}
-        </ConfirmDialog>
+            <div>
+              <dt>Próxima revisão</dt>
+              <dd>
+                <strong>
+                  {[
+                    selected.proximaRevisaoData && date(selected.proximaRevisaoData),
+                    selected.proximaRevisaoKm != null && km(selected.proximaRevisaoKm),
+                  ]
+                    .filter(Boolean)
+                    .join(' · ') || 'Não definida'}
+                </strong>
+                {selected.tipoProximaRevisao !== 'Não definida' && (
+                  <span className={detailStyles.detailLabel}>
+                    Programada por {selected.tipoProximaRevisao.toLowerCase()}
+                  </span>
+                )}
+              </dd>
+            </div>
+          </dl>
+          <dl className={detailStyles.detailReceipt}>
+            <dt>Comprovante</dt>
+            <dd>{selected.comprovanteNome || 'Não informado'}</dd>
+          </dl>
+        </RecordDetailsDialog>
       )}
     </div>
   )
@@ -538,14 +569,7 @@ function MaintenanceForm({
         className={styles.formHeader}
         title={editing ? 'Editar manutenção' : 'Registrar manutenção'}
         subtitle="Planeje um serviço ou registre uma manutenção já realizada."
-        breadcrumb={
-          <Breadcrumb
-            items={[
-              { label: 'Manutenções', to: '/manutencoes' },
-              { label: editing ? 'Editar cadastro' : 'Novo cadastro' },
-            ]}
-          />
-        }
+        breadcrumb={<BackLink to="/manutencoes">Voltar para Manutenções</BackLink>}
       />
       {error && <Alert variant="danger">{error}</Alert>}
       <form className={styles.form} onSubmit={save} aria-busy={saving}>

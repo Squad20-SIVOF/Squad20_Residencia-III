@@ -13,7 +13,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { normalizeText } from '@/utils/format'
 import { TrackedTripPreview } from './components/TrackedTripMap'
-import { TripBackLink } from './components/TripBackLink'
+import { BackLink } from '@/components/BackLink/BackLink'
 import { DEMO_ROUTES } from './services/demoRoutes'
 import { listTrackedTrips } from './services/trackedTripService'
 import {
@@ -50,7 +50,7 @@ export function RouteMonitoringPage() {
         title="Monitoramento de Viagens"
         subtitle="Acompanhe deslocamentos e ocorrências da frota com dados demonstrativos."
         className={styles.header}
-        breadcrumb={<TripBackLink />}
+        breadcrumb={<BackLink to="/viagens">Voltar para o Painel de Viagens</BackLink>}
       />
       {result.status === 'error' && (
         <StateMessage

@@ -1,5 +1,4 @@
 import { useId } from 'react'
-import { StatGrid } from '@/components/StatCard'
 import { formatKm, formatMonthYear } from '@/utils/format'
 import type { Vehicle } from '../../types'
 import { vehicleDisplayName, vehicleFullModel } from '../../utils/vehicleRules'
@@ -61,7 +60,14 @@ export function VehicleSummaryCard({ vehicle }: VehicleSummaryCardProps) {
           }
         />
       </section>
-      <StatGrid label="Indicadores do veículo" cards={indicators} />
+      <dl className={styles.indicators} aria-label="Indicadores do veículo">
+        {indicators.map(({ label, value }) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 }

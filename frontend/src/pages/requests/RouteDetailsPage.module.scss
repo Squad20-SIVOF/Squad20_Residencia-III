@@ -8,8 +8,8 @@
 }
 
 .header h1 {
-  font-size: clamp(1.5rem, 3vw, 1.9rem);
-  font-weight: 700;
+  color: $color-heading;
+  font-weight: 500;
 }
 
 .page .map {
