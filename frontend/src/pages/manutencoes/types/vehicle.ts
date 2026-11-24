@@ -8,4 +8,7 @@ export interface Vehicle {
   modelo: string
   quilometragem: number
   status: VehicleStatus
+  frota?: string
+  combustivel?: string
+  capacidadeLitros?: number
 }

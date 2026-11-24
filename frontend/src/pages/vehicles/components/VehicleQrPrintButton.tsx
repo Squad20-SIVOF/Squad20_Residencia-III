@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/Button'
-import { currentUser } from '@/service/authService'
 import { vehicleQrPayload } from '@/utils/vehicleQr'
 export function VehicleQrPrintButton({
   id,
@@ -11,19 +10,7 @@ export function VehicleQrPrintButton({
   plate: string
   model: string
 }) {
-  const [allowed, setAllowed] = useState(false)
   const [error, setError] = useState('')
-  useEffect(() => {
-    let active = true
-    currentUser()
-      .then((user) => {
-        if (active) setAllowed(user.permissoes.includes('veiculos:gerenciar'))
-      })
-      .catch(() => {})
-    return () => {
-      active = false
-    }
-  }, [])
   async function generate() {
     setError('')
     const sheet = window.open('', '_blank')
@@ -66,7 +53,6 @@ export function VehicleQrPrintButton({
       setError('Não foi possível gerar a etiqueta. Tente novamente.')
     }
   }
-  if (!allowed) return null
   return (
     <div>
       <Button variant="secondary" isFullWidth onClick={() => void generate()}>

@@ -1,16 +1,17 @@
+@use '@/styles/dark';
 .page {
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
   padding: 28px 32px 48px;
-  color: #172b4d;
+  color: light-dark(#172b4d, dark.$text);
 }
 
 .back {
   display: inline-flex;
   align-items: center;
   margin-bottom: 25px;
-  color: #2563eb;
+  color: light-dark(#2563eb, dark.$primary);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -30,7 +31,7 @@
 
   h1 {
     margin: 0 0 8px;
-    color: #172b4d;
+    color: light-dark(#172b4d, dark.$text);
     font-size: clamp(24px, 3vw, 32px);
     font-weight: 700;
     line-height: 1.25;
@@ -38,7 +39,7 @@
 
   p {
     margin: 0;
-    color: #748094;
+    color: light-dark(#748094, dark.$muted);
     font-size: 14px;
   }
 }
@@ -50,8 +51,8 @@
   width: fit-content;
   padding: 8px 14px;
   border-radius: 8px;
-  background: #fff3cd;
-  color: #936500;
+  background: light-dark(#fff3cd, dark.$warning-soft);
+  color: light-dark(#936500, dark.$warning);
   font-size: 13px;
   font-weight: 700;
 }
@@ -69,9 +70,9 @@
   width: 100%;
   height: 300px;
   overflow: hidden;
-  border: 1px solid #e3e9f0;
+  border: 1px solid light-dark(#e3e9f0, dark.$border);
   border-radius: 14px;
-  background: #edf1f5;
+  background: light-dark(#edf1f5, dark.$surface);
 }
 
 .routeBadge {
@@ -83,7 +84,7 @@
   max-width: calc(100% - 24px);
   padding: 12px 22px;
   border-radius: 30px;
-  background: #2563eb;
+  background: light-dark(#2563eb, dark.$primary-fill);
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2);
   color: #fff;
   font-size: 14px;
@@ -101,16 +102,16 @@
 .card {
   min-width: 0;
   padding: 24px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid light-dark(#cbd5e1, dark.$border);
   border-radius: 12px;
-  background: #fff;
+  background: light-dark(#fff, dark.$card);
   box-shadow: 0 2px 8px rgba(20, 40, 70, 0.035);
 
   h2 {
     margin: 0 0 22px;
     padding-bottom: 14px;
     border-bottom: 1px solid #edf0f5;
-    color: #1e3557;
+    color: light-dark(#1e3557, dark.$primary);
     font-size: 18px;
     font-weight: 700;
   }
@@ -123,14 +124,14 @@
   }
 
   dt {
-    color: #8792a4;
+    color: light-dark(#8792a4, dark.$muted);
     font-size: 14px;
   }
 
   dd {
     min-width: 0;
     margin: 0;
-    color: #253a57;
+    color: light-dark(#253a57, dark.$text);
     font-size: 14px;
     font-weight: 600;
     overflow-wrap: anywhere;
@@ -138,7 +139,7 @@
     a {
       display: block;
       margin-bottom: 6px;
-      color: #2563eb;
+      color: light-dark(#2563eb, dark.$primary);
       text-decoration: none;
 
       &:hover {
@@ -159,7 +160,7 @@
   padding: 12px 16px;
   border: 0;
   border-radius: 8px;
-  background: #2563eb;
+  background: light-dark(#2563eb, dark.$primary-fill);
   color: #fff;
   font: inherit;
   font-size: 14px;
@@ -173,7 +174,7 @@
 
 .note {
   margin: 12px 0 0;
-  color: #8792a4;
+  color: light-dark(#8792a4, dark.$muted);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -221,12 +222,12 @@
 .page {
   padding: 24px;
   max-width: 1440px;
-  color: #1f2937;
+  color: light-dark(#1f2937, dark.$text);
 }
 
 .back {
   margin-bottom: 8px;
-  color: #1e40af;
+  color: light-dark(#1e40af, dark.$primary);
   font-size: 12px;
 }
 
@@ -238,12 +239,12 @@
   h1 {
     margin-bottom: 5px;
     font-size: 24px;
-    color: #1f2937;
+    color: light-dark(#1f2937, dark.$text);
   }
 
   p {
     font-size: 12px;
-    color: #6b7280;
+    color: light-dark(#6b7280, dark.$muted);
   }
 }
 
@@ -251,8 +252,8 @@
   margin-top: 0;
   padding: 5px 10px;
   border-radius: 12px;
-  background: #fff3cd;
-  color: #8a6200;
+  background: light-dark(#fff3cd, dark.$warning-soft);
+  color: light-dark(#8a6200, dark.$warning);
   font-size: 11px;
 }
 
@@ -262,14 +263,14 @@
 
 .map {
   height: 250px;
-  border-color: #d4dce6;
-  background: #dfe7ef;
+  border-color: light-dark(#d4dce6, dark.$border);
+  background: light-dark(#dfe7ef, dark.$border);
 }
 
 .routeBadge {
   bottom: 16px;
   padding: 8px 15px;
-  background: #4583c4;
+  background: light-dark(#4583c4, dark.$primary-fill);
   font-size: 12px;
 }
 
@@ -279,7 +280,7 @@
 
 .card {
   padding: 18px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid light-dark(#cbd5e1, dark.$border);
   border-radius: 9px;
   box-shadow: 0 2px 5px rgba(20, 40, 70, 0.08);
 
@@ -287,7 +288,7 @@
     margin-bottom: 12px;
     padding-bottom: 0;
     border-bottom: 0;
-    color: #174b87;
+    color: light-dark(#174b87, dark.$primary);
     font-size: 15px;
   }
 
@@ -297,19 +298,19 @@
   }
 
   dt {
-    color: #1f2937;
+    color: light-dark(#1f2937, dark.$text);
     font-size: 11px;
     font-weight: 700;
   }
 
   dd {
-    color: #64748b;
+    color: light-dark(#64748b, dark.$muted);
     font-size: 11px;
     font-weight: 400;
 
     a {
       display: inline;
-      color: #64748b;
+      color: light-dark(#64748b, dark.$muted);
       margin-right: 4px;
     }
   }
@@ -327,7 +328,7 @@
   min-height: 38px;
   padding: 9px 12px;
   border-radius: 6px;
-  background: #2867b2;
+  background: light-dark(#2867b2, dark.$primary-fill);
   font-size: 12px;
 }
 

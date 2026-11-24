@@ -1,61 +1,118 @@
+@use '@/styles/dark';
 @use '../../styles/tokens' as *;
 
-.card {
-  display: flex;
-  flex-direction: column;
-  gap: $space-1;
+.gridFrame {
   min-width: 0;
-  padding: $space-3;
-  background-color: $color-surface;
-  border: 1px solid $color-border;
+  container-type: inline-size;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+    min-width: 0;
+  }
+
+  @container (width >= 28rem) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @container (width >= 41rem) {
+    &:not(.fourColumns) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @container (width >= 57rem) {
+    &.fourColumns {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+}
+
+.card {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem;
+  background-color: $color-card;
+  border: 1px solid light-dark(#e2e8f0, dark.$border);
   border-left-width: 4px;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-card;
+  border-radius: $radius-md;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .label {
-  font-size: $font-size-xsmall;
-  color: $color-text-muted;
+  margin: 0 0 0.25rem;
+  color: light-dark(#64748b, dark.$muted);
+  font-size: 0.85rem;
 }
 
-.row {
+.value {
+  margin: 0;
+  color: light-dark(#1e293b, dark.$text);
+  font-size: 1.8rem;
+  font-weight: 600;
+  line-height: $line-height-heading;
+  overflow-wrap: break-word;
+}
+
+.total {
+  color: light-dark(#64748b, dark.$muted);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.meta {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: $space-2;
 }
 
-.value {
-  font-size: $font-size-h3;
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.hint {
+.detail {
+  color: $color-text-muted;
   font-size: $font-size-xsmall;
 }
 
+.hint {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: $font-size-xsmall;
+  font-weight: 600;
+}
+
 .success {
-  border-left-color: $color-success;
+  border-left-color: #10b981;
 
   .hint {
-    color: $color-success;
+    color: light-dark(#166534, dark.$success);
+    background-color: light-dark(#dcfce7, dark.$success-soft);
   }
 }
 
 .warning {
-  border-left-color: $color-warning;
+  border-left-color: #f59e0b;
 
   .hint {
-    color: $color-warning-text;
+    color: light-dark(#92400e, dark.$warning);
+    background-color: light-dark(#fef3c7, dark.$warning-soft);
   }
 }
 
 .danger {
-  border-left-color: $color-danger;
+  border-left-color: #ef4444;
 
   .hint {
-    color: $color-danger;
+    color: light-dark(#991b1b, dark.$danger);
+    background-color: light-dark(#fee2e2, dark.$danger-soft);
   }
 }
 
@@ -64,56 +121,6 @@
 
   .hint {
     color: $color-primary;
+    background-color: $color-primary-soft;
   }
-}
-
-/* Etiquetas inferiores dos indicadores - Figma */
-
-.row {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 9px;
-}
-
-.hint {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  padding: 4px 8px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.success .hint {
-  background-color: #e5f5e9;
-  color: #25843a;
-}
-
-.warning .hint {
-  background-color: #fff1d2;
-  color: #986000;
-}
-
-.info .hint {
-  background-color: #e6efff;
-  color: #245ba3;
-}
-
-.danger .hint {
-  background-color: #ffe5e5;
-  color: #c62d2d;
-}
-
-.meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: $space-2;
-}
-
-.detail {
-  font-size: $font-size-xsmall;
-  color: $color-text-muted;
 }

@@ -20,6 +20,14 @@
   font-weight: 600;
 }
 
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2;
+}
+
 .description {
   margin-top: $space-2;
   font-size: $font-size-small;

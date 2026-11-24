@@ -29,6 +29,7 @@ const CAR_SVG =
 export type RouteMapVariant = 'detailed' | 'minimal'
 
 export interface RouteMapProps {
+  points?: GeoPoint[]
   /** Texto alternativo do mapa. */
   label: string
   variant?: RouteMapVariant
@@ -62,6 +63,7 @@ function addMarker(map: L.Map, point: GeoPoint, html: string): L.Marker {
 
 /** Mapa real (Leaflet + OpenStreetMap); a altura é definida pelo pai via `className`. */
 export function RouteMap({
+  points = DEMO_ROUTE,
   label,
   variant = 'detailed',
   progress,
@@ -97,7 +99,7 @@ export function RouteMap({
       map,
     )
 
-    const latLngs = DEMO_ROUTE.map(toLatLng)
+    const latLngs = points.map(toLatLng)
     const lineOptions = { interactive: false }
     const route = isMinimal
       ? L.polyline(latLngs, { ...lineOptions, className: styles.routeOutline })
@@ -113,8 +115,8 @@ export function RouteMap({
       )
     }
 
-    const origin = DEMO_ROUTE[0] ?? ARACAJU_CENTER
-    const destination = DEMO_ROUTE[DEMO_ROUTE.length - 1] ?? origin
+    const origin = points[0] ?? ARACAJU_CENTER
+    const destination = points[points.length - 1] ?? origin
     if (isMinimal) {
       addMarker(map, origin, `<span class="${styles.endOutline}"></span>`)
       addMarker(map, destination, `<span class="${styles.endOutline}"></span>`)
@@ -148,14 +150,14 @@ export function RouteMap({
       vehicleMarker.current = null
       map.remove()
     }
-  }, [isMinimal, isTracking])
+  }, [isMinimal, isTracking, points])
 
   // Roda depois do efeito acima (mesma ordem de declaração), então o marcador do
   // veículo já existe; mover o veículo não recria o mapa.
   useEffect(() => {
     if (progress === undefined) return
-    vehicleMarker.current?.setLatLng(toLatLng(getPointAlongRoute(DEMO_ROUTE, progress)))
-  }, [progress])
+    vehicleMarker.current?.setLatLng(toLatLng(getPointAlongRoute(points, progress)))
+  }, [progress, points])
 
   return (
     <div className={classNames(styles.map, isMinimal && styles.minimal, className)}>

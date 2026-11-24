@@ -1,26 +1,88 @@
 @use '../../styles/tokens' as *;
 @use '../../styles/mixins' as *;
-@use '../../styles/breakpoints' as *;
 
-// ---------- xs: lista de cards ----------
 .wrapper {
-  @include up(md) {
-    overflow-x: auto;
-    background-color: $color-surface;
-    border: 1px solid $color-border;
-    border-radius: $radius-lg;
-    box-shadow: $shadow-card;
+  --table-action-min-width: 65px;
+
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  background-color: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  @media print {
+    overflow: visible;
+  }
+}
+
+.scrollHint {
+  margin: 0;
+  color: $color-text-muted;
+  font-size: $font-size-xsmall;
+
+  @media print {
+    display: none;
   }
 }
 
 .table {
-  display: block;
   width: 100%;
-  font-size: $font-size-small;
   border-collapse: collapse;
+  font-size: $font-size-small;
+  font-variant-numeric: tabular-nums;
 
-  @include up(md) {
-    display: table;
+  :is(th, td) {
+    padding: $space-2 0.75rem;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  thead th {
+    padding-block: 0.75rem;
+    border-bottom: 1px solid $color-border;
+    background-color: $color-table-header;
+    color: $color-primary;
+    font-size: $font-size-xsmall;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody :is(th, td) {
+    overflow-wrap: break-word;
+  }
+
+  .keepTogether {
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    background-color: $color-card;
+
+    &:nth-child(even) {
+      background-color: $color-surface;
+    }
+
+    &:not(:last-child) > * {
+      border-bottom: 1px solid $color-border;
+    }
+
+    &:focus-within {
+      background-color: $color-table-header;
+    }
+
+    @include hover {
+      background-color: $color-table-header;
+    }
+  }
+
+  .actions {
+    text-align: center;
+    width: 1%;
   }
 }
 
@@ -28,117 +90,34 @@
   @include visually-hidden;
 }
 
-.head {
-  @include visually-hidden;
-
-  @include up(md) {
-    position: static;
-    width: auto;
-    height: auto;
-    margin: 0;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
-  }
-
-  th {
-    padding: 0.75rem;
-    font-size: $font-size-xsmall;
-    font-weight: 600;
-    color: $color-primary;
-    text-align: left;
-    white-space: nowrap;
-    background-color: $color-table-header;
-    border-bottom: 1px solid $color-border;
-
-    @include up(xl) {
-      padding-inline: $space-3;
-    }
-  }
-}
-
-.body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-
-  @include up(md) {
-    display: table-row-group;
-  }
-}
-
-.row {
-  display: flex;
-  flex-direction: column;
-  gap: $space-2;
-  padding: $space-3;
-  background-color: $color-surface;
-  border: 1px solid $color-border;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-card;
-
-  @include up(md) {
-    display: table-row;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-
-    &:not(:last-child) td {
-      border-bottom: 1px solid $color-border;
-    }
-  }
-
-  td {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: $space-2;
-    min-width: 0;
-
-    // xs: o cabeçalho da coluna vira o rótulo do valor.
-    &[data-label]::before {
-      content: attr(data-label);
-      color: $color-text-muted;
-    }
-
-    @include up(md) {
-      display: table-cell;
-      padding: $space-2 0.75rem;
-      vertical-align: middle;
-      white-space: nowrap;
-
-      &[data-label]::before {
-        content: none;
-      }
-    }
-
-    @include up(xl) {
-      padding-inline: $space-3;
-    }
-  }
-}
-
 .primary {
-  font-size: $font-size-body;
-  font-weight: 600;
-
-  @include up(md) {
-    font-size: inherit;
-    font-weight: 500;
-  }
+  font-weight: 500;
 }
 
-.actions {
-  padding-top: $space-2;
+.actionGroup {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: $space-2;
 
-  > * {
-    flex: 1;
+  > :is(a, button) {
+    min-width: var(--table-action-min-width);
+    padding-inline: $space-2;
+    background-color: $color-card;
+    color: $color-primary;
+
+    @include hover {
+      background-color: $color-primary-soft;
+    }
   }
 
-  @include up(md) {
-    > * + * {
-      margin-left: $space-2;
+  > [data-table-destructive] {
+    color: $color-danger;
+
+    @include hover {
+      color: $color-danger;
+      background-color: $color-danger-soft;
+      border-color: $color-danger;
     }
   }
 }

@@ -1,108 +1,150 @@
 @use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
 
 .page {
   display: grid;
-  gap: 1rem;
-}
-.demo {
-  margin: 0;
-  padding: 0.8rem 1rem;
-  color: $color-text-muted;
-  background: $color-background;
-  border: 1px solid $color-border;
-  border-radius: $radius-md;
-}
-.search {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  background: $color-card;
-  border: 1px solid $color-border;
-  border-radius: $radius-md;
-}
-.search input {
-  flex: 1;
   min-width: 0;
-  padding: 0.5rem;
-  border: 1px solid $color-border;
-  border-radius: $radius-sm;
+  gap: $space-3;
+  container: route-monitoring / inline-size;
 }
-.search > span:last-child {
-  color: $color-text-muted;
-  font-size: 0.875rem;
+
+.header {
+  gap: $space-1;
+
+  h1 {
+    color: $color-heading;
+    font-weight: 500;
+  }
 }
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2 $space-3;
+}
+
+.search {
+  flex: 1 1 14rem;
+  max-width: 21rem;
+
+  input {
+    min-height: 2.5rem;
+    background: $color-card;
+  }
+}
+
+.tripCount {
+  padding: $space-1 0.65rem;
+  color: $color-primary;
+  background: $color-primary-soft;
+  border-radius: $radius-pill;
+  font-size: $font-size-xsmall;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .layout {
   display: grid;
-  grid-template-columns: minmax(16rem, 0.8fr) minmax(0, 1.6fr);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr);
+  gap: $space-3;
   align-items: start;
 }
+
 .list {
   display: grid;
   gap: 0.65rem;
-}
-.trip {
-  display: grid;
-  gap: 0.45rem;
-  padding: 1rem;
-  text-align: left;
-  color: $color-text;
-  background: $color-card;
-  border: 1px solid $color-border;
-  border-radius: $radius-md;
-  cursor: pointer;
-}
-.trip span {
-  color: $color-text-muted;
-  font-size: 0.85rem;
-}
-.selected {
-  border-color: $color-primary;
-  box-shadow: 0 0 0 2px rgba(31, 95, 173, 0.12);
-}
-.mapPanel {
-  overflow: hidden;
-  background: $color-card;
-  border: 1px solid $color-border;
-  border-radius: $radius-md;
-}
-.mapPanel > div:first-child {
-  min-height: 24rem;
-}
-.mapDetails {
-  padding: 1rem 1.25rem;
-}
-.mapDetails h2 {
-  margin: 0 0 0.5rem;
-  font-size: 1.1rem;
-}
-.mapDetails p {
-  margin: 0.35rem 0;
-  color: $color-text-muted;
-}
-.mapDetails a {
-  display: inline-block;
-  margin-top: 0.5rem;
-  color: $color-primary;
-  font-weight: 700;
-}
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
   padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  margin: 0;
+  list-style: none;
 }
-@media (max-width: 800px) {
-  .layout {
-    grid-template-columns: 1fr;
+
+.trip {
+  min-width: 0;
+  padding: 0.75rem 0.9rem;
+  background: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+
+  &:has(button[aria-pressed='true']) {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 1px $color-primary;
   }
-  .mapPanel > div:first-child {
-    min-height: 18rem;
+
+  button {
+    display: grid;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0;
+    margin-bottom: 0.4rem;
+    color: $color-text;
+    text-align: left;
+    background: none;
+    border: 0;
+    border-radius: $radius-sm;
+    cursor: pointer;
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+  }
+
+  .detailsLink {
+    min-height: 1.9rem;
+    gap: $space-1;
+    padding: 0.3rem 0.6rem;
+    font-size: $font-size-xsmall;
+  }
+}
+
+.tripHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-1 $space-2;
+  font-size: $font-size-small;
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+.tripBadge {
+  padding-inline: $space-2;
+}
+
+.tripMeta,
+.tripRoute {
+  font-size: $font-size-xsmall;
+  overflow-wrap: anywhere;
+}
+
+.tripMeta {
+  color: $color-text-muted;
+}
+
+.tripRoute {
+  color: $color-primary;
+  font-weight: 500;
+}
+
+.page .map {
+  height: auto;
+  min-height: 16rem;
+  aspect-ratio: 1.23;
+}
+
+@container route-monitoring (width < 44rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .page .map {
+    aspect-ratio: 1.4;
+  }
+
+  .trip .detailsLink {
+    min-height: $touch-target;
   }
 }

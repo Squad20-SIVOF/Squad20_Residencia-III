@@ -1,0 +1,29 @@
+@use '../../styles/tokens' as *;
+@use '../../styles/breakpoints' as *;
+
+
+.root{
+    width: 100%;
+}
+
+.main{
+    width: 100%;
+    min-width: 30%;
+}
+
+.page { width: 100%; min-width: 0; color: $color-text; }
+.content { width: 100%; max-width: 1120px; margin: 0 auto; }
+.backLink { display: inline-flex; min-height: 24px; align-items: center; gap: 5px; color: $color-primary; text-decoration: none; }
+.backLink:hover { text-decoration: underline; }
+.statusLine { display: flex; margin: 16px 0; }
+.status { display: inline-flex; min-height: 24px; align-items: center; padding: 0 10px; border-radius: 20px; color: #21833c; background: #e5f4e8; font-size: 11px; font-weight: 700; }
+.blue { color: #15529e; background: #eaf2fc; }
+.green { color: #267b37; background: #e8f5e9; }
+.red { color: #d52222; background: #ffeded; }
+.yellow { color: #926900; background: #fff5d8; }
+.cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 17px; }
+.vehicle { display: flex; min-height: 34px; align-items: center; gap: 7px; padding: 6px 8px; color: #087653; background: #d9f5eb; font-size: 11px; flex-wrap: wrap; }
+.vehicle strong { font-weight: 700; }
+:global([data-theme='dark']) .status { color: #a5e4b4; background: #183d31; }
+:global([data-theme='dark']) .vehicle { color: #9ae5cb; background: #163b34; }
+@include up(md) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } }

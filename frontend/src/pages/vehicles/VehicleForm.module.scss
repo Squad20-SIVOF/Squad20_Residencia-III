@@ -1,5 +1,4 @@
 @use '../../styles/tokens' as *;
-@use '../../styles/breakpoints' as *;
 
 .page,
 .form {
@@ -11,43 +10,51 @@
 
 .page {
   gap: $space-4;
+  container-type: inline-size;
 }
 
 .header h1 {
+  color: $color-heading;
   font-weight: 500;
-  color: $color-text;
 }
 
-// xs: formulário e prévia empilhados; xl: prévia em coluna à direita.
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: $space-4;
   align-items: start;
 
-  @include up(xl) {
-    grid-template-columns: minmax(0, 36rem) minmax(0, 15.75rem);
+  @container (width >= 47rem) {
+    grid-template-columns: minmax(0, 2.25fr) minmax(14rem, 1fr);
+    grid-template-rows: auto 1fr;
+
+    > aside {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+
+    > .footer {
+      grid-column: 1;
+      grid-row: 2;
+    }
   }
 }
 
 // Prefixado com .form para vencer o estilo base do Card independente da ordem do CSS.
 .form .card {
   gap: 0.75rem;
-  padding: $space-3;
+  padding: clamp(0.875rem, 2cqi, 1.25rem);
   background-color: $color-card;
+  box-shadow: $shadow-subtle;
 
   > h2 {
     font-size: $font-size-body;
     font-weight: 700;
   }
-
-  @include up(md) {
-    padding: $space-3 $space-4 $space-4;
-  }
 }
 
 .hint {
-  font-size: $font-size-xsmall;
+  font-size: $font-size-small;
   color: $color-text-muted;
 }
 
@@ -66,16 +73,17 @@
 
   input,
   select {
-    min-height: $input-height;
+    min-width: 0;
+    min-height: $touch-target;
     background-color: $color-card;
-    border-radius: $radius-lg;
+    border-radius: $radius-md;
   }
 
-  @include up(sm) {
+  @container (width >= 29rem) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  @include up(md) {
+  @media (pointer: fine) {
     input,
     select {
       font-size: $font-size-small;
@@ -84,17 +92,12 @@
 }
 
 .gridThree {
-  @include up(md) {
+  @container (width >= 41rem) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
 
-// Completa a primeira linha de três colunas, como no protótipo.
-.spacer {
-  display: none;
-
-  @include up(md) {
-    display: block;
+    > :nth-child(3) {
+      grid-column: 1;
+    }
   }
 }
 
@@ -109,12 +112,64 @@
   padding-top: $space-2;
 }
 
+.settings {
+  padding-top: $space-2;
+  border-top: 1px solid $color-border;
+
+  summary {
+    width: fit-content;
+    padding-block: $space-1;
+    color: $color-primary;
+    font-size: $font-size-small;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
+
+@supports (interpolate-size: allow-keywords) and selector(::details-content) {
+  .settings::details-content {
+    interpolate-size: allow-keywords;
+    block-size: 0;
+    overflow: clip;
+    content-visibility: hidden;
+    opacity: 0;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition:
+        block-size 240ms ease,
+        opacity 180ms ease,
+        content-visibility 240ms allow-discrete;
+    }
+  }
+
+  .settings[open]::details-content {
+    block-size: auto;
+    content-visibility: visible;
+    opacity: 1;
+  }
+}
+
+.settingsBody {
+  display: grid;
+  gap: $space-2;
+  padding-top: $space-2;
+
+  :focus-visible {
+    outline-offset: -2px;
+  }
+
+  h3 {
+    color: $color-heading;
+    font-size: $font-size-small;
+  }
+}
+
 .checklist {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: $space-2;
 
-  @include up(sm) {
+  @container (width >= 29rem) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -123,26 +178,26 @@
   align-self: flex-start;
 }
 
-// xs: botões em largura total abaixo da dica; sm+: na mesma linha.
 .footer {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding-top: $space-1;
-
-  @include up(sm) {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2;
 }
 
 .actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-  gap: $space-3;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-2;
+  width: 100%;
 
-  @include up(sm) {
-    grid-template-columns: minmax(0, 6.25rem) minmax(0, 11.25rem);
+  @container (width >= 29rem) {
+    width: auto;
+    grid-template-columns: minmax(6rem, auto) minmax(10rem, auto);
+  }
+
+  @container (width < 21rem) {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

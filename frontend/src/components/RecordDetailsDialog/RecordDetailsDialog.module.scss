@@ -1,0 +1,184 @@
+@use '@/styles/tokens' as *;
+
+dialog.detailsDialog {
+  --details-padding: clamp(0.875rem, 3vw, 1.5rem);
+
+  width: min(37rem, calc(100% - #{$space-3}));
+  max-height: calc(100dvh - #{$space-3});
+  padding: 0;
+  overflow: hidden;
+  background-color: $color-card;
+
+  &[open] {
+    display: flex;
+    flex-direction: column;
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: details-enter 220ms ease-out;
+
+      &::backdrop {
+        animation: backdrop-enter 220ms ease-out;
+      }
+    }
+  }
+
+  > header {
+    padding: var(--details-padding);
+    border-bottom: 1px solid $color-border-subtle;
+
+    > p {
+      margin-top: $space-1;
+    }
+  }
+
+  > div {
+    display: grid;
+    gap: $space-3;
+    min-height: 0;
+    padding: $space-3 var(--details-padding);
+    margin: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+@keyframes details-enter {
+  from {
+    transform: translateY(0.5rem) scale(0.985);
+    opacity: 0;
+  }
+}
+
+@keyframes backdrop-enter {
+  from {
+    opacity: 0;
+  }
+}
+
+.detailBadge {
+  gap: $space-1;
+}
+
+.detailVehicle,
+.detailHighlight {
+  padding: $space-2 $space-3;
+  border-radius: $radius-md;
+}
+
+.detailVehicle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2 $space-3;
+  background-color: $color-surface;
+}
+
+.detailPlate {
+  padding: $space-1 $space-2;
+  color: $color-primary;
+  background: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  font-weight: 700;
+}
+
+.detailService {
+  display: grid;
+  gap: $space-2;
+
+  h3 {
+    font-size: $font-size-small;
+    font-weight: 700;
+  }
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-2 $space-3;
+  overflow-wrap: anywhere;
+}
+
+.detailLabel {
+  color: $color-text-muted;
+  font-size: $font-size-xsmall;
+}
+
+.detailValue {
+  font-size: $font-size-small;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.detailHighlight {
+  color: $color-primary;
+  background-color: $color-primary-soft;
+
+  dt {
+    font-size: $font-size-xsmall;
+    font-weight: 600;
+  }
+
+  dd {
+    margin-top: $space-1;
+    line-height: $line-height-heading;
+  }
+
+  .detailLabel {
+    display: block;
+    margin-top: $space-1;
+  }
+}
+
+.detailPrice {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.detailReceipt {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: $space-2;
+  color: $color-text-muted;
+  font-size: $font-size-xsmall;
+
+  dd {
+    min-width: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+}
+
+.detailsFooter,
+.detailsActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2;
+}
+
+.detailsFooter {
+  padding: $space-2 var(--details-padding);
+  background: $color-surface;
+  border-top: 1px solid $color-border-subtle;
+}
+
+.detailsActions {
+  justify-content: flex-end;
+  margin-inline-start: auto;
+}
+
+.detailsFooter .deleteDetails {
+  color: $color-danger;
+  background: $color-danger-soft;
+
+  &:not(:disabled):hover {
+    color: $color-on-primary;
+    background: $color-danger-fill;
+  }
+}
+
+.detailVehicle > div {
+  min-width: 0;
+}

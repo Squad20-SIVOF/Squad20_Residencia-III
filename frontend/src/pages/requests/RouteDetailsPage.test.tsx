@@ -16,7 +16,7 @@ test('mostra o mapa da rota com origem e destino', async () => {
 
   expect(
     await screen.findByRole('region', {
-      name: 'Mapa da rota Central SVO para Posto Sul',
+      name: 'Mapa demonstrativo da rota #101',
     }),
   ).toBeInTheDocument()
 })

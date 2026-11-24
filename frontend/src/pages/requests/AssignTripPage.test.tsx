@@ -135,7 +135,10 @@ test('mostra o resumo da solicitação real e os recursos disponíveis', async (
   renderAt()
 
   expect(
-    screen.getByRole('heading', { level: 1, name: 'Atribuir veículo e motorista' }),
+    await screen.findByRole('heading', {
+      level: 1,
+      name: 'Atribuir veículo e motorista',
+    }),
   ).toBeInTheDocument()
   expect(
     await screen.findByRole('heading', { name: 'Solicitação #11111111 · Operacional' }),
@@ -270,7 +273,7 @@ test('Cancelar e o link de voltar levam aos detalhes da solicitação', async ()
   renderAt()
 
   expect(
-    screen.getByRole('link', { name: /Voltar para os detalhes da solicitação/ }),
+    await screen.findByRole('link', { name: /Voltar para os detalhes da solicitação/ }),
   ).toHaveAttribute('href', DETAILS_PATH)
   expect(screen.getByRole('link', { name: 'Cancelar' })).toHaveAttribute(
     'href',
@@ -296,7 +299,8 @@ test('erro ao carregar oferece "Tentar novamente"', async () => {
   const user = userEvent.setup()
   renderAt()
 
-  const error = await within(vehicleColumn()).findByRole('alert')
+  const column = await screen.findByRole('region', { name: /Veículos disponíveis/ })
+  const error = within(column).getByRole('alert')
   expect(error).toHaveTextContent('Não foi possível carregar os veículos')
   await user.click(within(error).getByRole('button', { name: 'Tentar novamente' }))
 

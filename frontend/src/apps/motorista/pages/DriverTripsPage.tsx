@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/Badge'
 import { Button } from '@/components/Button'
@@ -14,12 +15,11 @@ export function DriverTripsPage() {
   const [page, setPage] = useState(1)
   const load = useCallback(() => fetchDriverTrips(page), [page])
   const result = useAsync(load)
+  if (result.status === 'loading') return <LoadingState label="Carregando viagens" />
+
   return (
     <section className={styles.page}>
       <PageHeader title="Minhas viagens" subtitle="Viagens atribuídas ao seu cadastro" />
-      {result.status === 'loading' && (
-        <StateMessage variant="loading" title="Carregando viagens" />
-      )}
       {result.status === 'error' && (
         <StateMessage
           variant="error"

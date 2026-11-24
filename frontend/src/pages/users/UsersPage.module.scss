@@ -7,6 +7,11 @@
   flex-direction: column;
   gap: $space-4;
   min-width: 0;
+  container-type: inline-size;
+}
+
+.heading h1 {
+  color: $color-heading;
 }
 
 .tabs {
@@ -45,7 +50,6 @@
   background: $color-card;
 }
 .sectionHeader,
-.matrixHeader,
 .permissionFooter {
   display: flex;
   justify-content: space-between;
@@ -55,13 +59,8 @@
 
   h2 {
     margin: 0 0 $space-2;
-    color: $color-navy;
+    color: $color-heading;
     font-size: $font-size-h4;
-  }
-  h3 {
-    margin: 0 0 $space-1;
-    color: $color-navy;
-    font-size: $font-size-body;
   }
   p {
     margin: 0;
@@ -93,14 +92,12 @@
   gap: $space-2;
   min-width: 0;
 }
-.selectField label,
-.adminForms label {
+.selectField label {
   color: $color-text-label;
   font-size: $font-size-small;
   font-weight: 600;
 }
-.selectField select,
-.adminForms select {
+.selectField select {
   width: 100%;
   min-width: 0;
   min-height: $input-height;
@@ -126,19 +123,16 @@
   gap: $space-2;
   min-width: 0;
 }
-.userSummary > div,
-.userList li > div:first-child {
+.userSummary > div {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
-.userSummary strong,
-.userList strong {
+.userSummary strong {
   font-size: $font-size-small;
-  color: $color-navy;
+  color: $color-heading;
 }
-.userSummary div span,
-.userList div > span {
+.userSummary div span {
   color: $color-text-muted;
   font-size: $font-size-small;
   overflow-wrap: anywhere;
@@ -164,46 +158,18 @@
   padding: $space-2;
   font-size: $font-size-xsmall;
 }
-.matrixWrapper {
-  overflow-x: auto;
-  border: 1px solid $color-border;
-  border-radius: $radius-lg;
-}
 .matrix {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: $font-size-small;
-  th,
-  td {
-    padding: $space-3;
-    vertical-align: middle;
-  }
-  thead th {
-    background: $color-table-header;
-    color: $color-primary;
-    font-size: $font-size-xsmall;
-    font-weight: 600;
-  }
-  th:first-child {
-    text-align: left;
-  }
-  thead th:not(:first-child),
-  td {
+  :is(th, td):not(:first-child) {
     width: 22%;
     text-align: center;
-    border-left: 1px solid $color-border-subtle;
   }
-  tbody tr:not(:last-child) {
-    border-bottom: 1px solid $color-border;
-  }
-  tbody tr:hover {
-    background: $color-surface;
-  }
+
   tbody th strong {
     display: block;
-    color: $color-navy;
+    color: $color-heading;
     font-weight: 600;
   }
+
   tbody th span {
     display: block;
     margin-top: $space-1;
@@ -212,6 +178,7 @@
     font-weight: 400;
   }
 }
+
 .matrixCheckbox {
   justify-content: center;
   min-width: $touch-target;
@@ -243,9 +210,6 @@
   border: 1px solid $color-border;
   border-radius: $radius-md;
 }
-.srOnly {
-  @include visually-hidden;
-}
 .empty {
   padding: $space-4;
   margin: 0;
@@ -271,31 +235,171 @@
 }
 .adminForms {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
   gap: $space-4;
+  min-width: 0;
 }
+
 .adminForms form {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: $space-3;
 }
-.adminForms p {
-  color: $color-text-muted;
-  font-size: $font-size-small;
+
+.adminTitle,
+.directoryHeader h2 {
+  color: $color-primary;
+  font-size: $font-size-card-title;
+  font-weight: 700;
 }
-.userList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+
+.managementGrid,
+.createFields,
+.linkFields,
+.driverFields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
 }
-.userList li {
+
+.managementGrid {
+  @container (width >= 47rem) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.adminForms .adminCard,
+.directory {
+  min-width: 0;
+  padding: clamp(0.875rem, 2cqi, 1.25rem);
+  background-color: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-subtle;
+}
+
+.adminCardHeader,
+.directoryIdentity,
+.titleRow {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
   align-items: center;
   gap: $space-2;
-  padding-block: $space-3;
-  border-bottom: 1px solid $color-border-subtle;
+}
+
+.adminCardHeader h3 {
+  color: $color-heading;
+  font-size: $font-size-body;
+  font-weight: 700;
+}
+
+.iconTile {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: $color-primary;
+  background-color: $color-primary-soft;
+  border-radius: $radius-md;
+}
+
+.createFields,
+.linkFields,
+.driverFields {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+
+  label {
+    color: $color-text;
+    font-size: $font-size-small;
+    font-weight: 600;
+  }
+}
+
+.createFields {
+  @container (width >= 32rem) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fullField {
+    grid-column: 1 / -1;
+  }
+}
+
+.driverFields {
+  align-items: end;
+
+  @container (width >= 42rem) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  }
+}
+
+.formFooter,
+.profileActions,
+.directoryHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2 $space-3;
+}
+
+.formFooter {
+  margin-top: auto;
+
+  > p {
+    flex: 1 1 12rem;
+  }
+
+  > button {
+    margin-inline-start: auto;
+  }
+}
+
+.directory {
+  display: grid;
+  gap: $space-3;
+}
+
+.directoryHeader {
+  justify-content: space-between;
+}
+
+.directorySearch {
+  position: relative;
+  flex: 0 1 19rem;
+
+  > svg {
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    transform: translateY(-50%);
+    color: $color-text-muted;
+    pointer-events: none;
+  }
+
+  input {
+    padding-left: 2.25rem;
+    background-color: $color-card;
+  }
+}
+
+.directoryTable > table {
+  min-width: 42rem;
+}
+
+.directoryTable td:last-child button {
+  min-width: max-content;
+}
+
+.directoryIdentity strong {
+  color: $color-heading;
+}
+
+.directoryIdentity .directoryAvatar {
+  width: 2.125rem;
+  height: 2.125rem;
 }
 .badges {
   display: flex;
@@ -308,16 +412,9 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: $space-4;
   }
-  .adminForms {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 575px) {
-  .matrix th,
-  .matrix td {
-    padding: $space-2;
-  }
   .matrix tbody th span {
     max-width: 10rem;
   }
