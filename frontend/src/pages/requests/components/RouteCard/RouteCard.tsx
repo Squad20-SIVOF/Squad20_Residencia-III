@@ -40,7 +40,7 @@ export function RouteCard({
       <RouteMap
         className={styles.map}
         variant="minimal"
-        label="Mapa ilustrativo da rota entre a origem e o destino"
+        label="Mapa da rota entre a origem e o destino"
       />
 
       <div className={styles.card}>

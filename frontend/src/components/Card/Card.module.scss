@@ -23,3 +23,11 @@
   line-height: 1.25;
   color: $color-primary;
 }
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-2;
+}

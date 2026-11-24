@@ -20,7 +20,7 @@ export function VehicleSummaryCard({ vehicle }: VehicleSummaryCardProps) {
     vehicle.maxCapacity ? `${vehicle.maxCapacity} L` : null,
     vehicle.exclusiveSvo ? 'Exclusivo SVO' : null,
   ].filter(Boolean)
-  const rows = [
+  const indicators = [
     { label: 'Quilometragem', value: formatKm(vehicle.mileageKm) },
     { label: 'Frota', value: vehicle.fleet },
     {
@@ -60,16 +60,14 @@ export function VehicleSummaryCard({ vehicle }: VehicleSummaryCardProps) {
           }
         />
       </section>
-      <section className={styles.card} aria-label="Indicadores do veículo">
-        <dl className={styles.list}>
-          {rows.map((row) => (
-            <div key={row.label} className={styles.row}>
-              <dt className={styles.label}>{row.label}</dt>
-              <dd className={styles.value}>{row.value}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <dl className={styles.indicators} aria-label="Indicadores do veículo">
+        {indicators.map(({ label, value }) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 }

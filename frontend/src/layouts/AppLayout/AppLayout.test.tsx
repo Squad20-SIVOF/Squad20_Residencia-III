@@ -56,10 +56,7 @@ test('mostra a marca SIVOF Manager e o rodapé do menu', async () => {
   expect(screen.getByText('SIVOF Manager')).toBeInTheDocument()
   expect(screen.getByText('Gestão de Frota · FSPH')).toBeInTheDocument()
   expect(screen.queryByText('FrotaManager')).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Modo claro' })).toHaveAttribute(
-    'aria-disabled',
-    'true',
-  )
+  expect(screen.getByRole('button', { name: 'Modo escuro' })).toBeEnabled()
   expect(screen.getByText('Notificações')).toBeInTheDocument()
   expect(screen.getByText('Gestor de Frota')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument()
@@ -126,7 +123,7 @@ test('recolhe e expande o menu, guardando a escolha na sessão', async () => {
     'aria-label',
     'Início',
   )
-  expect(screen.getByRole('button', { name: 'Modo claro' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Modo escuro' })).toBeInTheDocument()
   expect(sessionStorage.getItem('sivof:menu-recolhido')).toBe('1')
 
   unmount()

@@ -40,7 +40,7 @@
 
 .textAreaInvalid {
   border-color: $color-error;
-  background-color: rgba($color-error, 0.02);
+  background-color: color-mix(in srgb, $color-error 2%, transparent);
 }
 
 .errorMessage {

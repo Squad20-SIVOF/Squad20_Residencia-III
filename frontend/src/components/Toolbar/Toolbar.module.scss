@@ -1,36 +1,58 @@
 @use '../../styles/tokens' as *;
-@use '../../styles/breakpoints' as *;
 
-// xs: busca em largura total, filtros lado a lado e ação em largura total.
 .toolbar {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: $space-3;
+  min-width: 0;
 
-  > :first-child,
-  > :last-child {
-    grid-column: 1 / -1;
+  > * {
+    flex: 1 1 9rem;
+    min-width: 0;
   }
 
-  @include up(md) {
-    grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  > :has(> input[type='search']) {
+    flex: 2 1 18rem;
+  }
 
-    > :first-child,
-    > :last-child {
-      grid-column: auto;
+  > * > label {
+    color: var(--toolbar-label-color, #{$color-text});
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  > * > :is(input, select) {
+    min-width: 0;
+    height: 2.5rem;
+    min-height: 0;
+    color: $color-text;
+    font-size: $font-size-small;
+  }
+
+  > button {
+    flex: 0 0 auto;
+    min-height: 2.5rem;
+    padding-inline: 1.5rem;
+    font-size: $font-size-xsmall;
+  }
+
+  @media (width < 576px) {
+    > :has(> input[type='search']),
+    > button {
+      flex-basis: 100%;
     }
 
-    > :last-child {
-      justify-self: end;
+    > * > :is(input, select) {
+      font-size: $font-size-body;
     }
   }
 
-  @include up(xl) {
-    grid-template-columns: minmax(0, 22rem) repeat(2, minmax(0, 11rem)) 1fr;
-    gap: $space-3;
-
-    > :last-child {
-      justify-self: end;
+  @media (pointer: coarse) {
+    > button,
+    > * > :is(input, select) {
+      height: $touch-target;
+      min-height: $touch-target;
     }
   }
 }

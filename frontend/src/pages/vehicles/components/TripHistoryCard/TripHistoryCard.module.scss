@@ -1,5 +1,4 @@
 @use '../../../../styles/tokens' as *;
-@use '../../../../styles/breakpoints' as *;
 
 .list {
   display: flex;
@@ -10,9 +9,8 @@
   list-style: none;
 }
 
-// Resumo: viagens lado a lado a partir do sm.
 .listSummary {
-  @include up(sm) {
+  @container vehicle-details (width >= 34rem) {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: $space-4;
@@ -22,12 +20,14 @@
 .item {
   display: flex;
   flex-direction: column;
-  gap: $space-2;
+  gap: $space-1;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .code {
   font-size: $font-size-small;
+  font-weight: 600;
   color: $color-text;
 }
 

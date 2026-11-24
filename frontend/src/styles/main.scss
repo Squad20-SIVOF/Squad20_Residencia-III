@@ -10,6 +10,60 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  color-scheme: light;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition {
+    pointer-events: none;
+  }
+
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 220ms;
+    animation-timing-function: ease-in-out;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23afbed0' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+
+  .leaflet-tile-pane {
+    filter: invert(0.94) hue-rotate(180deg) saturate(0.65) brightness(0.87);
+  }
+
+  .leaflet-container,
+  .leaflet-bar a,
+  .leaflet-control-attribution,
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip {
+    color: $color-text;
+    background-color: $color-card;
+  }
+
+  .leaflet-bar a:hover,
+  .leaflet-bar a.leaflet-disabled {
+    background-color: $color-surface;
+  }
+
+  .leaflet-bar a {
+    border-color: $color-border;
+  }
+
+  .leaflet-control-attribution a,
+  .leaflet-popup-close-button {
+    color: $color-primary;
+  }
+
+  @media print {
+    color-scheme: light;
+  }
+}
+
+:where(:root[data-theme='dark']) a {
+  color: $color-primary;
 }
 
 // Gestor: barra de rolagem invisível; a rolagem segue por mouse, toque e teclado.

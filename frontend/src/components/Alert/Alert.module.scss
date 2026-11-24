@@ -21,25 +21,25 @@
 .info {
   color: $color-primary;
   background-color: $color-primary-soft;
-  border-color: rgba($color-primary, 0.25);
+  border-color: color-mix(in srgb, $color-primary 25%, transparent);
 }
 
 .success {
   color: $color-success;
   background-color: $color-success-soft;
-  border-color: rgba($color-success, 0.25);
+  border-color: color-mix(in srgb, $color-success 25%, transparent);
 }
 
 .warning {
   color: $color-warning-text;
   background-color: $color-warning-soft;
-  border-color: rgba($color-warning, 0.5);
+  border-color: color-mix(in srgb, $color-warning 50%, transparent);
 }
 
 .danger {
   color: $color-danger;
   background-color: $color-danger-soft;
-  border-color: rgba($color-danger, 0.25);
+  border-color: color-mix(in srgb, $color-danger 25%, transparent);
 }
 
 .dismiss {
@@ -56,6 +56,6 @@
   border-radius: $radius-md;
 
   @include hover {
-    background-color: rgba($color-text, 0.08);
+    background-color: color-mix(in srgb, $color-text 8%, transparent);
   }
 }

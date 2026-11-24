@@ -1,8 +1,11 @@
 import { PageHeader } from '@/components/PageHeader'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { TextField } from '@/components/TextField'
 import { SelectField } from '@/components/SelectField'
 import { ButtonLink } from '@/components/ButtonLink'
-import { DataTable, type DataTableColumn } from '@/components/DataTable'
+import { StatGrid } from '@/components/StatCard'
+import { Toolbar } from '@/components/Toolbar'
+import { DataTable, TablePanel, type DataTableColumn } from '@/components/DataTable'
 import { useCallback, useState } from 'react'
 import { currentUser } from '@/service/authService'
 import { useAsync } from '@/hooks/useAsync'
@@ -10,6 +13,7 @@ import { StateMessage } from '@/components/StateMessage'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { FuelDetailsDialog } from './FuelDetailsDialog'
 import { fuelService, monthRange, money, type FuelRecord } from './services/fuelService'
 import styles from './AbastecimentosPage.module.scss'
 
@@ -21,6 +25,7 @@ export default function AbastecimentosPage() {
   const [vehicle, setVehicle] = useState('')
   const [search, setSearch] = useState('')
   const [hoveredVehicleId, setHoveredVehicleId] = useState<string | null>(null)
+  const [selected, setSelected] = useState<FuelRecord | null>(null)
   const [removing, setRemoving] = useState<FuelRecord | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -34,6 +39,9 @@ export default function AbastecimentosPage() {
   }, [month])
 
   const request = useAsync(loader)
+  if (request.status === 'loading')
+    return <LoadingState label="Carregando abastecimentos" />
+
   const all = request.status === 'success' ? request.data.rows : []
   const canManage = request.status === 'success' && request.data.canManage
 
@@ -75,6 +83,7 @@ export default function AbastecimentosPage() {
     setError('')
     try {
       await fuelService.remove(removing.id)
+      setSelected((current) => (current?.id === removing.id ? null : current))
       setRemoving(null)
       request.reload()
     } catch (cause) {
@@ -90,6 +99,7 @@ export default function AbastecimentosPage() {
       key: 'vehicle',
       header: 'Veículo / placa',
       isPrimary: true,
+      minWidth: 10,
       render: (row) => (
         <div
           onMouseEnter={() => setHoveredVehicleId(row.veiculo_id)}
@@ -104,16 +114,19 @@ export default function AbastecimentosPage() {
     {
       key: 'driver',
       header: 'Motorista',
+      minWidth: 9,
       render: (row) => row.motorista_nome ?? 'Motorista removido',
     },
     {
       key: 'date',
       header: 'Data',
+      keepTogether: true,
       render: (row) => new Date(row.data_abastecimento).toLocaleString('pt-BR'),
     },
     {
       key: 'fuel',
       header: 'Combustível / posto',
+      minWidth: 10,
       render: (row) => (
         <span>
           {row.combustivel ?? 'Não registrado'}
@@ -124,17 +137,25 @@ export default function AbastecimentosPage() {
     {
       key: 'liters',
       header: 'Litros',
+      keepTogether: true,
       render: (row) => `${Number(row.litros).toLocaleString('pt-BR')} L`,
     },
     {
       key: 'price',
       header: 'Preço / L',
+      keepTogether: true,
       render: (row) => (row.preco_litro == null ? '—' : money(row.preco_litro)),
     },
-    { key: 'total', header: 'Total', render: (row) => money(row.valor_total) },
+    {
+      key: 'total',
+      header: 'Total',
+      keepTogether: true,
+      render: (row) => money(row.valor_total),
+    },
     {
       key: 'mileage',
       header: 'Hodômetro',
+      keepTogether: true,
       render: (row) => `${row.km_momento_abastecimento.toLocaleString('pt-BR')} km`,
     },
   ]
@@ -153,11 +174,9 @@ export default function AbastecimentosPage() {
         )}
       </div>
 
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && !selected && <Alert variant="danger">{error}</Alert>}
 
-      {request.status === 'loading' ? (
-        <StateMessage variant="loading" title="Carregando abastecimentos" />
-      ) : request.status === 'error' ? (
+      {request.status === 'error' ? (
         <StateMessage
           variant="error"
           title="Não foi possível carregar os abastecimentos"
@@ -166,29 +185,29 @@ export default function AbastecimentosPage() {
         />
       ) : (
         <>
-          <section className={styles.statsGrid} aria-label="Resumo dos abastecimentos">
-            <div className={`${styles.statCard} ${styles.borderGreen}`}>
-              <p className={styles.statLabel}>Gasto no período</p>
-              <h2 className={styles.statValue}>{money(total)}</h2>
-              <span className={`${styles.badge} ${styles.bgGreen}`}>
-                {rows.length} registros nos filtros selecionados
-              </span>
-            </div>
-            <div className={`${styles.statCard} ${styles.borderYellow}`}>
-              <p className={styles.statLabel}>Volume abastecido</p>
-              <h2 className={styles.statValue}>
-                {volume.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} L
-              </h2>
-              <span className={`${styles.badge} ${styles.bgYellow}`}>
-                Média de {(volume / (rows.length || 1)).toFixed(2)} L / reg
-              </span>
-            </div>
-            <div className={`${styles.statCard} ${styles.borderRed}`}>
-              <p className={styles.statLabel}>Preço médio por litro</p>
-              <h2 className={styles.statValue}>{volume ? money(total / volume) : '—'}</h2>
-              <span className={`${styles.badge} ${styles.bgRed}`}>Média calculada</span>
-            </div>
-          </section>
+          <StatGrid
+            label="Resumo dos abastecimentos"
+            cards={[
+              {
+                label: 'Gasto no período',
+                value: money(total),
+                hint: `${rows.length} registros nos filtros selecionados`,
+                variant: 'success',
+              },
+              {
+                label: 'Volume abastecido',
+                value: `${volume.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} L`,
+                hint: `Média de ${(volume / (rows.length || 1)).toFixed(2)} L / reg`,
+                variant: 'warning',
+              },
+              {
+                label: 'Preço médio por litro',
+                value: volume ? money(total / volume) : '—',
+                hint: 'Média calculada',
+                variant: 'danger',
+              },
+            ]}
+          />
 
           {/* CARD DO TETO - SEMPRE VISÍVEL, COM TRANSIÇÃO SUAVE */}
           <div className={styles.tetoCard}>
@@ -278,7 +297,7 @@ export default function AbastecimentosPage() {
             )}
           </div>
 
-          <div className={styles.filterGrid}>
+          <Toolbar label="Filtrar abastecimentos">
             <TextField
               id="filtroBusca"
               label="Buscar motorista ou posto"
@@ -310,57 +329,74 @@ export default function AbastecimentosPage() {
                 }
               }}
             />
-            <Button variant="primary" onClick={() => {}} className={styles.filterBtn}>
+            <Button variant="primary" onClick={() => {}}>
               Filtrar
             </Button>
-          </div>
+          </Toolbar>
 
-          <section className={styles.list} aria-label="Abastecimentos">
-            <div className={styles.tableHeader}>
-              <h2 className={styles.sectionTitle}>Histórico de abastecimentos</h2>
-              <span className={styles.tableCount}>{rows.length} registros</span>
-            </div>
+          <TablePanel title="Histórico de abastecimentos" recordCount={rows.length}>
             {!rows.length ? (
               <StateMessage
                 title="Nenhum abastecimento encontrado."
                 description="Selecione outro período ou registre um abastecimento."
               />
             ) : (
-              <div className={styles.tableWrapper}>
-                <DataTable
-                  caption="Histórico de abastecimentos"
-                  rows={rows}
-                  columns={columns}
-                  getRowKey={(row) => row.id}
-                  renderActions={
-                    canManage
-                      ? (row) => (
-                          <div className={styles.actions}>
-                            <ButtonLink
-                              variant="secondary"
-                              className={styles.btnOutlineBlue}
-                              to={`/abastecimentos/editar/${row.id}`}
-                            >
-                              Editar
-                            </ButtonLink>
-                            <Button
-                              variant="secondary"
-                              className={styles.btnOutlineRed}
-                              onClick={() => setRemoving(row)}
-                            >
-                              Excluir
-                            </Button>
-                          </div>
-                        )
-                      : undefined
-                  }
-                />
-              </div>
+              <DataTable
+                caption="Histórico de abastecimentos"
+                rows={rows}
+                columns={columns}
+                getRowKey={(row) => row.id}
+                renderActions={(row) => (
+                  <>
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setError('')
+                        setSelected(row)
+                      }}
+                    >
+                      Detalhes
+                    </Button>
+                    {canManage && (
+                      <>
+                        <ButtonLink
+                          variant="secondary"
+                          to={`/abastecimentos/editar/${row.id}`}
+                        >
+                          Editar
+                        </ButtonLink>
+                        <Button
+                          variant="secondary"
+                          data-table-destructive
+                          onClick={() => setRemoving(row)}
+                        >
+                          Excluir
+                        </Button>
+                      </>
+                    )}
+                  </>
+                )}
+              />
             )}
-          </section>
+          </TablePanel>
         </>
       )}
 
+      {selected && !removing && (
+        <FuelDetailsDialog
+          record={selected}
+          canManage={canManage}
+          error={error}
+          onClose={() => {
+            setSelected(null)
+            setError('')
+          }}
+          onDelete={() => {
+            setError('')
+            setRemoving(selected)
+          }}
+        />
+      )}
       <ConfirmDialog
         isOpen={!!removing}
         title="Excluir abastecimento?"

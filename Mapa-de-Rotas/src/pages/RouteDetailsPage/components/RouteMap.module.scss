@@ -1,0 +1,51 @@
+@use '../../../styles/tokens' as *;
+@use '../../../styles/breakpoints' as *;
+
+.root{
+  width: 100%;
+}
+
+.main{
+  width: 100%;
+}
+
+.mapSection { width: 100%; min-width: 0; }
+.map {
+  position: relative;
+  width: 100%;
+  height: clamp(280px, 42vw, 440px);
+  overflow: hidden;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+.leafletMap { width: 100%; height: 100%; z-index: 0; }
+.mapLabel {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  margin-top: 8px;
+  padding: 7px 12px;
+  border-radius: 20px;
+  color: #fff;
+  background: #4b83c8;
+  font-size: 11px;
+  font-weight: 700;
+}
+.summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  color: $color-muted;
+  background: $color-surface;
+  font-size: 12px;
+}
+.summary span { display: flex; flex-direction: column; gap: 3px; min-width: 0; color: $color-text; }
+.summary small { color: $color-muted; font-size: 10px; }
+.summary strong { display: flex; align-items: center; gap: 6px; color: #1765c0; font-size: 12px; }
+@include up(sm) {
+  .summary { grid-template-columns: 1fr 1fr auto; align-items: center; }
+}

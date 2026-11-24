@@ -97,7 +97,7 @@ function TrackingContent({ tracking, now }: TrackingContentProps) {
       <RouteMap
         className={styles.map}
         progress={tracking.progress}
-        label="Mapa ilustrativo com a posição do veículo e o ponto de embarque"
+        label="Mapa com a posição do veículo e o ponto de embarque"
       >
         <span className={styles.mapBadge}>
           <RequestIcon name="navigation" className={styles.mapBadgeIcon} />

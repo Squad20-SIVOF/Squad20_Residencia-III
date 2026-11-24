@@ -1,5 +1,4 @@
 @use '../../../../styles/tokens' as *;
-@use '../../../../styles/breakpoints' as *;
 
 .column {
   display: flex;
@@ -8,20 +7,44 @@
   min-width: 0;
 }
 
+.card,
+.indicators {
+  padding: clamp(0.875rem, 2cqi, 1.25rem);
+  background-color: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-subtle;
+}
+
 .card {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: $space-2 $space-3;
-  padding: $space-3;
-  background-color: $color-card;
-  border: 1px solid $color-border;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-card;
+  flex: 1;
+}
 
-  &:first-child {
-    flex: 1;
+.indicators {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $space-2 $space-3;
+  overflow-wrap: anywhere;
+
+  dt {
+    margin-bottom: $space-1;
+    color: $color-text-muted;
+    font-size: $font-size-xsmall;
+  }
+
+  dd {
+    color: $color-text;
+    font-size: $font-size-small;
+    font-weight: 600;
+  }
+
+  @container vehicle-details (width < 22rem) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -42,6 +65,7 @@
 .meta {
   font-size: $font-size-xsmall;
   color: $color-text-muted;
+  overflow-wrap: anywhere;
 }
 
 .badge {
@@ -52,33 +76,4 @@
 .badgeIcon {
   width: 0.875rem;
   height: 0.875rem;
-}
-
-// xs: indicadores empilhados; sm+: três colunas.
-.list {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: $space-3;
-  width: 100%;
-
-  @include up(sm) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-.row {
-  display: flex;
-  flex-direction: column;
-  gap: $space-2;
-}
-
-.label {
-  font-size: $font-size-xsmall;
-  color: $color-text-muted;
-}
-
-.value {
-  font-size: $font-size-small;
-  font-weight: 500;
-  color: $color-text;
 }

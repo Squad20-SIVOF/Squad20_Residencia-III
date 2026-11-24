@@ -1,7 +1,6 @@
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(
-  /\/$/,
-  '',
-)
+const API_URL = (
+  import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'http://localhost:3000')
+).replace(/\/$/, '')
 const TOKEN_KEY = 'frotamanager:session'
 
 export const getSessionToken = () => sessionStorage.getItem(TOKEN_KEY)

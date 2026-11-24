@@ -1,42 +1,35 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import { classNames } from '@/utils/classNames'
 import {
-  ROUTE_POINTS,
+  ARACAJU_CENTER,
+  DEMO_ROUTE,
   getPointAlongRoute,
-  toPolylinePoints,
+  type GeoPoint,
 } from '../../utils/routeGeometry'
+import './leafletIcons'
 import styles from './RouteMap.module.scss'
 
-// Ruas e quadras passam bem além do viewBox: com "meet" o trajeto aparece inteiro
-// e centralizado, e o resto do espaço (mapa alto ou largo) continua preenchido.
-const STREETS = [
-  'M-1000 268 L1400 -132',
-  'M-1000 870 L180 150 L1400 530',
-  'M-80 -1000 L460 1800',
-  'M420 -1000 L180 1800',
-  'M-1000 420 L1400 380',
-  'M-1000 -120 L1400 -60',
-]
+const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+const OSM_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+const INITIAL_ZOOM = 13
+const MAX_ZOOM = 19
+/** Folga, em px, entre a rota e a borda do mapa ao enquadrar o trajeto. */
+const FIT_PADDING_PX = 32
 
-const BLOCKS = [
-  { x: 20, y: 20, width: 70, height: 50 },
-  { x: 230, y: 20, width: 60, height: 35 },
-  { x: 320, y: 120, width: 70, height: 50 },
-  { x: 20, y: 160, width: 50, height: 40 },
-  { x: 290, y: 240, width: 90, height: 45 },
-  { x: 140, y: 240, width: 60, height: 40 },
-  { x: 40, y: -200, width: 90, height: 60 },
-  { x: 260, y: -180, width: 70, height: 50 },
-  { x: 60, y: 440, width: 80, height: 55 },
-  { x: 280, y: 460, width: 90, height: 50 },
-  { x: -180, y: 60, width: 90, height: 60 },
-  { x: 480, y: 160, width: 80, height: 50 },
-]
+const CAR_SVG =
+  '<svg viewBox="-8 -8 16 16" aria-hidden="true" focusable="false">' +
+  '<path d="M-6 2 L-6 -1 L-4 -5 L4 -5 L6 -1 L6 2 Z" fill="currentColor"/>' +
+  '<circle cx="-3.5" cy="3" r="1.5" fill="currentColor"/>' +
+  '<circle cx="3.5" cy="3" r="1.5" fill="currentColor"/></svg>'
 
-/** `minimal`: só ruas finas e a rota em contorno azul, como no Figma da solicitação. */
+/** `minimal`: rota em contorno azul e pontas discretas, como no Figma da solicitação. */
 export type RouteMapVariant = 'detailed' | 'minimal'
 
 export interface RouteMapProps {
+  points?: GeoPoint[]
   /** Texto alternativo do mapa. */
   label: string
   variant?: RouteMapVariant
@@ -47,108 +40,128 @@ export interface RouteMapProps {
   className?: string
 }
 
-/** Mapa ilustrativo em SVG; a altura é definida pelo pai via `className`. */
+function toLatLng({ lat, lng }: GeoPoint): L.LatLngTuple {
+  return [lat, lng]
+}
+
+/**
+ * Marcador desenhado só com CSS (cores dos tokens). A âncora tem tamanho zero no
+ * ponto exato e o conteúdo se centraliza nela, então o tamanho fica todo no SCSS.
+ */
+function cssIcon(html: string): L.DivIcon {
+  return L.divIcon({ className: styles.markerAnchor, iconSize: [0, 0], html })
+}
+
+function addMarker(map: L.Map, point: GeoPoint, html: string): L.Marker {
+  // O texto alternativo do mapa já descreve a rota; os marcadores são decorativos.
+  return L.marker(toLatLng(point), {
+    icon: cssIcon(html),
+    interactive: false,
+    keyboard: false,
+  }).addTo(map)
+}
+
+/** Mapa real (Leaflet + OpenStreetMap); a altura é definida pelo pai via `className`. */
 export function RouteMap({
+  points = DEMO_ROUTE,
   label,
   variant = 'detailed',
   progress,
   children,
   className,
 }: RouteMapProps) {
+  const mapElement = useRef<HTMLElement>(null)
+  const vehicleMarker = useRef<L.Marker | null>(null)
   const isTracking = progress !== undefined
   const isMinimal = variant === 'minimal'
-  const routePoints = toPolylinePoints(ROUTE_POINTS)
-  const start = ROUTE_POINTS[0] ?? { x: 0, y: 0 }
-  const end = ROUTE_POINTS[ROUTE_POINTS.length - 1] ?? start
-  const car = getPointAlongRoute(ROUTE_POINTS, progress ?? 0)
+
+  useEffect(() => {
+    const element = mapElement.current
+    if (!element) return
+
+    const map = L.map(element, {
+      center: toLatLng(ARACAJU_CENTER),
+      zoom: INITIAL_ZOOM,
+      zoomControl: false,
+      // Roda do mouse e arrasto de um dedo ficam com a página: o mapa não prende o
+      // scroll. No celular ele se move com pinça (dois dedos) e pelos botões de zoom.
+      scrollWheelZoom: false,
+      dragging: !L.Browser.mobile,
+    })
+    L.control
+      .zoom({
+        position: 'bottomright',
+        zoomInTitle: 'Aproximar',
+        zoomOutTitle: 'Afastar',
+      })
+      .addTo(map)
+    L.tileLayer(OSM_TILE_URL, { maxZoom: MAX_ZOOM, attribution: OSM_ATTRIBUTION }).addTo(
+      map,
+    )
+
+    const latLngs = points.map(toLatLng)
+    const lineOptions = { interactive: false }
+    const route = isMinimal
+      ? L.polyline(latLngs, { ...lineOptions, className: styles.routeOutline })
+      : L.polyline(latLngs, {
+          ...lineOptions,
+          className: isTracking ? styles.routeTracking : styles.route,
+        })
+    route.addTo(map)
+    if (isMinimal) {
+      // Contorno: traço azul largo com o miolo na cor do fundo por cima.
+      L.polyline(latLngs, { ...lineOptions, className: styles.routeOutlineInner }).addTo(
+        map,
+      )
+    }
+
+    const origin = points[0] ?? ARACAJU_CENTER
+    const destination = points[points.length - 1] ?? origin
+    if (isMinimal) {
+      addMarker(map, origin, `<span class="${styles.endOutline}"></span>`)
+      addMarker(map, destination, `<span class="${styles.endOutline}"></span>`)
+    } else {
+      addMarker(map, origin, `<span class="${styles.originMarker}"></span>`)
+      addMarker(
+        map,
+        destination,
+        isTracking
+          ? `<span class="${styles.pin}"><span class="${styles.pinCenter}"></span></span>`
+          : `<span class="${styles.destinationMarker}"></span>`,
+      )
+    }
+    vehicleMarker.current = isTracking
+      ? addMarker(map, origin, `<span class="${styles.vehicle}">${CAR_SVG}</span>`)
+      : null
+
+    map.fitBounds(route.getBounds(), { padding: [FIT_PADDING_PX, FIT_PADDING_PX] })
+
+    // O mapa precisa remedir os blocos quando o container muda de tamanho (giro do
+    // celular, menu lateral abrindo, janela redimensionada).
+    const handleResize = () => map.invalidateSize()
+    const observer =
+      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(handleResize)
+    if (observer) observer.observe(element)
+    else window.addEventListener('resize', handleResize)
+
+    return () => {
+      if (observer) observer.disconnect()
+      else window.removeEventListener('resize', handleResize)
+      vehicleMarker.current = null
+      map.remove()
+    }
+  }, [isMinimal, isTracking, points])
+
+  // Roda depois do efeito acima (mesma ordem de declaração), então o marcador do
+  // veículo já existe; mover o veículo não recria o mapa.
+  useEffect(() => {
+    if (progress === undefined) return
+    vehicleMarker.current?.setLatLng(toLatLng(getPointAlongRoute(points, progress)))
+  }, [progress, points])
 
   return (
-    <div className={classNames(styles.map, className)}>
-      <svg
-        className={styles.svg}
-        viewBox="0 0 400 300"
-        preserveAspectRatio="xMidYMid meet"
-        aria-hidden="true"
-        focusable="false"
-      >
-        {!isMinimal &&
-          BLOCKS.map((block) => (
-            <rect
-              key={`${block.x}-${block.y}`}
-              className={styles.block}
-              rx="6"
-              {...block}
-            />
-          ))}
-        {STREETS.map((street) => (
-          <path
-            key={street}
-            className={isMinimal ? styles.streetThin : styles.street}
-            d={street}
-          />
-        ))}
-        {isMinimal ? (
-          // Contorno: traço azul largo com o miolo na cor do fundo por cima.
-          <>
-            <polyline className={styles.routeOutline} points={routePoints} />
-            <polyline className={styles.routeOutlineInner} points={routePoints} />
-          </>
-        ) : (
-          <polyline
-            className={isTracking ? styles.routeTracking : styles.route}
-            points={routePoints}
-          />
-        )}
-
-        {isMinimal ? (
-          <>
-            <ellipse
-              className={styles.endOutline}
-              cx={start.x}
-              cy={start.y}
-              rx="14"
-              ry="10"
-            />
-            <ellipse
-              className={styles.endOutline}
-              cx={end.x}
-              cy={end.y}
-              rx="14"
-              ry="10"
-            />
-          </>
-        ) : isTracking ? (
-          <>
-            <g transform={`translate(${end.x} ${end.y})`}>
-              <circle className={styles.pinHalo} r="18" />
-              <circle className={styles.pin} r="11" />
-              <circle className={styles.pinCenter} r="4" />
-            </g>
-            <g className={styles.car} transform={`translate(${car.x} ${car.y})`}>
-              <circle className={styles.carHalo} r="20" />
-              <circle className={styles.carBody} r="13" />
-              <path
-                className={styles.carGlyph}
-                d="M-6 2 L-6 -1 L-4 -5 L4 -5 L6 -1 L6 2 Z"
-              />
-              <circle className={styles.carWheel} cx="-3.5" cy="3" r="1.5" />
-              <circle className={styles.carWheel} cx="3.5" cy="3" r="1.5" />
-            </g>
-          </>
-        ) : (
-          <>
-            <circle className={styles.originMarker} cx={start.x} cy={start.y} r="7" />
-            <rect
-              className={styles.destinationMarker}
-              x={end.x - 7}
-              y={end.y - 7}
-              width="14"
-              height="14"
-            />
-          </>
-        )}
-      </svg>
-      <p className={styles.label}>{label}</p>
+    <div className={classNames(styles.map, isMinimal && styles.minimal, className)}>
+      <section ref={mapElement} className={styles.canvas} aria-label={label} />
       {children}
     </div>
   )

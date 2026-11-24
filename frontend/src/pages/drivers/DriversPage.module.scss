@@ -1,3 +1,4 @@
+@use '@/styles/dark';
 @use '../../styles/tokens' as *;
 @use '../../styles/breakpoints' as *;
 
@@ -16,7 +17,6 @@
 }
 
 .btnPrimary {
-  background-color: #2563eb;
   color: white;
   padding: 0.6rem 1.2rem;
   border-radius: 6px;
@@ -25,38 +25,10 @@
   white-space: nowrap;
 
   &:hover {
-    background-color: #1d4ed8;
+    background-color: light-dark(#1d4ed8, dark.$primary-fill);
   }
 }
 
 .alertText {
   font-weight: 500;
-}
-
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: $space-3;
-  background: #ffffff;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  padding: 1rem;
-}
-
-.tableHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 0.5rem;
-}
-
-.tableTitle {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #1e40af;
-}
-
-.tableCount {
-  font-size: 0.85rem;
-  color: #64748b;
 }

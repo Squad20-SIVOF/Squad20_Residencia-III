@@ -176,6 +176,50 @@ test('não exibe edição de permissões sem autorização', async () => {
   expect(api).not.toHaveBeenCalled()
 })
 
+test('pagina, pesquisa e abre os vínculos do usuário escolhido na tabela', async () => {
+  const events = userEvent.setup()
+  vi.mocked(currentUser).mockResolvedValue({
+    id: 'admin',
+    nome: 'Administrador',
+    email: 'admin@example.invalid',
+    permissoes: ['usuarios:gerenciar', 'usuarios:gerenciar-perfis', 'perfis:ler'],
+  })
+  const previous = vi.mocked(api).getMockImplementation()
+  vi.mocked(api).mockImplementation(async (path, options) => {
+    if (path === '/usuarios')
+      return [
+        ...Array.from({ length: 6 }, (_, index) => ({
+          id: `u${index}`,
+          nome: `Pessoa ${index}`,
+          email: `p${index}@example.invalid`,
+        })),
+        {
+          id: 'target',
+          nome: 'João Lima',
+          email: 'joao@example.invalid',
+          motorista_id: 'm1',
+        },
+      ] as never
+    if (path === '/usuarios/motoristas-opcoes')
+      return [{ id: 'm1', nome: 'João Lima' }] as never
+    return (await previous?.(path, options)) as never
+  })
+
+  render(<UsersPage />)
+  await events.click(await screen.findByRole('button', { name: 'Próxima' }))
+  expect(screen.getByRole('rowheader', { name: 'João Lima' })).toBeInTheDocument()
+  const search = screen.getByRole('searchbox', { name: 'Pesquisar por nome ou e-mail' })
+  await events.type(search, 'joao')
+  expect(screen.getByText('Página 1 de 1')).toBeInTheDocument()
+  await events.click(
+    screen.getByRole('button', { name: 'Gerenciar vínculos de João Lima' }),
+  )
+  expect(screen.getByRole('combobox', { name: /^Usuário$/ })).toHaveValue('target')
+  expect(screen.getByRole('combobox', { name: 'Cadastro de motorista' })).toHaveValue(
+    'm1',
+  )
+})
+
 test('outro cargo exibe perfil e protege acessos herdados', async () => {
   render(<UsersPage />)
   await userEvent.selectOptions(

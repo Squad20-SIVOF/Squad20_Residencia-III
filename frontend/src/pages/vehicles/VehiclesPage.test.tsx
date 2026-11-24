@@ -61,7 +61,8 @@ test('mostra os cards da frota, a tabela paginada e filtra só ao clicar em Filt
   renderPage()
 
   const stats = await screen.findByRole('list', { name: 'Resumo da frota' })
-  expect(within(stats).getByText('5 / 7')).toBeInTheDocument()
+  const active = within(stats).getByText('Veículos ativos').closest('article')
+  expect(active).toHaveTextContent('5 / 7')
   expect(within(stats).getByText('Ativos / Total Cadastrados')).toBeInTheDocument()
   expect(within(stats).getByText('Exigem atenção')).toBeInTheDocument()
   expect(within(stats).getByText('Fora de serviço')).toBeInTheDocument()

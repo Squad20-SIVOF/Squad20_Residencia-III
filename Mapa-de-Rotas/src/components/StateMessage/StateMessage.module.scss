@@ -1,0 +1,2 @@
+@use '../../styles/tokens' as *;
+.message { display:grid; justify-items:start; gap:.5rem; padding:1.2rem; border:1px solid $color-border; border-radius:$radius-lg; background:$color-surface; color:$color-text; font-size:.85rem; p { margin:0; color:$color-muted; } button { min-height:$touch-target; padding:0 .9rem; color:white; background:$color-primary; border:0; border-radius:$radius-md; } }

@@ -1,0 +1,119 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.subtitle {
+  margin-top: -$space-2;
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2;
+  min-height: $touch-target;
+  padding: $space-2 $space-3;
+  background-color: $color-background;
+  border-radius: $radius-md;
+
+  dt {
+    font-size: $font-size-xsmall;
+    color: $color-text-muted;
+  }
+
+  dd {
+    margin: 0;
+    font-size: $font-size-small;
+    font-weight: 700;
+    text-align: right;
+  }
+}
+
+.success {
+  color: $color-success;
+}
+
+.warning {
+  color: $color-warning-text;
+}
+
+.info {
+  color: $color-primary;
+}
+
+.danger {
+  color: $color-danger;
+}
+
+.next {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.nextTitle {
+  font-size: $font-size-xsmall;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.empty {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  min-height: $touch-target;
+  padding: $space-2 $space-3;
+  font-size: $font-size-xsmall;
+  line-height: $line-height-small;
+  color: $color-text;
+  text-decoration: none;
+  background-color: $color-background;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-md;
+
+  @include hover {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+}
+
+.dot {
+  flex-shrink: 0;
+  width: $status-dot-size;
+  height: $status-dot-size;
+  border-radius: $radius-full;
+}
+
+.dotDanger {
+  background-color: $color-danger;
+}
+
+.dotWarning {
+  background-color: $color-warning;
+}
+
+.dotInfo {
+  background-color: $color-primary;
+}
