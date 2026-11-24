@@ -74,6 +74,7 @@ export function AssignTripPage() {
   const [driverId, setDriverId] = useState<string | null>(null)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [returnAt, setReturnAt] = useState('')
 
   const allVehicles = vehicles.status === 'success' ? vehicles.data : []
   const allDrivers = drivers.status === 'success' ? drivers.data : []
@@ -108,6 +109,7 @@ export function AssignTripPage() {
         requestId: id,
         vehicleId: selectedVehicle.id,
         driverId: selectedDriver.id,
+        ...(returnAt ? { returnAt: new Date(returnAt).toISOString() } : {}),
       })
       setSaveStatus('saved')
     } catch (cause) {
@@ -143,6 +145,15 @@ export function AssignTripPage() {
         />
       )}
       {request.status === 'success' && <AssignmentSummary request={request.data} />}
+      <label>
+        Retorno previsto (preencha se não informado na solicitação)
+        <input
+          type="datetime-local"
+          value={returnAt}
+          onChange={(event) => setReturnAt(event.target.value)}
+          disabled={saveStatus !== 'idle'}
+        />
+      </label>
 
       <div className={styles.columns}>
         <ResourceColumn
@@ -204,8 +215,7 @@ export function AssignTripPage() {
             </Link>
           }
         >
-          Atribuição registrada (demonstrativo): {vehicleLabel} com {selectedDriver?.name}
-          . O sistema ainda não salva atribuições, então nada foi gravado.
+          Viagem agendada: {vehicleLabel} com {selectedDriver?.name}.
         </Alert>
       )}
 

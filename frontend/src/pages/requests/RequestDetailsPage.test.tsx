@@ -132,6 +132,33 @@ test('sem permissão de gerenciar viagens o botão de atribuir não aparece', as
     screen.queryByRole('link', { name: 'Atribuir veículo e motorista' }),
   ).not.toBeInTheDocument()
 })
+test('recusa exige motivo e só mostra o status confirmado pela API', async () => {
+  vi.mocked(currentUser).mockResolvedValue({
+    id: 'gestor',
+    nome: 'Gestor',
+    email: 'gestor@example.com',
+    permissoes: ['viagens:gerenciar'],
+  })
+  vi.mocked(api).mockImplementation(async (path) => {
+    if (path === `/solicitacoes/${id}/recusar`) {
+      status = 'Recusada'
+      return {} as never
+    }
+    return { message: record() } as never
+  })
+  mount()
+  await userEvent.click(
+    await screen.findByRole('button', { name: 'Recusar solicitação' }),
+  )
+  expect(screen.getByRole('button', { name: 'Confirmar recusa' })).toBeDisabled()
+  await userEvent.type(screen.getByLabelText('Motivo da recusa'), 'Sem disponibilidade')
+  await userEvent.click(screen.getByRole('button', { name: 'Confirmar recusa' }))
+  expect(await screen.findByText('Recusada')).toBeInTheDocument()
+  expect(api).toHaveBeenCalledWith(`/solicitacoes/${id}/recusar`, {
+    method: 'PATCH',
+    body: JSON.stringify({ motivo: 'Sem disponibilidade' }),
+  })
+})
 vi.mock('@/service/authService', () => ({
   currentUser: vi.fn<typeof currentUser>(),
 }))

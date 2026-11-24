@@ -47,7 +47,7 @@ export function RequestFormPage() {
         title="Solicitar Veículo"
         breadcrumb={
           <>
-            <p>Envio demonstrativo: este formulário ainda não registra solicitações.</p>
+            <p>A solicitação será enviada para aprovação do gestor.</p>
             <nav className={styles.breadcrumbLinks} aria-label="Navegação de viagens">
               <Link to="/viagens" className={styles.backLink}>
                 <span aria-hidden="true">←</span> Voltar para o Painel de Viagens
@@ -58,7 +58,7 @@ export function RequestFormPage() {
             </nav>
           </>
         }
-        subtitle="Preencha os dados abaixo para reservar um veículo oficial do setor SVO."
+        subtitle="Preencha os dados abaixo para solicitar uma viagem institucional."
       />
 
       <RouteCard

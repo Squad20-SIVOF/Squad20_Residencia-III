@@ -1,4 +1,5 @@
 import { registerDriverTripCases } from "./driverTrip.integration-cases";
+import { registerRequestWorkflowCases } from "./requestWorkflow.integration-cases";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import type { Pool } from "pg";
@@ -644,6 +645,12 @@ describeDatabase("viagens com PostgreSQL real e migrations", () => {
     user: driverUser,
     other: otherUser,
     trip: tripId,
+    vehicle: vehicleId,
+  });
+  registerRequestWorkflowCases({
+    pool: () => pool,
+    manager,
+    driver: driverId,
     vehicle: vehicleId,
   });
 });

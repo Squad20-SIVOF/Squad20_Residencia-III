@@ -27,18 +27,14 @@ test('renderiza o formulário de solicitação no item Viagens', async () => {
     screen.getByRole('heading', { level: 1, name: 'Solicitar Veículo' }),
   ).toBeInTheDocument()
   expect(
-    screen.getByText(
-      'Preencha os dados abaixo para reservar um veículo oficial do setor SVO.',
-    ),
+    screen.getByText('Preencha os dados abaixo para solicitar uma viagem institucional.'),
   ).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: 'Rota da Solicitação' })).toBeInTheDocument()
   expect(
     screen.getByRole('region', { name: 'Mapa da rota entre a origem e o destino' }),
   ).toBeInTheDocument()
   expect(
-    screen.getByText(
-      'Envio demonstrativo: este formulário ainda não registra solicitações.',
-    ),
+    screen.getByText('A solicitação será enviada para aprovação do gestor.'),
   ).toBeInTheDocument()
   expect(screen.getByLabelText('Origem')).toHaveValue('Central SVO')
   expect(screen.getByLabelText('Setor solicitante')).toHaveValue('Administrativo')
@@ -186,7 +182,7 @@ vi.mock('./services/requestService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./services/requestService')>()
   return {
     ...actual,
-    createRequest: vi.fn<typeof actual.createRequest>(actual.createRequest),
+    createRequest: vi.fn<typeof actual.createRequest>().mockResolvedValue({} as never),
   }
 })
 

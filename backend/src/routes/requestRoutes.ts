@@ -1,6 +1,9 @@
 import { Router } from "express";
 import controller from "../controller/requestController";
 const router = Router();
+router.post("/", controller.create);
+router.patch("/:id/aprovar", controller.approve);
+router.patch("/:id/recusar", controller.reject);
 router.get("/", controller.list);
 router.get("/:id", controller.get);
 router.put("/:id", controller.update);

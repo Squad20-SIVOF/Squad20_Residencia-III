@@ -11,6 +11,11 @@ export interface RequestRecord {
   criado_em: string
   status: string
   motivo_cancelamento?: string | null
+  origem?: string | null
+  destino?: string | null
+  setor?: string | null
+  data_retorno_prevista?: string | null
+  motivo_recusa?: string | null
 }
 export interface RequestDetails extends RequestRecord {
   pode_editar: boolean
@@ -49,6 +54,12 @@ export async function updateRequest(id: string, input: RequestUpdate): Promise<v
 }
 export async function cancelRequest(id: string, reason: string): Promise<void> {
   await api(`${requestPath(id)}/cancelar`, {
+    method: 'PATCH',
+    body: JSON.stringify({ motivo: reason.trim() }),
+  })
+}
+export async function rejectRequest(id: string, reason: string): Promise<void> {
+  await api(`${requestPath(id)}/recusar`, {
     method: 'PATCH',
     body: JSON.stringify({ motivo: reason.trim() }),
   })

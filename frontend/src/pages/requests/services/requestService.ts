@@ -1,4 +1,5 @@
 import { REQUEST_SECTORS, TRIP_STAGES } from '../types'
+import { api } from '@/service/api'
 import type {
   RequestBody,
   RequestInput,
@@ -13,11 +14,8 @@ import type {
 import { getEtaMinutes, getRemainingKm, getTripStage } from '../utils/requestRules'
 
 /*
- * Os endpoints de criação e acompanhamento ainda não existem: as funções devolvem dados demonstrativos
- * com a assinatura planejada. As telas identificam a simulação. A leitura e as
- * ações existentes usam requestApi.ts. Para integrar os endpoints futuros, use
- * api<RequestResponse>('/solicitacoes', { method: 'POST', body }) e
- * api<RequestTrackingResponse>(`/solicitacoes/${id}/acompanhamento`).
+ * A criação persiste pela API. Somente o acompanhamento de trajeto abaixo
+ * permanece demonstrativo, identificado como tal na respectiva tela.
  */
 
 const MOCK_DELAY_MS = 400
@@ -53,8 +51,8 @@ function toRequestBody(input: RequestInput): RequestBody {
     origem: input.origin,
     destino: input.destination,
     setor: input.sector,
-    data_necessidade: input.departureAt,
-    data_retorno_prevista: input.returnAt,
+    data_necessidade: new Date(input.departureAt).toISOString(),
+    data_retorno_prevista: input.returnAt ? new Date(input.returnAt).toISOString() : null,
     numero_passageiros: input.passengers,
     veiculo_preferencial_id: input.vehicleId,
     motivo: input.reason,
@@ -188,8 +186,11 @@ function buildMockTracking(mock: MockRequest, now: number): RequestTrackingRespo
 
 /** POST /solicitacoes */
 export async function createRequest(input: RequestInput): Promise<VehicleRequest> {
-  const mock = registerMockRequest(toRequestBody(input), Date.now())
-  return toVehicleRequest(await respondWith(mock.response))
+  const result = await api<{ message: RequestResponse }>('/solicitacoes', {
+    method: 'POST',
+    body: JSON.stringify(toRequestBody(input)),
+  })
+  return toVehicleRequest(result.message)
 }
 
 /** GET /solicitacoes/:id/acompanhamento */

@@ -13,6 +13,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useCanAssignTrip } from './hooks/useCanAssignTrip'
 import {
   cancelRequest,
+  rejectRequest,
   getRequestDetails,
   updateRequest,
   type RequestDetails,
@@ -30,12 +31,15 @@ function localDateTime(value: string) {
 function RequestActions({
   request,
   reload,
+  canDecide,
 }: {
   request: RequestDetails
   reload: () => void
+  canDecide: boolean
 }) {
   const [editing, setEditing] = useState(false)
   const [cancelling, setCancelling] = useState(false)
+  const [rejecting, setRejecting] = useState(false)
   const [reason, setReason] = useState('')
   const [category, setCategory] = useState(request.categoria)
   const [neededAt, setNeededAt] = useState(localDateTime(request.data_necessidade))
@@ -49,7 +53,8 @@ function RequestActions({
     setSaving(true)
     setError('')
     try {
-      if (cancelling) await cancelRequest(request.id, reason)
+      if (rejecting) await rejectRequest(request.id, reason)
+      else if (cancelling) await cancelRequest(request.id, reason)
       else
         await updateRequest(request.id, {
           categoria: category.trim(),
@@ -77,6 +82,7 @@ function RequestActions({
             onClick={() => {
               setEditing(true)
               setCancelling(false)
+              setRejecting(false)
               setError('')
             }}
           >
@@ -90,6 +96,7 @@ function RequestActions({
             onClick={() => {
               setCancelling(true)
               setEditing(false)
+              setRejecting(false)
               setError('')
             }}
           >
@@ -97,16 +104,31 @@ function RequestActions({
           </Button>
         )}
       </div>
-      {(editing || cancelling) && (
+      {canDecide && request.status === 'Pendente' && (
+        <Button
+          variant="danger"
+          disabled={saving}
+          onClick={() => {
+            setRejecting(true)
+            setCancelling(false)
+            setEditing(false)
+            setError('')
+          }}
+        >
+          Recusar solicitação
+        </Button>
+      )}
+      {(editing || cancelling || rejecting) && (
         <form className={styles.editForm} onSubmit={submit}>
-          {cancelling ? (
+          {cancelling || rejecting ? (
             <>
               <p>
-                Confirme o cancelamento informando o motivo. Viagens agendadas ou em
-                deslocamento também serão canceladas.
+                {rejecting
+                  ? 'Informe o motivo da recusa.'
+                  : 'Confirme o cancelamento informando o motivo. Viagens agendadas ou em deslocamento também serão canceladas.'}
               </p>
               <TextAreaField
-                label="Motivo do cancelamento"
+                label={rejecting ? 'Motivo da recusa' : 'Motivo do cancelamento'}
                 value={reason}
                 onChange={setReason}
                 required
@@ -144,11 +166,17 @@ function RequestActions({
           <div className={styles.actions}>
             <Button
               type="submit"
-              variant={cancelling ? 'danger' : 'primary'}
+              variant={cancelling || rejecting ? 'danger' : 'primary'}
               isLoading={saving}
-              disabled={cancelling ? !reason.trim() : !category.trim() || !neededAt}
+              disabled={
+                cancelling || rejecting ? !reason.trim() : !category.trim() || !neededAt
+              }
             >
-              {cancelling ? 'Confirmar cancelamento' : 'Salvar alterações'}
+              {rejecting
+                ? 'Confirmar recusa'
+                : cancelling
+                  ? 'Confirmar cancelamento'
+                  : 'Salvar alterações'}
             </Button>
             <Button
               variant="secondary"
@@ -156,6 +184,7 @@ function RequestActions({
               onClick={() => {
                 setEditing(false)
                 setCancelling(false)
+                setRejecting(false)
               }}
             >
               Voltar sem salvar
@@ -163,10 +192,6 @@ function RequestActions({
           </div>
         </form>
       )}
-      <StateMessage
-        title="Aprovação e recusa ainda indisponíveis"
-        description="Essas ações ainda não estão disponíveis. Nenhuma alteração é simulada."
-      />
     </Card>
   )
 }
@@ -203,7 +228,7 @@ export function RequestDetailsPage() {
               <p>Solicitada em {dateTime(result.data.criado_em)}</p>
             </div>
             <Badge variant="info">{result.data.status}</Badge>
-            {canAssign && (
+            {canAssign && result.data.status === 'Pendente' && (
               <ButtonLink to={`/viagens/solicitacoes/${encodeURIComponent(id)}/atribuir`}>
                 Atribuir veículo e motorista
               </ButtonLink>
@@ -218,6 +243,30 @@ export function RequestDetailsPage() {
                 <dd>{result.data.categoria}</dd>
                 <dt>Necessidade</dt>
                 <dd>{dateTime(result.data.data_necessidade)}</dd>
+                {result.data.data_retorno_prevista && (
+                  <>
+                    <dt>Retorno previsto</dt>
+                    <dd>{dateTime(result.data.data_retorno_prevista)}</dd>
+                  </>
+                )}
+                {result.data.origem && (
+                  <>
+                    <dt>Origem</dt>
+                    <dd>{result.data.origem}</dd>
+                  </>
+                )}
+                {result.data.destino && (
+                  <>
+                    <dt>Destino</dt>
+                    <dd>{result.data.destino}</dd>
+                  </>
+                )}
+                {result.data.motivo_recusa && (
+                  <>
+                    <dt>Recusa</dt>
+                    <dd>{result.data.motivo_recusa}</dd>
+                  </>
+                )}
                 <dt>Urgência</dt>
                 <dd>{result.data.flag_urgencia ? 'Urgente' : 'Normal'}</dd>
                 {result.data.motivo_cancelamento && (
@@ -235,7 +284,9 @@ export function RequestDetailsPage() {
                 <dt>Setor</dt>
                 <dd>{result.data.setor_nome || 'Não informado'}</dd>
               </dl>
-              <p>Rota, carga e contato não foram informados nesta solicitação.</p>
+              {!result.data.origem && !result.data.destino && (
+                <p>Trajeto não informado nesta solicitação.</p>
+              )}
             </Card>
             <Card title="Histórico de status" className={styles.card}>
               {result.data.historico.length ? (
@@ -259,6 +310,7 @@ export function RequestDetailsPage() {
               key={result.data.id}
               request={result.data}
               reload={result.reload}
+              canDecide={canAssign}
             />
           </div>
         </>

@@ -15,6 +15,7 @@ type RequestRow = {
   id: string;
   solicitante_id: string | null;
   status: string;
+  data_retorno_prevista?: Date | null;
 };
 const isManager = async (
   userId: string,
@@ -96,7 +97,7 @@ const lock = async (
   scope: RequestScope,
 ): Promise<RequestRow> => {
   const { rows } = await client.query<RequestRow>(
-    "SELECT id, solicitante_id, status FROM solicitacoes WHERE id = $1 AND ($2::boolean OR solicitante_id = $3) FOR UPDATE",
+    "SELECT id, solicitante_id, status, data_retorno_prevista FROM solicitacoes WHERE id = $1 AND ($2::boolean OR solicitante_id = $3) FOR UPDATE",
     [id, scope.manager, scope.userId],
   );
   if (!rows[0]) throw new RequestError(404, "Solicitação não encontrada");
@@ -111,6 +112,15 @@ const update = (id: string, input: RequestInput, scope: RequestScope) =>
       throw new RequestError(
         409,
         "Somente solicitações pendentes podem ser editadas",
+      );
+    if (
+      request.data_retorno_prevista &&
+      new Date(input.data_necessidade) >=
+        new Date(request.data_retorno_prevista)
+    )
+      throw new RequestError(
+        400,
+        "A saída deve ser anterior ao retorno previsto",
       );
     const { rows } = await client.query(
       `UPDATE solicitacoes SET categoria = $2, flag_urgencia = $3,

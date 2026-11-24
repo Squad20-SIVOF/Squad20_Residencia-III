@@ -136,6 +136,7 @@ export interface TripAssignment {
   requestId: string
   vehicleId: string
   driverId: string
+  returnAt?: string
 }
 
 // ---------- Painel de Viagens ----------

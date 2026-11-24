@@ -229,7 +229,7 @@ test('filtra veículos por modelo ou placa e motoristas por nome ou CNH', async 
   expect(screen.queryByRole('radio', { name: 'Rafael Costa' })).not.toBeInTheDocument()
 })
 
-test('confirma, avisa que é demonstrativo e volta para os detalhes', async () => {
+test('confirma o agendamento e volta para os detalhes', async () => {
   vi.useFakeTimers({ shouldAdvanceTime: true })
   const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
   renderAt()
@@ -238,7 +238,7 @@ test('confirma, avisa que é demonstrativo e volta para os detalhes', async () =
   await user.click(await screen.findByRole('radio', { name: 'João da Silva' }))
   await user.click(confirmButton())
 
-  const message = await screen.findByText(/Atribuição registrada \(demonstrativo\)/)
+  const message = await screen.findByText(/Viagem agendada:/)
   expect(message.closest('[role="status"]')).not.toBeNull()
   expect(message).toHaveTextContent('Fiat Ducato · QRS3T45 com João da Silva')
   expect(saveAssignment).toHaveBeenCalledWith({
