@@ -1,0 +1,110 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.subtitle {
+  margin-top: -$space-2;
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $space-2 $space-1;
+  margin: 0;
+  padding: $space-3;
+  list-style: none;
+  background-color: $color-background;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-md;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+    min-width: 0;
+  }
+}
+
+.countLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+  hyphens: auto;
+}
+
+.countValue {
+  font-size: $font-size-h4;
+  font-weight: 700;
+  line-height: $line-height-tight;
+}
+
+.countShare {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: $status-dot-size;
+  height: $status-dot-size;
+  border-radius: $radius-full;
+}
+
+.meters {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: $meter-label-width minmax(0, 1fr) $meter-value-width;
+    align-items: center;
+    gap: $space-2;
+  }
+}
+
+.meterLabel {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.track {
+  display: block;
+  width: 100%;
+  height: $meter-height;
+  background-color: $color-border-subtle;
+  border-radius: $radius-pill;
+  overflow: hidden;
+}
+
+.meterValue {
+  font-size: $font-size-small;
+  font-weight: 700;
+  text-align: right;
+}
+
+// Cores por situação: usadas no ponto (background) e na barra (fill).
+.available {
+  background-color: $color-success;
+  fill: $color-success;
+}
+
+.maintenance {
+  background-color: $color-warning;
+  fill: $color-warning;
+}
+
+.refueling {
+  background-color: $color-primary;
+  fill: $color-primary;
+}
+
+.srOnly {
+  @include visually-hidden;
+}

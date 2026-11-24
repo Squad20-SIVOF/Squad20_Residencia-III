@@ -105,3 +105,15 @@
   background-color: #ffe5e5;
   color: #c62d2d;
 }
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2;
+}
+
+.detail {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}

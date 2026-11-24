@@ -65,3 +65,21 @@ export function formatTime(isoDateTime: string): string {
   const date = new Date(isoDateTime)
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
+
+const longDateFormatter = new Intl.DateTimeFormat('pt-BR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
+
+/** Data de hoje → "22 de novembro de 2026" */
+export function formatLongDate(date: Date): string {
+  return longDateFormatter.format(date)
+}
+
+/** 14.714 → "14,7" (no máximo `fractionDigits` casas) */
+export function formatDecimal(value: number, fractionDigits = 1): string {
+  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: fractionDigits }).format(
+    value,
+  )
+}

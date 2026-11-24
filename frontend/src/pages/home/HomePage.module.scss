@@ -7,12 +7,24 @@
   gap: $space-4;
 }
 
-.stats {
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+
+  @include up(lg) {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.kpis {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: $space-3;
 
-  @include up(md) {
+  @include up(sm) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -21,12 +33,49 @@
   }
 }
 
-.shortcuts {
+// Celular: uma coluna, na ordem do código. Desktop: duas colunas como no Figma.
+.panels {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: $space-2;
+  gap: $space-3;
 
-  @include up(sm) {
-    grid-template-columns: repeat(2, max-content);
+  @include up(lg) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    align-items: start;
   }
+}
+
+.utilization {
+  @include up(lg) {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: stretch;
+  }
+}
+
+.availability {
+  @include up(lg) {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: stretch;
+  }
+}
+
+.alerts {
+  @include up(lg) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+
+.details {
+  @include up(lg) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+.note {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
 }
