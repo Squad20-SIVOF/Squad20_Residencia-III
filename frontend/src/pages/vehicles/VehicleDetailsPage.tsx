@@ -1,12 +1,10 @@
-import { BackLink } from '@/components/BackLink/BackLink'
-import { LoadingState } from '@/components/LoadingState/LoadingState'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import type { Vehicle } from './types'
 import { useEffect, useRef, useState } from 'react'
 import { ButtonLink } from '@/components/ButtonLink'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { Button } from '@/components/Button'
 import { StateMessage } from '@/components/StateMessage'
-import { useAsync } from '@/hooks/useAsync'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { currentUser } from '@/service/authService'
 import { FuelCapCard } from './components/FuelCapCard'
@@ -42,28 +40,34 @@ export function VehicleDetailsPage({
 }: VehicleDetailsPageProps) {
   useDocumentTitle('Detalhes do veículo')
   const [historyOpen, setHistoryOpen] = useState(false)
-  const session = useAsync(currentUser)
-  const permissions = session.status === 'success' ? session.data.permissoes : []
+  const [permissions, setPermissions] = useState<string[]>([])
   // Mês de referência do teto: fixado na abertura da tela.
   const [now] = useState(() => new Date())
   const detailsRequest = useVehicleDetails(vehicleId)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const details = detailsRequest.status === 'success' ? detailsRequest.data : null
 
-  const isLoading = detailsRequest.status === 'loading' || session.status === 'loading'
-
   // Ao abrir a tela, o foco vai para o título (navegação sem rotas).
   useEffect(() => {
-    if (isLoading) return
     window.scrollTo({ top: 0 })
     headingRef.current?.focus()
-  }, [isLoading])
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    currentUser()
+      .then((user) => {
+        if (active) setPermissions(user.permissoes)
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [])
 
   function handleEdit() {
     if (details) onEdit?.(details.vehicle)
   }
-
-  if (isLoading) return <LoadingState label="Carregando detalhes do veículo..." />
 
   const canReadFuel = details?.availability?.fuel !== false
   const fuelings = details?.fuelings ?? []
@@ -73,9 +77,12 @@ export function VehicleDetailsPage({
 
   return (
     <div className={styles.page}>
-      <BackLink to="/veiculos" onClick={onBack}>
-        Voltar para Veículos
-      </BackLink>
+      <Breadcrumb
+        items={[
+          { label: 'Veículos', to: '/veiculos', onClick: onBack },
+          { label: 'Detalhes' },
+        ]}
+      />
       <header className={styles.header}>
         <div className={styles.heading}>
           <h1 ref={headingRef} tabIndex={-1} className={styles.title}>
@@ -89,13 +96,11 @@ export function VehicleDetailsPage({
         </div>
         {details && (
           <div className={styles.headerActions}>
-            {permissions.includes('veiculos:gerenciar') && (
-              <VehicleQrPrintButton
-                id={vehicleId}
-                plate={details.vehicle.plate}
-                model={details.vehicle.model}
-              />
-            )}
+            <VehicleQrPrintButton
+              id={vehicleId}
+              plate={details.vehicle.plate}
+              model={details.vehicle.model}
+            />
             {canManage && onEdit && (
               <Button variant="secondary" onClick={handleEdit}>
                 Editar veículo
@@ -104,6 +109,10 @@ export function VehicleDetailsPage({
           </div>
         )}
       </header>
+
+      {detailsRequest.status === 'loading' && (
+        <StateMessage variant="loading" title="Carregando detalhes do veículo..." />
+      )}
 
       {detailsRequest.status === 'error' && (
         <StateMessage

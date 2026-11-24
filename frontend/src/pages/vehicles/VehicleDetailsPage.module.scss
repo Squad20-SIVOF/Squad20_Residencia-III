@@ -1,19 +1,19 @@
 @use '../../styles/tokens' as *;
+@use '../../styles/breakpoints' as *;
 
 .page {
   display: flex;
   flex-direction: column;
   gap: $space-3;
-  min-width: 0;
-  container: vehicle-details / inline-size;
 }
 
+// xs: título e ações empilhados; md+: ações à direita.
 .header {
   display: flex;
   flex-direction: column;
   gap: $space-3;
 
-  @container vehicle-details (width >= 38rem) {
+  @include up(md) {
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
@@ -28,10 +28,10 @@
 }
 
 .title {
-  font-weight: 500;
+  font-size: $font-size-h3;
+  font-weight: 700;
   line-height: $line-height-heading;
-  color: $color-heading;
-  overflow-wrap: anywhere;
+  color: $color-text;
 
   &:focus {
     outline: none;
@@ -39,9 +39,8 @@
 }
 
 .subtitle {
-  font-size: $font-size-small;
+  font-size: $font-size-xsmall;
   color: $color-text-muted;
-  overflow-wrap: anywhere;
 }
 
 .headerActions {
@@ -57,7 +56,8 @@
     width: 100%;
   }
 
-  @container vehicle-details (width >= 46rem) {
+  @include up(md) {
+    flex-wrap: nowrap;
     justify-content: flex-end;
 
     > * {
@@ -70,24 +70,30 @@
   }
 }
 
+// Seções em uma coluna; cada linha decide quantas colunas usa.
 .grid {
   display: flex;
   flex-direction: column;
   gap: $space-3;
 
-  @container vehicle-details (width >= 38rem) {
+  @include up(md) {
     gap: $space-4;
   }
 }
 
+// Cartão escuro + resumo: lado a lado a partir do md.
 .top {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: $space-3;
 
-  @container vehicle-details (width >= 38rem) {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 5fr);
+  @include up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: $space-4;
+  }
+
+  @include up(xl) {
+    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
   }
 }
 
@@ -97,7 +103,7 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
   gap: $space-3;
 
-  @container vehicle-details (width >= 38rem) {
+  @include up(md) {
     gap: $space-4;
   }
 }
@@ -106,10 +112,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: $space-3;
-  align-items: start;
 
-  @container vehicle-details (width >= 46rem) {
-    grid-template-columns: minmax(0, 2.25fr) minmax(13rem, 1fr);
+  @include up(lg) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 13.5rem);
     gap: $space-4;
   }
 }
@@ -118,7 +123,6 @@
 // Prefixado com .grid para vencer o estilo base do Card independente da ordem do CSS.
 .grid .panel {
   background-color: $color-card;
-  box-shadow: $shadow-subtle;
 
   > h2 {
     font-size: $font-size-body;

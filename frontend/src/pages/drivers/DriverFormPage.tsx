@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { LoadingState } from '@/components/LoadingState/LoadingState'
-import { BackLink } from '@/components/BackLink/BackLink'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { ButtonLink } from '@/components/ButtonLink'
 import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
@@ -20,9 +19,6 @@ export function DriverFormPage() {
   const title = isEditing ? 'Editar Motorista' : 'Cadastro de Motorista'
   useDocumentTitle(title)
 
-  if (driverRequest.status === 'loading')
-    return <LoadingState label="Carregando motorista..." />
-
   async function handleSubmit(input: DriverInput) {
     if (id) await updateDriver(id, input)
     else await createDriver(input)
@@ -36,7 +32,11 @@ export function DriverFormPage() {
     })
   }
 
-  const renderContent = () => {
+  function renderContent() {
+    if (driverRequest.status === 'loading') {
+      return <StateMessage variant="loading" title="Carregando motorista..." />
+    }
+
     if (driverRequest.status === 'error') {
       return (
         <StateMessage
@@ -64,14 +64,20 @@ export function DriverFormPage() {
   return (
     <div className={styles.page}>
       <PageHeader
-        className={styles.header}
         title={title}
         subtitle={
           isEditing
             ? 'Atualize os dados do motorista'
             : 'Preencha os dados do novo motorista'
         }
-        breadcrumb={<BackLink to="/motoristas">Voltar para Motoristas</BackLink>}
+        breadcrumb={
+          <Breadcrumb
+            items={[
+              { label: 'Motoristas', to: '/motoristas' },
+              { label: isEditing ? 'Editar cadastro' : 'Novo cadastro' },
+            ]}
+          />
+        }
       />
       {renderContent()}
     </div>

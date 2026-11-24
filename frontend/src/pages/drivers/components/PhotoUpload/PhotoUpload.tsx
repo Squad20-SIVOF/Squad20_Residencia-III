@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import { Upload, UserRound } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { Button } from '@/components/Button'
 import styles from './PhotoUpload.module.scss'
@@ -37,19 +36,7 @@ export function PhotoUpload({ name, photo, onChange }: PhotoUploadProps) {
 
   return (
     <div className={styles.wrapper}>
-      {photo ? (
-        <Avatar
-          name={name || 'Motorista'}
-          src={photo}
-          size="lg"
-          className={styles.preview}
-        />
-      ) : (
-        <div className={styles.placeholder}>
-          <UserRound size={30} aria-hidden="true" />
-          <span>Foto</span>
-        </div>
-      )}
+      <Avatar name={name || 'Motorista'} src={photo} size="lg" />
       <input
         ref={inputRef}
         type="file"
@@ -58,12 +45,7 @@ export function PhotoUpload({ name, photo, onChange }: PhotoUploadProps) {
         aria-label="Arquivo da foto"
         onChange={(event) => handleFile(event.target.files?.[0])}
       />
-      <Button
-        variant="secondary"
-        className={styles.upload}
-        iconStart={<Upload size={14} />}
-        onClick={() => inputRef.current?.click()}
-      >
+      <Button variant="secondary" onClick={() => inputRef.current?.click()}>
         Enviar foto
       </Button>
       <p className={styles.hint}>JPG ou PNG · até 5 MB</p>

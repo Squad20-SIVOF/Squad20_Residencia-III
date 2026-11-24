@@ -1,5 +1,0 @@
-@use '../styles/tokens' as *;
-@use '../styles/breakpoints' as *;
-.appLayout { min-height:100dvh; display:flex; flex-direction:column; background:$color-background; }
-.main { flex:1; min-width:0; padding:0 1rem 2rem; }
-@include up(md) { .appLayout { flex-direction:row; }.main { padding:2rem 1.75rem; } }

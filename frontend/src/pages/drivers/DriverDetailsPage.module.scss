@@ -1,186 +1,65 @@
 @use '../../styles/tokens' as *;
-
-.page,
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: $space-3;
-  min-width: 0;
-}
+@use '../../styles/breakpoints' as *;
 
 .page {
-  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  max-width: 50rem;
 }
 
-.header {
+.summary {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
   gap: $space-3;
-
-  h1 {
-    color: $color-heading;
-  }
-}
-
-@container (width < 34rem) {
-  .edit {
-    width: 100%;
-  }
-}
-
-.summaryGrid,
-.list {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: $space-3;
-}
-
-@container (width >= 34rem) {
-  .summaryGrid,
-  .twoColumns {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .threeColumns {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-.content .card {
-  gap: $space-2;
-  padding: clamp(0.875rem, 2cqi, 1.25rem);
-  background: $color-card;
-  box-shadow: $shadow-subtle;
 }
 
 .identity {
   display: flex;
-  align-items: center;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
   gap: $space-2;
-}
-
-.cardHeading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: $space-1 $space-2;
-
-  h2 {
-    color: $color-primary;
-    font-size: $font-size-body;
-    font-weight: 700;
-  }
-
-  .name {
-    color: $color-heading;
-    font-size: $font-size-small;
-  }
+  min-width: 0;
 }
 
 .name {
-  color: $color-heading;
-  font-size: $font-size-body;
-  font-weight: 700;
-  overflow-wrap: anywhere;
-}
-
-.muted,
-.list dt {
-  color: $color-text-muted;
-  font-size: $font-size-xsmall;
-  overflow-wrap: anywhere;
-}
-
-.wildcardBadge {
-  align-self: flex-start;
-  gap: $space-1;
-}
-
-.section {
-  display: grid;
-  gap: $space-3;
-  padding-block: $space-1;
-}
-
-.section + .section {
-  padding-top: $space-3;
-  border-top: 1px solid $color-border;
-}
-
-.list dd {
-  margin-top: $space-1;
-  color: $color-text;
-  font-size: $font-size-small;
+  font-size: $font-size-h4;
   font-weight: 600;
-  overflow-wrap: anywhere;
 }
 
-.list .wildcardLabel {
-  color: $color-primary;
-  font-weight: 700;
+.edit {
+  width: 100%;
+
+  @include up(sm) {
+    width: auto;
+  }
 }
 
-.list dd.muted {
-  color: $color-text-muted;
-  font-weight: 400;
-}
-
-.vehicles {
+.list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
+
+  @include up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
   gap: $space-1;
-}
-
-.vehicleRow {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: $space-1 $space-2;
   min-width: 0;
-  padding: $space-2 $space-3;
-  background: $color-surface;
-  border-radius: $radius-md;
-  color: $color-text;
-  font-size: $font-size-small;
-  overflow-wrap: anywhere;
-
-  @container (width >= 34rem) {
-    grid-template-columns: 6rem minmax(0, 1fr) 8rem 7rem;
-    column-gap: $space-3;
-  }
 }
 
-.vehiclePlate {
-  color: $color-primary;
-}
-
-.vehicleFleet,
-.vehicleFallback {
+.label {
+  font-size: $font-size-xsmall;
+  font-weight: 600;
   color: $color-text-muted;
 }
 
-.vehicleFleet,
-.vehicleStatus {
-  font-size: $font-size-xsmall;
-
-  @container (width >= 34rem) {
-    text-align: right;
-  }
-}
-
-.vehicleRow .vehicleStatus {
-  padding: 0;
-  background-color: transparent;
-  font-weight: 700;
-  white-space: normal;
-
-  @container (width >= 34rem) {
-    justify-self: end;
-  }
-}
-
-.vehicleFallback {
-  grid-column: 2 / -1;
+.value {
+  overflow-wrap: anywhere;
 }

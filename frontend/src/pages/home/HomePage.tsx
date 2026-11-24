@@ -1,8 +1,7 @@
 import { Button } from '@/components/Button'
-import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { ButtonLink } from '@/components/ButtonLink'
 import { PageHeader } from '@/components/PageHeader'
-import { StatGrid } from '@/components/StatCard'
+import { StatCard } from '@/components/StatCard'
 import { StateMessage } from '@/components/StateMessage'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useDrivers } from '@/pages/drivers/hooks/useDrivers'
@@ -15,10 +14,11 @@ export function HomePage() {
   const vehiclesRequest = useVehicles()
   const driversRequest = useDrivers()
 
-  if (vehiclesRequest.status === 'loading' || driversRequest.status === 'loading')
-    return <LoadingState label="Carregando resumo da frota..." />
+  function renderSummary() {
+    if (vehiclesRequest.status === 'loading' || driversRequest.status === 'loading') {
+      return <StateMessage variant="loading" title="Carregando resumo da frota..." />
+    }
 
-  const renderSummary = () => {
     if (vehiclesRequest.status === 'error' || driversRequest.status === 'error') {
       return (
         <StateMessage
@@ -50,61 +50,56 @@ export function HomePage() {
     ).length
 
     return (
-      <StatGrid
-        label="Resumo da frota"
-        columns={4}
-        cards={[
-          {
-            variant: 'info',
-            label: 'Veículos na frota',
-            value: vehicles.length,
-            hint: `${availableVehicles} disponíveis`,
-          },
-          {
-            variant: 'success',
-            label: 'Motoristas ativos',
-            value: drivers.active,
-            total: drivers.total,
-            hint: 'Ativos / Total Cadastrados',
-          },
-          {
-            variant: 'warning',
-            label: 'CNHs próximas do vencimento',
-            value: drivers.expiring,
-            hint: 'Exigem atenção em 30 dias',
-          },
-          {
-            variant: 'danger',
-            label: 'Bloqueios operacionais',
-            value: drivers.blocked,
-            hint: `${drivers.expired} CNH vencida${drivers.expired === 1 ? '' : 's'}`,
-          },
-          {
-            variant: 'info',
-            label: 'Veículos SVO',
-            value: vehicles.filter((vehicle) => vehicle.fleet === 'SVO').length,
-            hint: `${exclusiveSvo} exclusivos SVO`,
-          },
-          {
-            variant: 'info',
-            label: 'Motoristas SVO',
-            value: driversRequest.data.filter((driver) => driver.fleet === 'SVO').length,
-            hint: `${driversRequest.data.filter((driver) => driver.isWildcard).length} motoristas coringas (todas as frotas)`,
-          },
-          {
-            variant: 'success',
-            label: 'Motoristas com veículos vinculados',
-            value: linkedDrivers,
-            hint: 'Vínculos registrados no cadastro',
-          },
-          {
-            variant: 'warning',
-            label: 'Veículos sem frota definida',
-            value: vehicles.filter((vehicle) => vehicle.fleet === 'Não informada').length,
-            hint: 'Revise os cadastros existentes',
-          },
-        ]}
-      />
+      <section className={styles.stats} aria-label="Resumo da frota">
+        <StatCard
+          variant="info"
+          label="Veículos na frota"
+          value={vehicles.length}
+          hint={`${availableVehicles} disponíveis`}
+        />
+        <StatCard
+          variant="success"
+          label="Motoristas ativos"
+          value={drivers.active}
+          hint={`de ${drivers.total} cadastrados`}
+        />
+        <StatCard
+          variant="warning"
+          label="CNHs próximas do vencimento"
+          value={drivers.expiring}
+          hint="em até 30 dias"
+        />
+        <StatCard
+          variant="danger"
+          label="Bloqueios operacionais"
+          value={drivers.blocked}
+          hint={`${drivers.expired} CNH vencida${drivers.expired === 1 ? '' : 's'}`}
+        />
+        <StatCard
+          variant="info"
+          label="Veículos SVO"
+          value={vehicles.filter((vehicle) => vehicle.fleet === 'SVO').length}
+          hint={`${exclusiveSvo} exclusivos SVO`}
+        />
+        <StatCard
+          variant="info"
+          label="Motoristas SVO"
+          value={driversRequest.data.filter((driver) => driver.fleet === 'SVO').length}
+          hint={`${driversRequest.data.filter((driver) => driver.isWildcard).length} motoristas coringas (todas as frotas)`}
+        />
+        <StatCard
+          variant="success"
+          label="Motoristas com veículos vinculados"
+          value={linkedDrivers}
+          hint="Vínculos registrados no cadastro"
+        />
+        <StatCard
+          variant="warning"
+          label="Veículos sem frota definida"
+          value={vehicles.filter((vehicle) => vehicle.fleet === 'Não informada').length}
+          hint="Revise os cadastros existentes"
+        />
+      </section>
     )
   }
 

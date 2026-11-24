@@ -1,13 +1,5 @@
-import { useId, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
-import { Check, ChevronDown, FilePlus2 } from 'lucide-react'
-import { Alert } from '@/components/Alert'
-import { BackLink } from '@/components/BackLink/BackLink'
-import { Badge } from '@/components/Badge'
-import { Button } from '@/components/Button'
-import { ButtonLink } from '@/components/ButtonLink'
-import { PageHeader } from '@/components/PageHeader'
-import { useDocumentTitle } from '@/hooks/useDocumentTitle'
-import { classNames } from '@/utils/classNames'
+import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styles from './AtendimentoSVOPage.module.scss'
 
 type Field = {
@@ -62,44 +54,8 @@ const groups: { title: string; fields: Field[] }[] = [
   },
 ]
 
-function AtendimentoSection({
-  title,
-  expanded,
-  onToggle,
-  children,
-}: {
-  title: string
-  expanded: boolean
-  onToggle: () => void
-  children: ReactNode
-}) {
-  const panel = useId()
-  return (
-    <section className={styles.section}>
-      <button
-        type="button"
-        className={styles.sectionHeading}
-        onClick={onToggle}
-        aria-expanded={expanded}
-        aria-controls={panel}
-      >
-        <strong>{title}</strong>
-        <span aria-hidden="true">
-          {expanded ? 'Expandido' : 'Expandir'}
-          <ChevronDown size={14} />
-        </span>
-      </button>
-      <div id={panel} className={styles.sectionPanel} inert={!expanded}>
-        <fieldset className={styles.sectionBody} disabled={!expanded}>
-          {children}
-        </fieldset>
-      </div>
-    </section>
-  )
-}
-
 export function AtendimentoSVOPage() {
-  useDocumentTitle('Atendimento SVO')
+  const navigate = useNavigate()
   const [data, setData] = useState<Record<string, string>>({})
   const [collapsed, setCollapsed] = useState<number[]>([])
   const [files, setFiles] = useState<File[]>([])
@@ -123,86 +79,99 @@ export function AtendimentoSVOPage() {
   }
 
   return (
-    <div className={styles.page}>
-      <PageHeader
-        className={styles.heading}
-        title="Atendimento SVO"
-        subtitle="Registro de verificação de óbito e encaminhamento de remoção"
-        breadcrumb={<BackLink to="/viagens">Voltar para o Painel de Viagens</BackLink>}
-      />
+    <main className={styles.page}>
+      <button type="button" className={styles.back} onClick={() => navigate('/viagens')}>
+        ← Voltar para o Painel de Viagens
+      </button>
+
+      <header className={styles.heading}>
+        <h1>Atendimento SVO</h1>
+        <p>Registro de solicitação de óbito e encaminhamento de remoção</p>
+      </header>
 
       <div className={styles.progress}>
-        <Badge variant="info" className={styles.progressBadge}>
-          <FilePlus2 size={14} aria-hidden="true" />
-          Novo atendimento
-        </Badge>
-        <span>{groups.length + 1} etapas · campos obrigatórios marcados com *</span>
+        <span>▣ &nbsp; NOVO ATENDIMENTO</span>
+        <span>4 etapas · preenchimento obrigatório</span>
       </div>
 
-      <form onSubmit={submit} autoComplete="off" className={styles.form}>
+      <form onSubmit={submit}>
         {groups.map((group, index) => (
-          <AtendimentoSection
-            key={group.title}
-            title={`${index + 1}. ${group.title}`}
-            expanded={!collapsed.includes(index)}
-            onToggle={() => toggle(index)}
-          >
-            <div className={classNames(styles.fields, index === 2 && styles.three)}>
-              {group.fields.map((field) => (
-                <label key={field.name}>
-                  <span>
+          <section className={styles.section} key={group.title}>
+            <button
+              type="button"
+              className={styles.sectionHeading}
+              onClick={() => toggle(index)}
+              aria-expanded={!collapsed.includes(index)}
+            >
+              <strong>
+                {index + 1}. {group.title}
+              </strong>
+              <span>{collapsed.includes(index) ? 'Expandir +' : 'Expandido −'}</span>
+            </button>
+
+            {!collapsed.includes(index) && (
+              <div className={`${styles.fields} ${index === 2 ? styles.three : ''}`}>
+                {group.fields.map((field) => (
+                  <label key={field.name}>
                     {field.label}
-                    {field.required && <span aria-hidden="true"> *</span>}
-                  </span>
-                  <input
-                    name={field.name}
-                    type={field.type ?? 'text'}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    value={data[field.name] ?? ''}
-                    onChange={(e) =>
-                      setData((old) => ({
-                        ...old,
-                        [field.name]: e.target.value,
-                      }))
-                    }
-                  />
-                </label>
-              ))}
-            </div>
-          </AtendimentoSection>
+                    <input
+                      name={field.name}
+                      type={field.type ?? 'text'}
+                      placeholder={field.placeholder}
+                      required={field.required}
+                      value={data[field.name] ?? ''}
+                      onChange={(e) =>
+                        setData((old) => ({
+                          ...old,
+                          [field.name]: e.target.value,
+                        }))
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+            )}
+          </section>
         ))}
 
-        <AtendimentoSection
-          title="4. Laudo e documentação"
-          expanded={!collapsed.includes(groups.length)}
-          onToggle={() => toggle(groups.length)}
-        >
-          <label className={styles.dropzone}>
-            <strong>Upload de documentos</strong>
-            <small>Arraste os arquivos do laudo ou clique para selecionar</small>
-            <input
-              type="file"
-              aria-label="Upload de documentos"
-              multiple
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={upload}
-            />
-            {files.length > 0 && <span>{files.map((f) => f.name).join(', ')}</span>}
-          </label>
-        </AtendimentoSection>
+        <section className={styles.section}>
+          <button
+            type="button"
+            className={styles.sectionHeading}
+            onClick={() => toggle(3)}
+            aria-expanded={!collapsed.includes(3)}
+          >
+            <strong>4. Laudo e documentação</strong>
+            <span>{collapsed.includes(3) ? 'Expandir +' : 'Expandido −'}</span>
+          </button>
 
-        {notice && <Alert variant="info">{notice}</Alert>}
+          {!collapsed.includes(3) && (
+            <label className={styles.dropzone}>
+              ⬆ &nbsp;
+              <strong>Upload de documentos</strong>
+              <small>Arraste ou selecione os arquivos de laudo e outros documentos</small>
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={upload}
+              />
+              {files.length > 0 && <span>{files.map((f) => f.name).join(', ')}</span>}
+            </label>
+          )}
+        </section>
+
+        {notice && <output className={styles.notice}>{notice}</output>}
 
         <footer className={styles.actions}>
-          <ButtonLink variant="secondary" to="/viagens">
+          <button type="button" onClick={() => navigate('/viagens')}>
             Cancelar
-          </ButtonLink>
-          <Button type="submit" iconStart={<Check size={16} />}>
-            Registrar atendimento
-          </Button>
+          </button>
+          <button type="submit" className={styles.primary}>
+            ✚ &nbsp; Registrar Atendimento
+          </button>
         </footer>
       </form>
-    </div>
+    </main>
   )
 }

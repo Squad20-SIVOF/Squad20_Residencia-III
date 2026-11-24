@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { BackLink } from '@/components/BackLink/BackLink'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { Button } from '@/components/Button'
 import { TextField } from '@/components/TextField'
 import { SelectField } from '@/components/SelectField'
@@ -44,13 +44,11 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
   })
   const [fleet, setFleet] = useState<Fleet>(vehicle?.fleet ?? 'Não informada')
   const [exclusiveSvo, setExclusiveSvo] = useState(vehicle?.exclusiveSvo ?? false)
-  const [available, setAvailable] = useState(true)
   const [checklist, setChecklist] = useState(vehicle?.inspectionChecklist ?? [])
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   async function submit(event: FormEvent) {
     event.preventDefault()
-    if (saving) return
     setSaving(true)
     setError('')
     try {
@@ -60,7 +58,6 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
         checklist_vistoria: checklist,
         frota: fleet === 'Não informada' ? null : fleet,
         exclusivo_svo: exclusiveSvo,
-        ...(!vehicle && { ativo: available }),
         capacidade_maxima: Number(values.capacidade_maxima),
         quilometragem: Number(values.quilometragem),
         ultimo_km_alertado: vehicle?.lastAlertedKm ?? 0,
@@ -137,9 +134,12 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
         className={styles.header}
         title={title}
         breadcrumb={
-          <BackLink to="/veiculos" onClick={onBackToList ?? onCancel}>
-            Voltar para Veículos
-          </BackLink>
+          <Breadcrumb
+            items={[
+              { label: 'Veículos', to: '/veiculos', onClick: onBackToList ?? onCancel },
+              { label: vehicle ? 'Editar cadastro' : 'Novo cadastro' },
+            ]}
+          />
         }
         subtitle={
           vehicle
@@ -147,13 +147,14 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
             : 'Adicione um veículo e defina as condições iniciais de operação.'
         }
       />
-      <form onSubmit={submit} className={styles.layout} aria-busy={saving}>
-        <div className={styles.form}>
+      <div className={styles.layout}>
+        <form onSubmit={submit} className={styles.form} aria-busy={saving}>
           {error && <Alert variant="danger">{error}</Alert>}
           <Card title="Identificação do veículo" className={styles.card}>
             <p className={styles.hint}>Campos com * são obrigatórios.</p>
             <div className={classNames(styles.grid, styles.gridThree)}>
               {renderFields(['identificacao', 'marca'])}
+              <span className={styles.spacer} aria-hidden="true" />
               {renderFields(['modelo', 'placa'])}
               <fieldset disabled={saving} className={styles.controls}>
                 <SelectField
@@ -167,6 +168,21 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
                 />
               </fieldset>
             </div>
+            <SwitchField
+              className={styles.switch}
+              label="Exclusivo SVO"
+              description={
+                exclusiveSvo
+                  ? 'Ativado · veículo reservado à frota SVO'
+                  : 'Desativado · pode atender qualquer frota'
+              }
+              checked={exclusiveSvo}
+              onChange={(checked) => {
+                setExclusiveSvo(checked)
+                if (checked) setFleet('SVO')
+              }}
+              disabled={saving}
+            />
           </Card>
           <Card title="Operação e limites" className={styles.card}>
             <p className={styles.hint}>
@@ -180,83 +196,62 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
                 'teto_gasto_mensal',
               ])}
             </div>
-            {!vehicle && (
-              <SwitchField
-                className={styles.switch}
-                label="Disponível para viagens"
-                description={
-                  available
-                    ? 'Ativado · liberado para novas viagens'
-                    : 'Desativado · indisponível para novas viagens'
-                }
-                checked={available}
-                onChange={setAvailable}
-                disabled={saving}
-              />
-            )}
-            <details className={styles.settings} open={Boolean(vehicle)}>
-              <summary>Exclusividade SVO e vistoria</summary>
-              <div className={styles.settingsBody}>
-                <SwitchField
-                  label="Exclusivo SVO"
-                  description={
-                    exclusiveSvo
-                      ? 'Ativado · veículo reservado à frota SVO'
-                      : 'Desativado · pode atender qualquer frota'
-                  }
-                  checked={exclusiveSvo}
-                  onChange={(checked) => {
-                    setExclusiveSvo(checked)
-                    if (checked) setFleet('SVO')
-                  }}
-                  disabled={saving}
-                />
-                <h3>Vistoria do veículo</h3>
-                <p className={styles.hint}>
-                  Registre os itens verificados. Itens desmarcados ficam pendentes; sem
-                  itens, nenhuma vistoria é registrada.
-                </p>
-                <div className={styles.grid}>{renderFields(['proxima_vistoria'])}</div>
-                {checklist.length > 0 && (
-                  <div className={styles.checklist}>
-                    {checklist.map((item, index) => (
-                      <CheckboxField
-                        key={item.id}
-                        variant="plain"
-                        label={item.label}
-                        checked={item.isOk}
-                        disabled={saving}
-                        onChange={(isOk) =>
-                          setChecklist((current) =>
-                            current.map((entry, i) =>
-                              i === index ? { ...entry, isOk } : entry,
-                            ),
-                          )
-                        }
-                      />
-                    ))}
-                  </div>
-                )}
-                {!checklist.length && (
-                  <Button
-                    variant="secondary"
-                    className={styles.checklistButton}
+          </Card>
+          <Card title="Vistoria do veículo" className={styles.card}>
+            <p className={styles.hint}>
+              Registre os itens verificados. Itens desmarcados ficam pendentes; sem itens,
+              nenhuma vistoria é registrada.
+            </p>
+            <div className={styles.grid}>{renderFields(['proxima_vistoria'])}</div>
+            {checklist.length > 0 && (
+              <div className={styles.checklist}>
+                {checklist.map((item, index) => (
+                  <CheckboxField
+                    key={item.id}
+                    variant="plain"
+                    label={item.label}
+                    checked={item.isOk}
                     disabled={saving}
-                    onClick={() =>
-                      setChecklist(
-                        ['Pneus e rodas', 'Freios', 'Iluminação', 'Documentação'].map(
-                          (label, i) => ({ id: `item-${i + 1}`, label, isOk: false }),
+                    onChange={(isOk) =>
+                      setChecklist((current) =>
+                        current.map((entry, i) =>
+                          i === index ? { ...entry, isOk } : entry,
                         ),
                       )
                     }
-                  >
-                    Registrar checklist de vistoria
-                  </Button>
-                )}
+                  />
+                ))}
               </div>
-            </details>
+            )}
+            {!checklist.length && (
+              <Button
+                variant="secondary"
+                className={styles.checklistButton}
+                disabled={saving}
+                onClick={() =>
+                  setChecklist(
+                    ['Pneus e rodas', 'Freios', 'Iluminação', 'Documentação'].map(
+                      (label, i) => ({ id: `item-${i + 1}`, label, isOk: false }),
+                    ),
+                  )
+                }
+              >
+                Registrar checklist de vistoria
+              </Button>
+            )}
           </Card>
-        </div>
+          <footer className={styles.footer}>
+            <p className={styles.hint}>Revise os dados antes de salvar.</p>
+            <div className={styles.actions}>
+              <Button variant="secondary" onClick={onCancel} disabled={saving}>
+                Cancelar
+              </Button>
+              <Button type="submit" isLoading={saving}>
+                {vehicle ? 'Salvar alterações' : 'Cadastrar veículo'}
+              </Button>
+            </div>
+          </footer>
+        </form>
         <VehicleFormAside
           isEditing={vehicle !== null}
           identification={values.identificacao}
@@ -268,18 +263,7 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
           fuelType={values.tipo_combustivel}
           capacity={values.capacidade_maxima}
         />
-        <footer className={styles.footer}>
-          <p className={styles.hint}>Revise os dados antes de salvar.</p>
-          <div className={styles.actions}>
-            <Button variant="secondary" onClick={onCancel} disabled={saving}>
-              Cancelar
-            </Button>
-            <Button type="submit" isLoading={saving}>
-              {vehicle ? 'Salvar alterações' : 'Cadastrar veículo'}
-            </Button>
-          </div>
-        </footer>
-      </form>
+      </div>
     </div>
   )
 }

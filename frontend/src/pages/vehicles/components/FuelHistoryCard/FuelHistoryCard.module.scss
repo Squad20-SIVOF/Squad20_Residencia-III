@@ -17,7 +17,6 @@
 
 .title {
   font-size: $font-size-small;
-  font-weight: 600;
   color: $color-text;
 }
 
@@ -25,7 +24,6 @@
 .summary {
   font-size: $font-size-xsmall;
   color: $color-text-muted;
-  overflow-wrap: anywhere;
 }
 
 .total {

@@ -1,5 +1,4 @@
 import { useCallback, useState, type FormEvent } from 'react'
-import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { Link, useParams } from 'react-router-dom'
 import { Button } from '@/components/Button'
 import { Badge } from '@/components/Badge'
@@ -177,16 +176,15 @@ export function RequestDetailsPage() {
   const { id = '' } = useParams()
   const load = useCallback(() => getRequestDetails(id), [id])
   const result = useAsync(load)
-  const assignmentPermission = useCanAssignTrip()
-  const canAssign = assignmentPermission.status === 'success' && assignmentPermission.data
-  if (result.status === 'loading' || assignmentPermission.status === 'loading')
-    return <LoadingState label="Carregando solicitação" />
-
+  const canAssign = useCanAssignTrip()
   return (
     <section className={styles.page}>
       <Link to="/viagens/solicitacoes" className={styles.back}>
         ← Voltar para solicitações pendentes
       </Link>
+      {result.status === 'loading' && (
+        <StateMessage variant="loading" title="Carregando solicitação" />
+      )}
       {result.status === 'error' && (
         <StateMessage
           variant="error"

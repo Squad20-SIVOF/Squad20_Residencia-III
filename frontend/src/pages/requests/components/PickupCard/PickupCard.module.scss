@@ -1,0 +1,34 @@
+@use '../../../../styles/tokens' as *;
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-3;
+  background-color: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+}
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: $touch-target;
+  height: $touch-target;
+  color: $color-primary;
+  background-color: $color-primary-soft;
+  border-radius: $radius-md;
+}
+
+.label {
+  font-size: $font-size-xsmall;
+  font-weight: 600;
+  color: $color-primary;
+}
+
+.address {
+  font-size: $font-size-small;
+  color: $color-text;
+}

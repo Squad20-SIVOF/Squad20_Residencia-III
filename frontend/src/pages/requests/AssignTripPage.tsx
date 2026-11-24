@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { LoadingState } from '@/components/LoadingState/LoadingState'
 import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Alert } from '@/components/Alert'
@@ -32,6 +31,7 @@ const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : 'Tente novamente.'
 
 interface ColumnStateLabels {
+  loading: string
   error: string
   empty: string
   notFound: string
@@ -39,10 +39,12 @@ interface ColumnStateLabels {
 
 /** Carregando, erro, vazio ou busca sem resultado; `undefined` quando há itens para listar. */
 function getColumnState<T>(
-  result: Exclude<AsyncResult<T[]>, { status: 'loading' }>,
+  result: AsyncResult<T[]>,
   visibleCount: number,
   labels: ColumnStateLabels,
 ): ReactNode {
+  if (result.status === 'loading')
+    return <StateMessage variant="loading" title={labels.loading} />
   if (result.status === 'error')
     return (
       <StateMessage
@@ -118,13 +120,6 @@ export function AssignTripPage() {
     }
   }
 
-  if (
-    request.status === 'loading' ||
-    vehicles.status === 'loading' ||
-    drivers.status === 'loading'
-  )
-    return <LoadingState label="Carregando atribuição da viagem" />
-
   return (
     <div className={styles.page}>
       <Link to={detailsPath} className={styles.backLink}>
@@ -136,6 +131,9 @@ export function AssignTripPage() {
         subtitle="Selecione os recursos disponíveis para realizar esta viagem."
       />
 
+      {request.status === 'loading' && (
+        <StateMessage variant="loading" title="Carregando solicitação" />
+      )}
       {request.status === 'error' && (
         <StateMessage
           variant="error"
@@ -155,6 +153,7 @@ export function AssignTripPage() {
           search={vehicleSearch}
           onSearchChange={setVehicleSearch}
           state={getColumnState(vehicles, visibleVehicles.length, {
+            loading: 'Carregando veículos',
             error: 'Não foi possível carregar os veículos',
             empty: 'Nenhum veículo disponível',
             notFound: 'Nenhum veículo encontrado',
@@ -178,6 +177,7 @@ export function AssignTripPage() {
           search={driverSearch}
           onSearchChange={setDriverSearch}
           state={getColumnState(drivers, visibleDrivers.length, {
+            loading: 'Carregando motoristas',
             error: 'Não foi possível carregar os motoristas',
             empty: 'Nenhum motorista disponível',
             notFound: 'Nenhum motorista encontrado',

@@ -2,9 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Button } from '@/components/Button'
-import { StatGrid } from '@/components/StatCard'
-import { SelectField } from '@/components/SelectField'
-import { Toolbar } from '@/components/Toolbar'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { ROUTE_PRESETS } from '../../gps/aracajuRoutes'
 import { geoBus, type GeoEventMap } from '../../gps/geoEventBus'
@@ -276,19 +273,22 @@ export function GpsEventSimulatorPage() {
         <section className={styles.mapPanel} aria-label="Mapa da rota simulada">
           <div ref={mapElement} className={styles.map} />
           <div className={styles.telemetry} aria-live="polite">
-            <StatGrid
-              label="Telemetria do veículo"
-              columns={4}
-              cards={[
-                {
-                  label: 'Distância restante',
-                  value: `${telemetry.remainingKm.toFixed(2)} km`,
-                },
-                { label: 'ETA estimado', value: `${telemetry.remainingMinutes} min` },
-                { label: 'Velocidade', value: `${telemetry.speedKmh} km/h` },
-                { label: 'Rumo', value: `${Math.round(telemetry.heading)}°` },
-              ]}
-            />
+            <div>
+              <span>Distância restante</span>
+              <strong>{telemetry.remainingKm.toFixed(2)} km</strong>
+            </div>
+            <div>
+              <span>ETA estimado</span>
+              <strong>{telemetry.remainingMinutes} min</strong>
+            </div>
+            <div>
+              <span>Velocidade</span>
+              <strong>{telemetry.speedKmh} km/h</strong>
+            </div>
+            <div>
+              <span>Rumo</span>
+              <strong>{Math.round(telemetry.heading)}°</strong>
+            </div>
           </div>
           {telemetry.arrived && (
             <output className={styles.arrived}>
@@ -307,17 +307,20 @@ export function GpsEventSimulatorPage() {
               Limpar
             </Button>
           </div>
-          <Toolbar label="Filtrar eventos de geolocalização">
-            <SelectField<EventName | 'all'>
-              label="Filtrar eventos"
+          <label className={styles.filter}>
+            Filtrar eventos
+            <select
               value={filter}
-              options={[
-                { value: 'all', label: 'Todos os eventos' },
-                ...EVENT_TYPES.map((type) => ({ value: type, label: type })),
-              ]}
-              onChange={setFilter}
-            />
-          </Toolbar>
+              onChange={(event) => setFilter(event.target.value as EventName | 'all')}
+            >
+              <option value="all">Todos os eventos</option>
+              {EVENT_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </label>
           <ol className={styles.eventList} aria-live="polite">
             {events
               .filter((event) => filter === 'all' || event.type === filter)

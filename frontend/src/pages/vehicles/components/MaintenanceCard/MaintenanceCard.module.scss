@@ -24,15 +24,12 @@
 
 .description {
   font-size: $font-size-small;
-  font-weight: 600;
   color: $color-text;
-  overflow-wrap: anywhere;
 }
 
 .meta {
   font-size: $font-size-xsmall;
   color: $color-text-muted;
-  overflow-wrap: anywhere;
 }
 
 .cost {
@@ -43,12 +40,6 @@
 
 .estimate {
   font-weight: 400;
-}
-
-.note {
-  margin-top: auto;
-  color: $color-text-muted;
-  font-size: $font-size-xsmall;
 }
 
 .more {

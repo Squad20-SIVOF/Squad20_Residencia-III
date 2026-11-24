@@ -14,9 +14,6 @@
   border: 1px solid $color-border;
   border-radius: $radius-lg;
   box-shadow: $shadow-subtle;
-}
-
-.link {
   transition: border-color $transition-fast;
 
   @include hover {
@@ -26,11 +23,6 @@
   &:focus-visible {
     @include focus-ring;
   }
-}
-
-.header .status {
-  background-color: transparent;
-  padding: 0;
 }
 
 .header {
@@ -44,7 +36,7 @@
 .title {
   font-size: $font-size-small;
   font-weight: 700;
-  color: $color-heading;
+  color: $color-navy;
 }
 
 .meta {
@@ -54,7 +46,6 @@
 }
 
 .route {
-  color: $color-text-muted;
-  font-size: $font-size-xsmall;
+  font-size: $font-size-small;
   overflow-wrap: anywhere;
 }

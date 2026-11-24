@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { classNames } from '@/utils/classNames'
 import styles from './DataTable.module.scss'
 
@@ -6,14 +6,8 @@ export interface DataTableColumn<TRow> {
   key: string
   header: string
   render: (row: TRow) => ReactNode
-  /** Destaca o valor que identifica o registro. */
+  /** Coluna de destaque: vira o título do card no mobile (sem rótulo). */
   isPrimary?: boolean
-  /** Usa a célula como cabeçalho semântico da linha. */
-  isRowHeader?: boolean
-  /** Largura mínima da coluna em rem para conteúdos que podem quebrar linha. */
-  minWidth?: number
-  /** Mantém dados curtos, como datas e valores, em uma linha. */
-  keepTogether?: boolean
 }
 
 export interface DataTableProps<TRow> {
@@ -26,6 +20,10 @@ export interface DataTableProps<TRow> {
   className?: string
 }
 
+/*
+ * Uma única tabela: no xs cada linha vira um card via CSS (o rótulo vem do atributo
+ * data-label, sem duplicar o markup); a partir do md ela volta a ser uma tabela.
+ */
 export function DataTable<TRow>({
   caption,
   rows,
@@ -34,91 +32,37 @@ export function DataTable<TRow>({
   renderActions,
   className,
 }: DataTableProps<TRow>) {
-  const wrapperRef = useRef<HTMLElement>(null)
-  const tableRef = useRef<HTMLTableElement>(null)
-  const hintId = useId()
-  const [canScroll, setCanScroll] = useState(false)
-
-  useEffect(() => {
-    const wrapper = wrapperRef.current
-    const table = tableRef.current
-    if (!wrapper || !table) return
-
-    const measure = () => setCanScroll(wrapper.scrollWidth > wrapper.clientWidth)
-    measure()
-    if (typeof ResizeObserver === 'undefined') return
-
-    const observer = new ResizeObserver(measure)
-    observer.observe(wrapper)
-    observer.observe(table)
-    return () => observer.disconnect()
-  }, [])
-
   return (
-    <>
-      {canScroll && (
-        <p className={styles.scrollHint} id={hintId}>
-          Deslize a tabela para ver mais colunas.
-        </p>
-      )}
-      <section
-        ref={wrapperRef}
-        className={classNames(styles.wrapper, className)}
-        aria-label={caption}
-        aria-describedby={canScroll ? hintId : undefined}
-        // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- Permite rolar as colunas pelo teclado.
-        tabIndex={0}
-      >
-        <table ref={tableRef} className={styles.table}>
-          <caption className={styles.caption}>{caption}</caption>
-          <thead>
-            <tr>
-              {columns.map((column) => (
-                <th
-                  key={column.key}
-                  scope="col"
-                  style={
-                    column.minWidth ? { minWidth: `${column.minWidth}rem` } : undefined
-                  }
-                >
-                  {column.header}
-                </th>
-              ))}
-              {renderActions && (
-                <th className={styles.actions} scope="col">
-                  Ações
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={getRowKey(row)}>
-                {columns.map((column) => {
-                  const Cell = column.isRowHeader ? 'th' : 'td'
-                  return (
-                    <Cell
-                      key={column.key}
-                      scope={column.isRowHeader ? 'row' : undefined}
-                      className={classNames(
-                        column.isPrimary && styles.primary,
-                        column.keepTogether && styles.keepTogether,
-                      )}
-                    >
-                      {column.render(row)}
-                    </Cell>
-                  )
-                })}
-                {renderActions && (
-                  <td className={styles.actions}>
-                    <div className={styles.actionGroup}>{renderActions(row)}</div>
-                  </td>
-                )}
-              </tr>
+    <div className={classNames(styles.wrapper, className)}>
+      <table className={styles.table}>
+        <caption className={styles.caption}>{caption}</caption>
+        <thead className={styles.head}>
+          <tr>
+            {columns.map((column) => (
+              <th key={column.key} scope="col">
+                {column.header}
+              </th>
             ))}
-          </tbody>
-        </table>
-      </section>
-    </>
+            {renderActions && <th scope="col">Ações</th>}
+          </tr>
+        </thead>
+        <tbody className={styles.body}>
+          {rows.map((row) => (
+            <tr key={getRowKey(row)} className={styles.row}>
+              {columns.map((column) => (
+                <td
+                  key={column.key}
+                  className={column.isPrimary ? styles.primary : undefined}
+                  data-label={column.isPrimary ? undefined : column.header}
+                >
+                  {column.render(row)}
+                </td>
+              ))}
+              {renderActions && <td className={styles.actions}>{renderActions(row)}</td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }

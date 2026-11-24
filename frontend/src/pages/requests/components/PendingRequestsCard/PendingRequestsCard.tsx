@@ -7,7 +7,6 @@ import type { DataTableColumn } from '@/components/DataTable'
 import { SelectField } from '@/components/SelectField'
 import { StateMessage } from '@/components/StateMessage'
 import { TextField } from '@/components/TextField'
-import { Toolbar } from '@/components/Toolbar'
 import type { AsyncResult } from '@/hooks/useAsync'
 import { classNames } from '@/utils/classNames'
 import { formatShortDateTime } from '@/utils/format'
@@ -18,6 +17,7 @@ import {
   PENDING_SORT_LABELS,
   filterPendingRequests,
   formatImportantCount,
+  formatPendingCount,
   formatShowingCount,
   getRequestCode,
   sortPendingRequests,
@@ -42,7 +42,6 @@ const COLUMNS: DataTableColumn<RequestRecord>[] = [
     key: 'pedido',
     header: 'Pedido',
     isPrimary: true,
-    minWidth: 7,
     render: (row) => (
       <span className={styles.stack}>
         <span className={styles.code}>{getRequestCode(row.id)}</span>
@@ -58,7 +57,6 @@ const COLUMNS: DataTableColumn<RequestRecord>[] = [
   {
     key: 'tipo',
     header: 'Tipo / Setor',
-    minWidth: 10,
     render: (row) => (
       <span className={styles.stack}>
         <span className={styles.type}>{row.categoria}</span>
@@ -80,7 +78,6 @@ const COLUMNS: DataTableColumn<RequestRecord>[] = [
   {
     key: 'data',
     header: 'Data / Horário',
-    keepTogether: true,
     render: (row) => (
       <time dateTime={row.data_necessidade}>
         {formatShortDateTime(row.data_necessidade)}
@@ -91,6 +88,19 @@ const COLUMNS: DataTableColumn<RequestRecord>[] = [
     key: 'status',
     header: 'Status',
     render: () => <Badge variant="warning">Pendente</Badge>,
+  },
+  {
+    key: 'acao',
+    header: 'Ação',
+    render: (row) => (
+      <ButtonLink
+        to={requestDetailsPath(row.id)}
+        className={styles.detailsButton}
+        aria-label={`Ver detalhes da solicitação ${getRequestCode(row.id)}`}
+      >
+        Ver detalhes da solicitação
+      </ButtonLink>
+    ),
   },
 ]
 
@@ -105,11 +115,6 @@ export function PendingRequestsCard({ result, className }: PendingRequestsCardPr
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<PendingSort>('importantes')
   const data = result.status === 'success' ? result.data : null
-  const rows = sortPendingRequests(
-    filterPendingRequests(data?.dados ?? [], search),
-    sort,
-  ).slice(0, PANEL_REQUEST_LIMIT)
-  const importantCount = data?.dados.filter((row) => row.flag_urgencia).length ?? 0
 
   function renderBody() {
     if (result.status === 'loading') {
@@ -121,7 +126,6 @@ export function PendingRequestsCard({ result, className }: PendingRequestsCardPr
     if (result.status === 'error') {
       return (
         <StateMessage
-          className={styles.message}
           variant="error"
           title="Não foi possível carregar as solicitações pendentes."
           description={
@@ -139,18 +143,24 @@ export function PendingRequestsCard({ result, className }: PendingRequestsCardPr
     if (!data || data.total === 0 || data.dados.length === 0) {
       return (
         <StateMessage
-          className={styles.message}
           title="Nenhuma solicitação pendente."
           description="Quando um setor pedir um veículo, a solicitação aparece aqui."
         />
       )
     }
 
+    const rows = sortPendingRequests(
+      filterPendingRequests(data.dados, search),
+      sort,
+    ).slice(0, PANEL_REQUEST_LIMIT)
+    // A contagem cobre a página carregada da API (até 20), a mesma base da busca.
+    const importantCount = data.dados.filter((row) => row.flag_urgencia).length
+
     return (
       <>
-        <Toolbar className={styles.toolbar} label="Filtrar solicitações de viagens">
+        <div className={styles.toolbar}>
           <div className={styles.search}>
-            <PanelIcon name="search" className={styles.fieldIcon} />
+            <PanelIcon name="search" className={styles.searchIcon} />
             <TextField
               type="search"
               label="Buscar solicitação pendente"
@@ -161,7 +171,7 @@ export function PendingRequestsCard({ result, className }: PendingRequestsCardPr
             />
           </div>
           <div className={styles.sort}>
-            <PanelIcon name="sort" className={styles.fieldIcon} />
+            <PanelIcon name="sort" className={styles.sortIcon} />
             <SelectField
               label="Ordenar solicitações"
               isLabelHidden
@@ -170,62 +180,23 @@ export function PendingRequestsCard({ result, className }: PendingRequestsCardPr
               onChange={setSort}
             />
           </div>
-        </Toolbar>
+        </div>
 
         {rows.length > 0 ? (
           <DataTable
-            className={styles.table}
             caption="Solicitações de viagens pendentes"
+            className={styles.table}
             rows={rows}
             columns={COLUMNS}
             getRowKey={(row) => row.id}
-            renderActions={(row) => (
-              <ButtonLink
-                to={requestDetailsPath(row.id)}
-                className={styles.rowAction}
-                aria-label={`Ver detalhes da solicitação ${getRequestCode(row.id)}`}
-              >
-                Ver detalhes da solicitação
-              </ButtonLink>
-            )}
           />
         ) : (
           <StateMessage
-            className={styles.message}
             title={`Nenhuma solicitação encontrada para “${search.trim()}”.`}
             description="Confira o ID ou o setor digitado."
           />
         )}
-      </>
-    )
-  }
 
-  return (
-    <section className={classNames(styles.panel, className)} aria-labelledby={titleId}>
-      <header className={styles.header}>
-        <div>
-          <div className={styles.titleRow}>
-            <h2 id={titleId}>Solicitações de Viagens Pendentes</h2>
-            {data && (
-              <Badge variant="warning">
-                {data.total} {data.total === 1 ? 'pendente' : 'pendentes'}
-              </Badge>
-            )}
-          </div>
-          <p className={styles.muted}>
-            Analise os pedidos e direcione os próximos passos.
-          </p>
-        </div>
-        <ButtonLink
-          className={styles.viewAll}
-          variant="secondary"
-          to={PENDING_REQUESTS_PATH}
-        >
-          Ver todas
-        </ButtonLink>
-      </header>
-      {renderBody()}
-      {data && data.dados.length > 0 && (
         <footer className={styles.footer}>
           <p className={styles.muted}>{formatShowingCount(rows.length, data.total)}</p>
           {importantCount > 0 && (
@@ -235,7 +206,29 @@ export function PendingRequestsCard({ result, className }: PendingRequestsCardPr
             </p>
           )}
         </footer>
-      )}
+      </>
+    )
+  }
+
+  return (
+    <section className={classNames(styles.card, className)} aria-labelledby={titleId}>
+      <header className={styles.header}>
+        <div className={styles.headingGroup}>
+          <div className={styles.titleRow}>
+            <h2 id={titleId} className={styles.title}>
+              Solicitações de Viagens Pendentes
+            </h2>
+            {data && <Badge variant="warning">{formatPendingCount(data.total)}</Badge>}
+          </div>
+          <p className={styles.subtitle}>
+            Analise os pedidos e direcione os próximos passos.
+          </p>
+        </div>
+        <ButtonLink variant="secondary" to={PENDING_REQUESTS_PATH}>
+          Ver todas
+        </ButtonLink>
+      </header>
+      {renderBody()}
     </section>
   )
 }

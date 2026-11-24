@@ -26,7 +26,7 @@ export interface RequestFormProps {
   form: RequestFormState
   /** Veículos disponíveis para o campo "Veículo preferencial". */
   vehicles: Vehicle[]
-  vehiclesStatus: 'error' | 'success'
+  vehiclesStatus: 'loading' | 'error' | 'success'
   onReloadVehicles: () => void
   /** Aviso exibido acima dos campos (ex.: confirmação de envio). */
   notice?: ReactNode
@@ -130,6 +130,9 @@ export function RequestForm({
           onChange={(value) => setField('vehicleId', value)}
           errorMessage={errors.vehicleId}
         />
+        {vehiclesStatus === 'loading' && (
+          <output className={styles.helper}>Carregando veículos...</output>
+        )}
         {vehiclesStatus === 'error' && (
           <Alert
             variant="warning"

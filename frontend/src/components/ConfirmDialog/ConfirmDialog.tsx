@@ -1,6 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { Button } from '@/components/Button'
-import { classNames } from '@/utils/classNames'
 import styles from './ConfirmDialog.module.scss'
 
 export interface ConfirmDialogProps {
@@ -10,9 +9,6 @@ export interface ConfirmDialogProps {
   confirmLabel?: string
   cancelLabel?: string | null
   children?: ReactNode
-  className?: string
-  titleAccessory?: ReactNode
-  footer?: ReactNode
   isDestructive?: boolean
   onConfirm: () => void
   onCancel: () => void
@@ -25,9 +21,6 @@ export function ConfirmDialog({
   description,
   confirmLabel = 'Confirmar',
   children,
-  className,
-  titleAccessory,
-  footer,
   cancelLabel = 'Cancelar',
   isDestructive = false,
   onConfirm,
@@ -53,11 +46,7 @@ export function ConfirmDialog({
   return (
     <dialog
       ref={dialogRef}
-      className={classNames(
-        styles.dialog,
-        Boolean(children) && styles.withContent,
-        className,
-      )}
+      className={`${styles.dialog} ${children ? styles.withContent : ''}`}
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
       onCancel={(event) => {
@@ -65,30 +54,23 @@ export function ConfirmDialog({
         onCancel()
       }}
     >
-      <header>
-        <div className={titleAccessory ? styles.titleRow : undefined}>
-          <h2 id={titleId} className={styles.title}>
-            {title}
-          </h2>
-          {titleAccessory}
-        </div>
-        <p id={descriptionId} className={styles.description}>
-          {description}
-        </p>
-      </header>
+      <h2 id={titleId} className={styles.title}>
+        {title}
+      </h2>
+      <p id={descriptionId} className={styles.description}>
+        {description}
+      </p>
       {children && <div className={styles.content}>{children}</div>}
-      {footer ?? (
-        <div className={styles.buttons}>
-          {cancelLabel && (
-            <Button variant="secondary" onClick={onCancel}>
-              {cancelLabel}
-            </Button>
-          )}
-          <Button variant={isDestructive ? 'danger' : 'primary'} onClick={onConfirm}>
-            {confirmLabel}
+      <div className={styles.buttons}>
+        {cancelLabel && (
+          <Button variant="secondary" onClick={onCancel}>
+            {cancelLabel}
           </Button>
-        </div>
-      )}
+        )}
+        <Button variant={isDestructive ? 'danger' : 'primary'} onClick={onConfirm}>
+          {confirmLabel}
+        </Button>
+      </div>
     </dialog>
   )
 }

@@ -1,6 +1,0 @@
-@use '../../../../styles/tokens' as *;
-@use '../../../../styles/breakpoints' as *;
-.mapPanel { position:relative; width:100%; height:clamp(16.25rem,65vw,25.6rem); overflow:hidden; border:1px solid $color-border; border-radius:$radius-lg; background:var(--color-map-background); }
-.map { width:100%; height:100%; z-index:1; }
-.mapLabel { position:absolute; z-index:500; bottom:1rem; left:50%; transform:translateX(-50%); padding:.45rem .8rem; border-radius:2rem; color:white; background:#4c83c4; font-size:.62rem; font-weight:600; white-space:nowrap; }
-@include up(md) { .mapPanel { height:27.6rem; } }

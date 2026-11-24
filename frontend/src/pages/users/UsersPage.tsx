@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { ContactRound, ShieldCheck, UserRoundPlus } from 'lucide-react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { api } from '@/service/api'
 import { currentUser, type SessionUser } from '@/service/authService'
 import { Button } from '@/components/Button'
@@ -7,10 +6,8 @@ import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { TextField } from '@/components/TextField'
 import { PageHeader } from '@/components/PageHeader'
 import { Card } from '@/components/Card'
-import { Alert } from '@/components/Alert'
-import { SelectField } from '@/components/SelectField'
+import { Badge } from '@/components/Badge'
 import { PermissionsPanel } from './components/PermissionsPanel'
-import { UsersDirectory } from './components/UsersDirectory'
 import type { User, Delegation } from './types'
 import styles from './UsersPage.module.scss'
 
@@ -19,34 +16,6 @@ interface Profile {
   nome: string
   codigo: string | null
 }
-
-function AdminCard({
-  title,
-  description,
-  icon,
-  children,
-}: {
-  title: string
-  description: string
-  icon: ReactNode
-  children: ReactNode
-}) {
-  return (
-    <Card className={styles.adminCard}>
-      <header className={styles.adminCardHeader}>
-        <span className={styles.iconTile} aria-hidden="true">
-          {icon}
-        </span>
-        <div>
-          <h3>{title}</h3>
-          <p className={styles.muted}>{description}</p>
-        </div>
-      </header>
-      {children}
-    </Card>
-  )
-}
-
 export function UsersPage() {
   const [actor, setActor] = useState<SessionUser | null>(null)
   const [profiles, setProfiles] = useState<Profile[]>([])
@@ -57,7 +26,7 @@ export function UsersPage() {
   })
   const [drivers, setDrivers] = useState<{ id: string; nome: string }[]>([])
   const [driverLink, setDriverLink] = useState({ usuario_id: '', motorista_id: '' })
-  const [activeTab, setActiveTab] = useState<'users' | 'permissions'>('users')
+  const [activeTab, setActiveTab] = useState('permissions')
   const [membership, setMembership] = useState({ usuario_id: '', perfil_id: '' })
   const [form, setForm] = useState({
     nome: '',
@@ -77,9 +46,7 @@ export function UsersPage() {
     if (me.permissoes.includes('usuarios:gerenciar')) {
       const [allUsers, allProfiles, allDrivers] = await Promise.all([
         api<User[]>('/usuarios'),
-        me.permissoes.includes('perfis:ler')
-          ? api<{ message: Profile[] }>('/perfis')
-          : Promise.resolve({ message: [] }),
+        api<{ message: Profile[] }>('/perfis'),
         api<{ id: string; nome: string }[]>('/usuarios/motoristas-opcoes'),
       ])
       setUsers(allUsers)
@@ -103,7 +70,6 @@ export function UsersPage() {
 
   async function create(event: FormEvent) {
     event.preventDefault()
-    if (saving || !form.perfil_id) return
     setSaving(true)
     setError('')
     setMessage('')
@@ -123,7 +89,6 @@ export function UsersPage() {
   }
 
   async function changeProfile(removing: boolean) {
-    if (saving) return
     setSaving(true)
     setError('')
     setMessage('')
@@ -183,23 +148,10 @@ export function UsersPage() {
   if (loading) return <LoadingState label="Carregando usuários" />
   const canCreate = actor?.permissoes.includes('usuarios:gerenciar')
   const canDelegate = actor?.permissoes.includes('usuarios:delegar-permissoes')
-  const canManageProfiles = actor?.permissoes.includes('usuarios:gerenciar-perfis')
-  const selectedTab = !canCreate ? 'permissions' : !canDelegate ? 'users' : activeTab
-  const profileOptions = profiles.map(({ id, nome }) => ({ value: id, label: nome }))
-  const userOptions = users.map(({ id, nome, email }) => ({
-    value: id,
-    label: `${nome} — ${email}`,
-  }))
-  const driverOptions = [
-    { value: '', label: 'Sem vínculo' },
-    ...drivers.map(({ id, nome }) => ({ value: id, label: nome })),
-  ]
-  const profileSelected = Boolean(membership.usuario_id && membership.perfil_id)
 
   return (
     <section className={styles.page}>
       <PageHeader
-        className={styles.heading}
         title="Usuários e permissões"
         subtitle="Organize os usuários, seus perfis e os acessos da equipe."
       />
@@ -209,57 +161,36 @@ export function UsersPage() {
         </p>
       )}
       {message && <output className={styles.success}>{message}</output>}
-      {canDelegate && canCreate && (
-        <div
-          className={styles.tabs}
-          role="tablist"
-          aria-label="Gestão de acessos"
-          tabIndex={-1}
-          onKeyDown={(event) => {
-            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
-            event.preventDefault()
-            const next =
-              event.key === 'Home'
-                ? 'users'
-                : event.key === 'End'
-                  ? 'permissions'
-                  : selectedTab === 'users'
-                    ? 'permissions'
-                    : 'users'
-            setActiveTab(next)
-            event.currentTarget.querySelector<HTMLButtonElement>(`#${next}-tab`)?.focus()
-          }}
-        >
-          <button
-            type="button"
-            role="tab"
-            id="users-tab"
-            aria-controls="users-panel"
-            aria-selected={selectedTab === 'users'}
-            tabIndex={selectedTab === 'users' ? 0 : -1}
-            onClick={() => setActiveTab('users')}
-          >
-            Usuários e vínculos
-          </button>
-          <button
-            type="button"
-            role="tab"
-            id="permissions-tab"
-            aria-controls="permissions-panel"
-            aria-selected={selectedTab === 'permissions'}
-            tabIndex={selectedTab === 'permissions' ? 0 : -1}
-            onClick={() => setActiveTab('permissions')}
-          >
-            Permissões dos usuários
-          </button>
+      {(canDelegate || canCreate) && (
+        <div className={styles.tabs} role="tablist" aria-label="Gestão de acessos">
+          {canDelegate && (
+            <button
+              type="button"
+              role="tab"
+              id="permissions-tab"
+              aria-controls="permissions-panel"
+              aria-selected={activeTab === 'permissions'}
+              onClick={() => setActiveTab('permissions')}
+            >
+              Permissões dos usuários
+            </button>
+          )}
+          {canCreate && (
+            <button
+              type="button"
+              role="tab"
+              id="users-tab"
+              aria-controls="users-panel"
+              aria-selected={!canDelegate || activeTab === 'users'}
+              onClick={() => setActiveTab('users')}
+            >
+              Usuários e vínculos
+            </button>
+          )}
         </div>
       )}
-      {canDelegate && selectedTab === 'permissions' && (
-        <div
-          role={canCreate ? 'tabpanel' : undefined}
-          id="permissions-panel"
-          aria-labelledby={canCreate ? 'permissions-tab' : undefined}
-        >
+      {canDelegate && activeTab === 'permissions' && (
+        <div role="tabpanel" id="permissions-panel" aria-labelledby="permissions-tab">
           <PermissionsPanel
             delegation={delegation}
             saving={saving}
@@ -270,201 +201,193 @@ export function UsersPage() {
       {!canCreate && !canDelegate && (
         <p>Seu usuário não possui acesso à gestão de usuários.</p>
       )}
-      {canCreate && selectedTab === 'users' && (
+      {canCreate && (!canDelegate || activeTab === 'users') && (
         <div
-          role={canDelegate ? 'tabpanel' : undefined}
+          role="tabpanel"
           id="users-panel"
-          aria-labelledby={canDelegate ? 'users-tab' : undefined}
+          aria-labelledby="users-tab"
           className={styles.adminForms}
         >
-          <h2 className={styles.adminTitle}>Gestão de usuários</h2>
-          <div className={styles.managementGrid}>
-            <AdminCard
-              title="Criar usuário"
-              description="Preencha os dados e escolha o perfil inicial."
-              icon={<UserRoundPlus size={20} />}
-            >
-              <form onSubmit={create}>
-                <fieldset disabled={saving} className={styles.createFields}>
-                  <TextField
-                    id="user-name"
-                    label="Nome"
-                    placeholder="Nome completo"
-                    value={form.nome}
-                    onChange={(nome) => setForm({ ...form, nome })}
-                    autoComplete="name"
-                    minLength={3}
-                    maxLength={150}
-                    required
-                  />
-                  <TextField
-                    id="user-email"
-                    label="E-mail"
-                    placeholder="nome@exemplo.com"
-                    type="email"
-                    value={form.email}
-                    onChange={(email) => setForm({ ...form, email })}
-                    autoComplete="email"
-                    maxLength={150}
-                    required
-                  />
-                  <TextField
-                    id="user-password"
-                    label="Senha inicial"
-                    placeholder="Mínimo de 12 caracteres"
-                    type="password"
-                    value={form.password}
-                    onChange={(password) => setForm({ ...form, password })}
-                    autoComplete="new-password"
-                    minLength={12}
-                    maxLength={256}
-                    required
-                  />
-                  <SelectField
-                    id="user-profile"
-                    label="Perfil"
-                    value={form.perfil_id}
-                    options={[
-                      { value: '', label: 'Selecione um perfil' },
-                      ...profileOptions,
-                    ]}
-                    onChange={(perfil_id) => setForm({ ...form, perfil_id })}
-                  />
-                  <SelectField
-                    id="new-user-driver"
-                    className={styles.fullField}
-                    label="Motorista vinculado (opcional)"
-                    value={form.motorista_id}
-                    options={driverOptions}
-                    onChange={(motorista_id) => setForm({ ...form, motorista_id })}
-                  />
-                </fieldset>
-                <div className={styles.formFooter}>
-                  <p className={styles.muted}>
-                    {profileOptions.length
-                      ? 'Para usar o app do motorista, atribua o perfil Motorista e vincule o cadastro.'
-                      : 'O cadastro exige acesso a um perfil inicial.'}
-                  </p>
-                  <Button type="submit" isLoading={saving} disabled={!form.perfil_id}>
-                    Criar usuário
-                  </Button>
-                </div>
-              </form>
-            </AdminCard>
-
-            <AdminCard
-              title="Alterar perfis de um usuário"
-              description="Atribua ou remova perfis de uma conta existente."
-              icon={<ShieldCheck size={20} />}
-            >
-              <fieldset
-                className={styles.linkFields}
-                disabled={saving || !canManageProfiles}
+          <Card title="Criar usuário">
+            <form onSubmit={create}>
+              <TextField
+                id="user-name"
+                label="Nome"
+                value={form.nome}
+                onChange={(nome) => setForm({ ...form, nome })}
+                disabled={saving}
+              />
+              <TextField
+                id="user-email"
+                label="E-mail"
+                type="email"
+                value={form.email}
+                onChange={(email) => setForm({ ...form, email })}
+                disabled={saving}
+              />
+              <TextField
+                id="user-password"
+                label="Senha inicial (mínimo de 12 caracteres)"
+                type="password"
+                value={form.password}
+                onChange={(password) => setForm({ ...form, password })}
+                disabled={saving}
+              />
+              <label htmlFor="user-profile">Perfil</label>
+              <select
+                id="user-profile"
+                required
+                value={form.perfil_id}
+                disabled={saving}
+                onChange={(e) => setForm({ ...form, perfil_id: e.target.value })}
               >
-                <SelectField
-                  id="membership-user"
-                  label="Usuário"
-                  value={membership.usuario_id}
-                  options={[{ value: '', label: 'Selecione um usuário' }, ...userOptions]}
-                  onChange={(usuario_id) => setMembership({ ...membership, usuario_id })}
-                />
-                <SelectField
-                  id="membership-profile"
-                  label="Perfil a atribuir ou remover"
-                  value={membership.perfil_id}
-                  options={[
-                    { value: '', label: 'Selecione um perfil' },
-                    ...profileOptions,
-                  ]}
-                  onChange={(perfil_id) => setMembership({ ...membership, perfil_id })}
-                />
-                <div className={styles.profileActions}>
-                  <Button
-                    disabled={!profileSelected}
-                    onClick={() => changeProfile(false)}
-                  >
-                    Atribuir perfil
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    disabled={!profileSelected}
-                    onClick={() => changeProfile(true)}
-                  >
-                    Remover perfil
-                  </Button>
-                </div>
-              </fieldset>
-              {!canManageProfiles && (
-                <p className={styles.muted}>
-                  A alteração de perfis exige permissão específica.
-                </p>
-              )}
-            </AdminCard>
-          </div>
-
-          <UsersDirectory
-            users={users}
-            saving={saving}
-            onManage={(user) => {
-              setMembership({ usuario_id: user.id, perfil_id: '' })
-              setDriverLink({
-                usuario_id: user.id,
-                motorista_id: user.motorista_id ?? '',
-              })
-              document
-                .getElementById(
-                  canManageProfiles && profileOptions.length
-                    ? 'membership-profile'
-                    : 'driver-link-driver',
-                )
-                ?.focus()
-            }}
-          />
-
-          <AdminCard
-            title="Vincular conta a motorista"
-            description="Associe uma conta ao cadastro usado no app do motorista."
-            icon={<ContactRound size={20} />}
-          >
-            <form onSubmit={saveDriverLink}>
-              <fieldset className={styles.driverFields} disabled={saving}>
-                <SelectField
-                  id="driver-link-user"
-                  label="Conta de usuário"
-                  value={driverLink.usuario_id}
-                  options={[{ value: '', label: 'Selecione um usuário' }, ...userOptions]}
-                  onChange={(usuario_id) =>
-                    setDriverLink({
-                      usuario_id,
-                      motorista_id:
-                        users.find((user) => user.id === usuario_id)?.motorista_id ?? '',
-                    })
-                  }
-                />
-                <SelectField
-                  id="driver-link-driver"
-                  label="Cadastro de motorista"
-                  value={driverLink.motorista_id}
-                  options={driverOptions}
-                  onChange={(motorista_id) =>
-                    setDriverLink({ ...driverLink, motorista_id })
-                  }
-                />
-                <Button
-                  type="submit"
-                  isLoading={saving}
-                  disabled={!driverLink.usuario_id}
-                >
-                  Salvar vínculo
-                </Button>
-              </fieldset>
+                <option value="">Selecione</option>
+                {profiles.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nome}
+                  </option>
+                ))}
+              </select>
+              <label htmlFor="new-user-driver">Motorista vinculado (opcional)</label>
+              <select
+                id="new-user-driver"
+                value={form.motorista_id}
+                disabled={saving}
+                onChange={(event) =>
+                  setForm({ ...form, motorista_id: event.target.value })
+                }
+              >
+                <option value="">Sem vínculo</option>
+                {drivers.map((driver) => (
+                  <option key={driver.id} value={driver.id}>
+                    {driver.nome}
+                  </option>
+                ))}
+              </select>
+              <p>
+                Para abastecer pelo app mobile, atribua o perfil Motorista e vincule o
+                cadastro correspondente.
+              </p>
+              <Button type="submit" isLoading={saving}>
+                Criar usuário
+              </Button>
             </form>
-          </AdminCard>
-
-          <Alert>
-            <strong>Acessos dos solicitantes.</strong> O perfil Solicitante permite criar
-            e consultar as próprias solicitações de viagem.
-          </Alert>
+          </Card>
+          <Card title="Vincular conta a motorista">
+            <form onSubmit={saveDriverLink}>
+              <label htmlFor="driver-link-user">Conta de usuário</label>
+              <select
+                id="driver-link-user"
+                required
+                disabled={saving}
+                value={driverLink.usuario_id}
+                onChange={(event) =>
+                  setDriverLink({
+                    usuario_id: event.target.value,
+                    motorista_id:
+                      users.find((user) => user.id === event.target.value)
+                        ?.motorista_id ?? '',
+                  })
+                }
+              >
+                <option value="">Selecione</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.nome} — {user.email}
+                  </option>
+                ))}
+              </select>
+              <label htmlFor="driver-link-driver">Cadastro de motorista</label>
+              <select
+                id="driver-link-driver"
+                disabled={saving}
+                value={driverLink.motorista_id}
+                onChange={(event) =>
+                  setDriverLink({ ...driverLink, motorista_id: event.target.value })
+                }
+              >
+                <option value="">Sem vínculo</option>
+                {drivers.map((driver) => (
+                  <option key={driver.id} value={driver.id}>
+                    {driver.nome}
+                  </option>
+                ))}
+              </select>
+              <Button type="submit" isLoading={saving} disabled={!driverLink.usuario_id}>
+                Salvar vínculo
+              </Button>
+            </form>
+          </Card>
+          <Card title="Alterar perfis de um usuário">
+            <label htmlFor="membership-user">Usuário</label>
+            <select
+              id="membership-user"
+              value={membership.usuario_id}
+              disabled={saving}
+              onChange={(e) =>
+                setMembership({ ...membership, usuario_id: e.target.value })
+              }
+            >
+              <option value="">Selecione</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.nome} — {u.email}
+                </option>
+              ))}
+            </select>
+            <label htmlFor="membership-profile">Perfil a atribuir ou remover</label>
+            <select
+              id="membership-profile"
+              value={membership.perfil_id}
+              disabled={saving}
+              onChange={(e) =>
+                setMembership({ ...membership, perfil_id: e.target.value })
+              }
+            >
+              <option value="">Selecione</option>
+              {profiles.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.nome}
+                </option>
+              ))}
+            </select>
+            <Button
+              disabled={saving || !membership.usuario_id || !membership.perfil_id}
+              onClick={() => changeProfile(false)}
+            >
+              Atribuir perfil
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={saving || !membership.usuario_id || !membership.perfil_id}
+              onClick={() => changeProfile(true)}
+            >
+              Remover perfil
+            </Button>
+          </Card>
+          <Card title="Usuários cadastrados">
+            {users.length ? (
+              <ul className={styles.userList}>
+                {users.map((u) => (
+                  <li key={u.id}>
+                    <div>
+                      <strong>{u.nome}</strong>
+                      <span>{u.email}</span>
+                    </div>
+                    <div className={styles.badges}>
+                      {u.perfis?.map((profile) => (
+                        <Badge key={profile.id} variant="info">
+                          {profile.nome}
+                        </Badge>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Nenhum usuário cadastrado.</p>
+            )}
+          </Card>
         </div>
       )}
     </section>

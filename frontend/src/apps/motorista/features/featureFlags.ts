@@ -58,14 +58,14 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureApp, FeatureFlagDefinition[]> 
       key: 'gestor_route_monitoring',
       label: 'Monitoramento de rotas',
       description: 'Mapa e lista de deslocamentos demonstrativos.',
-      defaultValue: true,
+      defaultValue: false,
       status: 'disponivel',
     },
     {
       key: 'gestor_route_details',
       label: 'Detalhes da rota',
       description: 'Dados de solicitante, motorista e trajeto demonstrativos.',
-      defaultValue: true,
+      defaultValue: false,
       status: 'disponivel',
     },
     {

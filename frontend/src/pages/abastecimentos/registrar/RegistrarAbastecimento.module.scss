@@ -1,4 +1,3 @@
-@use '@/styles/dark';
 @use '../../../styles/tokens' as *;
 
 .page {
@@ -31,8 +30,8 @@
   flex-direction: column;
   gap: 1rem;
   padding: 1.5rem;
-  background: light-dark(#ffffff, dark.$card);
-  border: 1px solid light-dark(#e2e8f0, dark.$border);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
@@ -40,13 +39,13 @@
 .cardTitle {
   font-size: 1.15rem;
   font-weight: 600;
-  color: light-dark(#1e40af, dark.$primary);
+  color: #1e40af;
   margin: 0;
 }
 
 .cardSubtitle {
   font-size: 0.85rem;
-  color: light-dark(#64748b, dark.$muted);
+  color: #64748b;
   margin-top: -0.5rem;
 }
 
@@ -69,7 +68,7 @@
   label {
     font-size: 0.85rem;
     font-weight: 600;
-    color: light-dark(#334155, dark.$text);
+    color: #334155;
   }
 
   input,
@@ -78,14 +77,14 @@
     min-height: 42px;
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
-    color: light-dark(#1e293b, dark.$text);
-    background: light-dark(#ffffff, dark.$card);
-    border: 1px solid light-dark(#cbd5e1, dark.$border);
+    color: #1e293b;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
     border-radius: 6px;
     outline: none;
 
     &:focus-visible {
-      border-color: light-dark(#3b82f6, dark.$primary);
+      border-color: #3b82f6;
       box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
     }
   }
@@ -93,7 +92,7 @@
 
 .helperText {
   font-size: 0.75rem;
-  color: light-dark(#64748b, dark.$muted);
+  color: #64748b;
   margin-top: 0.2rem;
 }
 
@@ -102,7 +101,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem;
-  background: light-dark(#eff6ff, dark.$primary-soft);
+  background: #eff6ff;
   border-radius: 8px;
   margin-top: 0.5rem;
 
@@ -116,18 +115,18 @@
     margin: 0;
     font-size: 0.9rem;
     font-weight: 600;
-    color: light-dark(#1e40af, dark.$primary);
+    color: #1e40af;
   }
 
   span {
     font-size: 0.8rem;
-    color: light-dark(#60a5fa, dark.$primary);
+    color: #60a5fa;
   }
 
   strong {
     font-size: 1.8rem;
     font-weight: 700;
-    color: light-dark(#1e40af, dark.$primary);
+    color: #1e40af;
   }
 }
 
@@ -137,9 +136,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border: 2px dashed light-dark(#cbd5e1, dark.$border);
+  border: 2px dashed #cbd5e1;
   border-radius: 8px;
-  background: light-dark(#f8fafc, dark.$surface);
+  background: #f8fafc;
   cursor: pointer;
 }
 
@@ -151,28 +150,28 @@
   p {
     font-size: 0.9rem;
     font-weight: 500;
-    color: light-dark(#1e293b, dark.$text);
+    color: #1e293b;
     margin: 0;
   }
 
   span {
     font-size: 0.75rem;
-    color: light-dark(#64748b, dark.$muted);
+    color: #64748b;
   }
 }
 
 .attachBtn {
   padding: 0.5rem 1rem;
-  border: 1px solid light-dark(#cbd5e1, dark.$border);
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
-  background: light-dark(white, dark.$card);
+  background: white;
   font-size: 0.85rem;
   font-weight: 600;
-  color: light-dark(#475569, dark.$muted);
+  color: #475569;
   cursor: pointer;
 
   &:hover {
-    background: light-dark(#f1f5f9, dark.$surface);
+    background: #f1f5f9;
   }
 }
 
@@ -188,7 +187,7 @@
 
 .footerText {
   font-size: 0.85rem;
-  color: light-dark(#64748b, dark.$muted);
+  color: #64748b;
 }
 
 .actions {
@@ -200,7 +199,7 @@
 .vehicleTitle {
   font-size: 1.1rem;
   font-weight: 600;
-  color: light-dark(#1e293b, dark.$text);
+  color: #1e293b;
   margin: 0;
 }
 
@@ -214,14 +213,14 @@
 .plate {
   display: flex;
   flex-direction: column;
-  border: 2px solid light-dark(#1e293b, dark.$border);
+  border: 2px solid #1e293b;
   border-radius: 4px;
   overflow: hidden;
   width: fit-content;
 }
 
 .plateHeader {
-  background: light-dark(#1e40af, dark.$primary-fill);
+  background: #1e40af;
   color: white;
   font-size: 0.55rem;
   text-align: center;
@@ -230,8 +229,8 @@
 }
 
 .plateText {
-  background: light-dark(white, dark.$card);
-  color: light-dark(#1e293b, dark.$text);
+  background: white;
+  color: #1e293b;
   font-size: 1.1rem;
   font-weight: bold;
   padding: 0 0.5rem;
@@ -239,8 +238,8 @@
 }
 
 .badgeAvailable {
-  background: light-dark(#dcfce7, dark.$success-soft);
-  color: light-dark(#166534, dark.$success);
+  background: #dcfce7;
+  color: #166534;
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.25rem 0.5rem;
@@ -249,7 +248,7 @@
 
 .vehicleInfo {
   font-size: 0.8rem;
-  color: light-dark(#64748b, dark.$muted);
+  color: #64748b;
   margin: 0;
 }
 
@@ -258,7 +257,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.85rem;
-  color: light-dark(#64748b, dark.$muted);
+  color: #64748b;
   margin-bottom: 0.2rem;
 }
 
@@ -270,43 +269,43 @@
 
   strong {
     font-size: 1.1rem;
-    color: light-dark(#1e293b, dark.$text);
+    color: #1e293b;
   }
   span {
     font-size: 0.8rem;
-    color: light-dark(#64748b, dark.$muted);
+    color: #64748b;
   }
 }
 
 .progressBarBg {
   width: 100%;
   height: 8px;
-  background: light-dark(#e2e8f0, dark.$border);
+  background: #e2e8f0;
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progressBarBlue {
   height: 100%;
-  background: light-dark(#2563eb, dark.$primary-fill);
+  background: #2563eb;
   transition: width 0.4s ease;
 }
 
 .progressBarWarning {
   height: 100%;
-  background: light-dark(#f59e0b, dark.$warning);
+  background: #f59e0b;
   transition: width 0.4s ease;
 }
 
 .progressBarDanger {
   height: 100%;
-  background: light-dark(#ef4444, dark.$danger);
+  background: #ef4444;
   transition: width 0.4s ease;
 }
 
 .progressSub {
   font-size: 0.75rem;
-  color: light-dark(#94a3b8, dark.$muted);
+  color: #94a3b8;
   margin-top: 0.4rem;
 }
 
@@ -315,14 +314,14 @@
 }
 
 .textBlue {
-  color: light-dark(#2563eb, dark.$primary);
+  color: #2563eb;
 }
 
 .badgeWarning {
   display: inline-block;
   margin-top: 0.5rem;
-  background: light-dark(#fef3c7, dark.$warning-soft);
-  color: light-dark(#b45309, dark.$warning);
+  background: #fef3c7;
+  color: #b45309;
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.25rem 0.75rem;
@@ -330,21 +329,21 @@
 }
 
 .badgeDanger {
-  background: light-dark(#fee2e2, dark.$danger-soft);
-  color: light-dark(#b91c1c, dark.$danger);
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .warningBox {
   margin-top: 1rem;
   padding: 1rem;
-  background: light-dark(#fef3c7, dark.$warning-soft);
+  background: #fef3c7;
   border-radius: 6px;
-  border: 1px solid light-dark(#fde68a, dark.$warning);
+  border: 1px solid #fde68a;
 
   p {
     margin: 0;
     font-size: 0.8rem;
-    color: light-dark(#92400e, dark.$warning);
+    color: #92400e;
     line-height: 1.4;
   }
 
@@ -356,13 +355,13 @@
 /* Último abastecimento */
 .lastFuelInfo {
   font-size: 0.85rem;
-  color: light-dark(#334155, dark.$text);
+  color: #334155;
   margin: 0.5rem 0;
   font-weight: 500;
 }
 
 .lastFuelDriver {
   font-size: 0.8rem;
-  color: light-dark(#64748b, dark.$muted);
+  color: #64748b;
   margin: 0;
 }

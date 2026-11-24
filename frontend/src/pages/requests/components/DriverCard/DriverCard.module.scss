@@ -1,0 +1,51 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-3;
+  background-color: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.avatar {
+  color: $color-on-navy;
+  background-color: $color-navy;
+  border-color: $color-navy;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 700;
+  color: $color-text;
+}
+
+.vehicle {
+  font-size: $font-size-small;
+  color: $color-text-muted;
+}
+
+.call {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: $touch-target;
+  height: $touch-target;
+  color: $color-primary;
+  background-color: $color-primary-soft;
+  border-radius: $radius-full;
+  transition: background-color $transition-fast;
+
+  @include hover {
+    background-color: $color-table-header;
+  }
+}

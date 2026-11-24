@@ -1,7 +1,8 @@
-@use '@/styles/dark';
 @use '../../styles/tokens' as *;
+@use '../../styles/breakpoints' as *;
 
-.page {
+.page,
+.list {
   display: flex;
   flex-direction: column;
   gap: $space-4;
@@ -17,6 +18,7 @@
 }
 
 .btnPrimary {
+  background-color: #2563eb;
   color: white;
   padding: 0.6rem 1.2rem;
   border-radius: 6px;
@@ -25,14 +27,90 @@
   white-space: nowrap;
 
   &:hover {
-    background-color: light-dark(#1d4ed8, dark.$primary-fill);
+    background-color: #1d4ed8;
   }
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
+  align-items: end;
+}
+
+.filterBtn {
+  height: 40px;
+  padding: 0 1.5rem;
+  background-color: #2563eb !important;
+  color: white !important;
+  font-weight: 600;
+  border: none;
+}
+
+/* Cards KPI */
+.statsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $space-3;
+}
+
+.statCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  border-left-width: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.borderGreen {
+  border-left-color: #10b981;
+}
+.borderYellow {
+  border-left-color: #f59e0b;
+}
+.borderRed {
+  border-left-color: #ef4444;
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.statValue {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.75rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.bgGreen {
+  background: #dcfce7;
+  color: #166534;
+}
+.bgYellow {
+  background: #fef3c7;
+  color: #92400e;
+}
+.bgRed {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 /* Card do Teto (Sempre visível com transição) */
 .tetoCard {
-  background: light-dark(#ffffff, dark.$card);
-  border: 1px solid light-dark(#e2e8f0, dark.$border);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 1.25rem;
   display: flex;
@@ -53,12 +131,12 @@
 .tetoTitle {
   font-size: 1.1rem;
   font-weight: 600;
-  color: light-dark(#1f5fad, dark.$primary);
+  color: #1e40af;
 }
 
 .tetoSubtitle {
   font-size: 0.8rem;
-  color: light-dark(#64748b, dark.$muted);
+  color: #64748b;
 }
 
 .tetoBadge {
@@ -69,16 +147,16 @@
 }
 
 .tetoBadgeWarning {
-  background: light-dark(#fef3c7, dark.$warning-soft);
-  color: light-dark(#b45309, dark.$warning);
+  background: #fef3c7;
+  color: #b45309;
 }
 .tetoBadgeDanger {
-  background: light-dark(#fee2e2, dark.$danger-soft);
-  color: light-dark(#b91c1c, dark.$danger);
+  background: #fee2e2;
+  color: #b91c1c;
 }
 .tetoBadgeMuted {
-  background: light-dark(#f1f5f9, dark.$surface);
-  color: light-dark(#64748b, dark.$muted);
+  background: #f1f5f9;
+  color: #64748b;
 }
 
 .tetoValues {
@@ -89,33 +167,33 @@
   h3 {
     font-size: 1.3rem;
     font-weight: 700;
-    color: light-dark(#1e293b, dark.$text);
+    color: #1e293b;
     margin: 0;
   }
 
   span {
     font-size: 0.85rem;
-    color: light-dark(#64748b, dark.$muted);
+    color: #64748b;
   }
 }
 
 .progressBarBg {
   width: 100%;
   height: 10px;
-  background: light-dark(#e2e8f0, dark.$border);
+  background: #e2e8f0;
   border-radius: 5px;
   overflow: hidden;
 }
 
 .progressBarWarning {
   height: 100%;
-  background: light-dark(#f59e0b, dark.$warning);
+  background: #f59e0b;
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .progressBarDanger {
   height: 100%;
-  background: light-dark(#ef4444, dark.$danger);
+  background: #ef4444;
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -124,7 +202,7 @@
   justify-content: space-between;
   align-items: center;
   font-size: 0.85rem;
-  color: light-dark(#64748b, dark.$muted);
+  color: #64748b;
   margin-top: 0.5rem;
 
   @media (max-width: 600px) {
@@ -135,7 +213,7 @@
 }
 
 .tetoWarningText {
-  color: light-dark(#b45309, dark.$warning);
+  color: #b45309;
   font-weight: 500;
 }
 
@@ -145,8 +223,84 @@
   transition: color 0.2s;
 
   &:hover strong {
-    color: light-dark(#2563eb, dark.$primary);
+    color: #2563eb;
     text-decoration: underline;
+  }
+}
+
+/* Tabela */
+.tableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 1rem 1.25rem 0;
+  border-radius: 8px 8px 0 0;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.tableCount {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.tableWrapper {
+  background: #ffffff;
+  border-radius: 0 0 8px 8px;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  overflow-x: auto;
+
+  :global(thead) {
+    background-color: #eff6ff !important;
+  }
+
+  :global(th) {
+    color: #1e40af !important;
+    font-weight: 600 !important;
+    padding: 1rem !important;
+    text-align: left;
+    border-bottom: 1px solid #bfdbfe !important;
+  }
+
+  :global(td) {
+    padding: 1rem !important;
+    vertical-align: middle;
+    color: #334155;
+    border-bottom: 1px solid #e2e8f0;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.btnOutlineBlue {
+  color: #2563eb !important;
+  border: 1px solid #93c5fd !important;
+  background-color: transparent !important;
+  font-weight: 500;
+
+  &:hover {
+    background-color: #eff6ff !important;
+  }
+}
+
+.btnOutlineRed {
+  color: #dc2626 !important;
+  border: 1px solid #fca5a5 !important;
+  background-color: transparent !important;
+  font-weight: 500;
+
+  &:hover {
+    background-color: #fef2f2 !important;
   }
 }
 
@@ -158,4 +312,18 @@
 .secondary {
   display: block;
   font-weight: 400;
+}
+
+@include up(md) {
+  .statsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .filterGrid {
+    grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  }
+}
+@include up(xl) {
+  .filterGrid {
+    grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)) auto;
+  }
 }

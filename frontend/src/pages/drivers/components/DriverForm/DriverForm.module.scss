@@ -1,7 +1,7 @@
 @use '../../../../styles/tokens' as *;
+@use '../../../../styles/breakpoints' as *;
 
 .form {
-  container-type: inline-size;
   min-width: 0;
 }
 
@@ -9,73 +9,61 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: $space-4;
-
-  @container (width >= 45rem) {
-    grid-template-columns: minmax(7.5rem, 15%) minmax(0, 1fr);
-  }
 }
 
-.sections,
-.section {
+.sections {
   display: flex;
   flex-direction: column;
-  gap: $space-2;
+  gap: $space-4;
   min-width: 0;
 }
 
 .section {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  min-width: 0;
   padding: 0;
   margin: 0;
   border: 0;
 }
 
-.sections > .section + .section {
-  padding-top: $space-3;
-  border-top: 1px solid $color-border-subtle;
-}
-
+/* NOVO: Cabeçalho da seção com texto alinhado à direita */
 .sectionHeader {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
-  gap: $space-1 $space-3;
-
-  h2 {
-    color: $color-primary;
-    font-size: $font-size-body;
-    font-weight: 700;
-  }
+  border-bottom: 1px solid $color-border;
+  padding-bottom: 0.5rem;
+  margin-bottom: $space-3;
 }
 
-.sectionHint,
-.helper {
+.legend {
+  padding: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $color-primary;
+}
+
+.sectionHint {
+  font-size: 0.8rem;
   color: $color-text-muted;
-  font-size: $font-size-xsmall;
-  overflow-wrap: anywhere;
 }
 
 .grid2,
 .grid3 {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  align-items: start;
-  gap: $space-2 $space-3;
-
-  > * {
-    min-width: 0;
-  }
+  gap: $space-3;
 }
 
-@container (width >= 32rem) {
-  .grid2,
-  .grid3 {
+.grid2 {
+  @include up(md) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
-@container (width >= 38rem) {
-  .grid3 {
+.grid3 {
+  @include up(md) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
@@ -85,7 +73,7 @@
   flex-direction: column;
   gap: $space-3;
 
-  @container (width >= 38rem) {
+  @include up(md) {
     flex-direction: row;
     align-items: flex-end;
     justify-content: space-between;
@@ -93,13 +81,9 @@
 }
 
 .status {
-  min-width: 0;
-  padding: 0;
-  margin: 0;
-  border: 0;
-
-  @container (width >= 38rem) {
-    width: calc((100% - #{$space-3}) / 2);
+  @include up(md) {
+    width: 100%;
+    max-width: 24rem;
   }
 }
 
@@ -108,102 +92,69 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: $space-2;
 
-  @container (width >= 38rem) {
+  @include up(md) {
     grid-template-columns: repeat(2, auto);
   }
 }
 
-.form .card {
-  gap: $space-3;
-  padding: clamp(0.875rem, 2cqi, 1.25rem);
+.card {
   background: $color-card;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-subtle;
+  border-radius: $radius-md;
+  padding: 1.25rem;
+  gap: 1.25rem;
 }
 
-.card .notice {
-  padding: $space-1 $space-2;
-  border-color: transparent;
-  border-radius: $radius-sm;
-  font-size: $font-size-xsmall;
-}
-
-.noticeRow,
-.noticeText {
-  display: flex;
-  align-items: center;
-  gap: $space-2;
-}
-
-.noticeRow {
-  flex-wrap: wrap;
-  justify-content: space-between;
-  row-gap: $space-1;
-}
-
-.noticeText svg {
-  flex: none;
+.required {
+  float: right;
+  margin-left: 1rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
 }
 
 .photo {
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .helper {
-  margin-top: $space-1;
+  color: $color-text-muted;
+  font-size: 0.6875rem;
+  margin-top: 0.4rem;
 }
 
+/* NOVO: Estilo da caixa do motorista coringa */
 .wildcard {
-  position: relative;
-  background: $color-warning-soft;
-  border: 1px solid color-mix(in srgb, $color-warning 55%, transparent);
-  border-radius: $radius-md;
-
-  > label {
-    padding: $space-2 2.5rem $space-2 $space-2;
-    align-items: flex-start;
-  }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #fde68a;
+  border-radius: $radius-sm;
+  background: #fef3c7;
+  padding: 0.75rem 1rem;
+  margin-top: 0.5rem;
 }
 
 .infoIcon {
-  position: absolute;
-  top: 50%;
-  right: $space-2;
-  transform: translateY(-50%);
-  color: $color-warning-text;
-  pointer-events: none;
+  color: #b45309;
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
-.form :is(.grid2, .grid3, .status) label {
-  color: $color-text;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.25rem;
+.form label {
+  font-size: 0.75rem;
+}
+.form input,
+.form select {
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  background: $color-card;
+  border-radius: $radius-sm;
 }
 
-.form :is(.grid2, .grid3, .status) :is(input, select) {
-  min-height: $touch-target;
-  min-width: 0;
-  background-color: $color-card;
-
-  @media (pointer: fine) {
-    font-size: $font-size-small;
+@media (min-width: 1000px) {
+  .layout {
+    grid-template-columns: 7rem minmax(0, 1fr);
   }
-}
-
-.withIcon {
-  position: relative;
-
-  .fieldIcon {
-    position: absolute;
-    top: calc(1.25rem + #{$space-1} + #{$touch-target} / 2);
-    left: 0.75rem;
-    transform: translateY(-50%);
-    color: $color-text-muted;
-    pointer-events: none;
-  }
-}
-
-.form :is(.grid2, .grid3) .withIcon input {
-  padding-left: 2.25rem;
 }
