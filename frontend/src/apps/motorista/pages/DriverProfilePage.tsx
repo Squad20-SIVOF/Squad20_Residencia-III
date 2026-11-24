@@ -1,7 +1,7 @@
 import { logout } from '@/service/authService'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/Button'
-import ProfilePage from '@/pages/perfil/ProfilePage.module'
+import ProfilePage from '@/pages/perfil'
 export function DriverProfilePage() {
   const navigate = useNavigate()
   return (

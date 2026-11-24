@@ -332,13 +332,15 @@
 
 .userBox {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: $space-gutter-xs;
   padding: $space-2 $space-3;
 
   .layoutCollapsed & {
     @include up(lg) {
       flex-direction: column;
+      gap: $space-1;
+      padding: $space-2 0;
     }
   }
 }
@@ -375,6 +377,7 @@
   display: inline-flex;
   align-items: center;
   min-width: $touch-target;
+  min-height: $touch-target;
   padding: 0;
   font-size: $font-size-small;
   color: $color-logout;
