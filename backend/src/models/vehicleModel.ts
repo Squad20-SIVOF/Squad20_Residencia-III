@@ -109,7 +109,7 @@ const updateVehicle = async (
       marca=CASE WHEN $12::jsonb ? 'marca' THEN $12::jsonb->>'marca' ELSE marca END,
       proxima_vistoria=CASE WHEN $12::jsonb ? 'proxima_vistoria' THEN ($12::jsonb->>'proxima_vistoria')::date ELSE proxima_vistoria END,
       checklist_vistoria=COALESCE($12::jsonb->'checklist_vistoria',checklist_vistoria),
-      foto=CASE WHEN $12::jsonb ? 'foto' THEN $12::jsonb->>'foto' ELSE foto END
+      foto=CASE WHEN $13::boolean THEN $14::text ELSE foto END
       WHERE id = $8
       RETURNING ${columns}`,
     [
@@ -129,8 +129,9 @@ const updateVehicle = async (
         marca: vehicle.marca,
         proxima_vistoria: vehicle.proxima_vistoria,
         checklist_vistoria: vehicle.checklist_vistoria,
-        foto: vehicle.foto,
       }),
+      vehicle.foto !== undefined,
+      vehicle.foto ?? null,
     ],
   );
 
