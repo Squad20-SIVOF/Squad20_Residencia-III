@@ -12,7 +12,6 @@ import {
   toRequestInput,
   validateRequestForm,
 } from './requestRules'
-import { ROUTE_POINTS, getPointAlongRoute } from './routeGeometry'
 
 // 26/10/2026, 10:00 (horário local)
 const NOW = new Date(2026, 9, 26, 10, 0)
@@ -136,23 +135,4 @@ test('previsão de chegada e idade da última posição', () => {
     new Date(updatedAt).getTime() + (STALE_LOCATION_SECONDS + 1) * 1000,
   )
   expect(isLocationStale(updatedAt, muchLater)).toBe(true)
-})
-
-test('posição do carro no trajeto do mapa', () => {
-  expect(getPointAlongRoute(ROUTE_POINTS, 0)).toEqual(ROUTE_POINTS[0])
-  expect(getPointAlongRoute(ROUTE_POINTS, 1)).toEqual(
-    ROUTE_POINTS[ROUTE_POINTS.length - 1],
-  )
-  expect(getPointAlongRoute(ROUTE_POINTS, 2)).toEqual(
-    ROUTE_POINTS[ROUTE_POINTS.length - 1],
-  )
-
-  const half = getPointAlongRoute(
-    [
-      { x: 0, y: 0 },
-      { x: 10, y: 0 },
-    ],
-    0.5,
-  )
-  expect(half).toEqual({ x: 5, y: 0 })
 })

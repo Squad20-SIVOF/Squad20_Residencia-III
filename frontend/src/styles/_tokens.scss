@@ -94,13 +94,15 @@ $sidebar-badge-size: 1.125rem;
 $content-max-width: 82.5rem;
 $transition-fast: 150ms ease;
 
-// Mapa ilustrativo (solicitação e acompanhamento de veículo)
-$color-map-background: #dfe6ee;
-$color-map-block: #cbd5e1;
-$color-map-street: #ffffff;
+// Mapa das viagens (Leaflet): solicitação, acompanhamento e monitoramento
+$color-map-background: #dfe6ee; // fundo enquanto os blocos do OpenStreetMap carregam
 $color-map-route: $color-navy;
 $color-map-route-outline: $color-primary;
+$color-map-vehicle: $color-primary;
 $color-map-badge: $color-primary;
+$map-marker-size: 0.875rem;
+$map-pin-size: 1.5rem;
+$map-vehicle-size: 2rem;
 $map-preview-height: 11rem;
 $map-tracking-height: 18rem;
 $map-overlay-width: 20rem;

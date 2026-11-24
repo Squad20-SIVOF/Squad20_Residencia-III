@@ -33,6 +33,9 @@ test('renderiza o formulário de solicitação no item Viagens', async () => {
   ).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: 'Rota da Solicitação' })).toBeInTheDocument()
   expect(
+    screen.getByRole('region', { name: 'Mapa da rota entre a origem e o destino' }),
+  ).toBeInTheDocument()
+  expect(
     screen.getByText(
       'Envio demonstrativo: este formulário ainda não registra solicitações.',
     ),

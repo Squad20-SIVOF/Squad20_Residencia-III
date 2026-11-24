@@ -83,7 +83,7 @@ export function RouteMonitoringPage() {
           {selectedTrip && (
             <article className={styles.mapPanel}>
               <RouteMap
-                label={`Mapa ilustrativo de ${selectedTrip.origin} até ${selectedTrip.destination}`}
+                label={`Mapa de ${selectedTrip.origin} até ${selectedTrip.destination}`}
               />
               <div className={styles.mapDetails}>
                 <h2>Rota #{selectedTrip.routeCode}</h2>

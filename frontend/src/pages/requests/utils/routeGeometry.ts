@@ -1,39 +1,48 @@
-export interface MapPoint {
-  x: number
-  y: number
+export interface GeoPoint {
+  lat: number
+  lng: number
 }
 
-/** Trajeto desenhado no mapa ilustrativo (coordenadas do viewBox 400 × 300). */
-export const ROUTE_POINTS: MapPoint[] = [
-  { x: 110, y: 240 },
-  { x: 150, y: 222 },
-  { x: 190, y: 200 },
-  { x: 225, y: 190 },
-  { x: 255, y: 160 },
-  { x: 275, y: 120 },
-  { x: 288, y: 72 },
-]
-
-/** Atributo `points` de <polyline>. */
-export function toPolylinePoints(points: MapPoint[]): string {
-  return points.map(({ x, y }) => `${x},${y}`).join(' ')
-}
+/** Centro de Aracaju/SE: vista inicial do mapa antes de enquadrar a rota. */
+export const ARACAJU_CENTER: GeoPoint = { lat: -10.9472, lng: -37.0731 }
 
 /**
- * Ponto a uma fração `progress` (0 a 1) do comprimento total do trajeto.
- * Feito à mão porque getPointAtLength não existe no jsdom dos testes.
+ * DEMONSTRATIVO: trajeto fixo em Aracaju (Centro → Shopping Jardins) só para o mapa
+ * ter o que desenhar. A API ainda não envia coordenadas; quando enviar, as telas
+ * passam a usar os pontos reais e esta constante sai.
  */
-export function getPointAlongRoute(points: MapPoint[], progress: number): MapPoint {
+export const DEMO_ROUTE: GeoPoint[] = [
+  { lat: -10.9132965, lng: -37.0486965 },
+  { lat: -10.9186, lng: -37.0512 },
+  { lat: -10.9248, lng: -37.0531 },
+  { lat: -10.9311, lng: -37.0549 },
+  { lat: -10.9367, lng: -37.0566 },
+  { lat: -10.9412, lng: -37.0583 },
+  { lat: -10.9432674, lng: -37.059823 },
+]
+
+/**
+ * Distância aproximada entre dois pontos, na mesma unidade para todos os trechos.
+ * Corrige a longitude pelo cosseno da latitude; numa cidade isso basta para
+ * repartir o trajeto, sem precisar da fórmula de haversine.
+ */
+function segmentLength(start: GeoPoint, end: GeoPoint): number {
+  const meanLat = ((start.lat + end.lat) / 2) * (Math.PI / 180)
+  return Math.hypot(end.lat - start.lat, (end.lng - start.lng) * Math.cos(meanLat))
+}
+
+/** Ponto a uma fração `progress` (0 a 1) do comprimento total do trajeto. */
+export function getPointAlongRoute(points: GeoPoint[], progress: number): GeoPoint {
   const first = points[0]
   const last = points[points.length - 1]
-  if (!first || !last) return { x: 0, y: 0 }
+  if (!first || !last) return ARACAJU_CENTER
   // Nas pontas devolve o ponto exato, sem o erro de arredondamento da soma.
   if (progress <= 0) return first
   if (progress >= 1) return last
 
   const segments = points.slice(1).map((end, index) => {
     const start = points[index] ?? first
-    return { start, end, length: Math.hypot(end.x - start.x, end.y - start.y) }
+    return { start, end, length: segmentLength(start, end) }
   })
   const total = segments.reduce((sum, segment) => sum + segment.length, 0)
   let remaining = progress * total
@@ -42,8 +51,8 @@ export function getPointAlongRoute(points: MapPoint[], progress: number): MapPoi
     if (remaining <= length) {
       const ratio = length === 0 ? 0 : remaining / length
       return {
-        x: start.x + (end.x - start.x) * ratio,
-        y: start.y + (end.y - start.y) * ratio,
+        lat: start.lat + (end.lat - start.lat) * ratio,
+        lng: start.lng + (end.lng - start.lng) * ratio,
       }
     }
     remaining -= length

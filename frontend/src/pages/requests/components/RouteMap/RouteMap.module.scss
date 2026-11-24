@@ -1,132 +1,145 @@
 @use '../../../../styles/tokens' as *;
 @use '../../../../styles/mixins' as *;
+@use '../../../../styles/breakpoints' as *;
 
+// `isolation` prende as camadas do Leaflet (z-index 400 a 1000) dentro do mapa,
+// para que os selos (children) e os cards das telas fiquem por cima dele.
 .map {
   position: relative;
+  isolation: isolate;
   overflow: hidden;
   background-color: $color-map-background;
   border-radius: $radius-lg;
 }
 
-.svg {
+.canvas {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  z-index: 0;
+  font-family: $font-family;
+  background-color: $color-map-background;
+
+  &:focus-visible {
+    @include focus-ring;
+    outline-offset: -2px;
+  }
+
+  // Botões de zoom com a área de toque mínima de 44 px.
+  :global(.leaflet-bar.leaflet-control-zoom a) {
+    width: $touch-target;
+    height: $touch-target;
+    font-size: $font-size-h4;
+    line-height: $touch-target;
+    color: $color-text;
+  }
+
+  :global(.leaflet-control-attribution) {
+    font-size: $font-size-xsmall;
+  }
 }
 
-// O desenho é decorativo; quem usa leitor de tela recebe a descrição em texto.
-.label {
-  @include visually-hidden;
+// Na solicitação, o mapa do celular é só um fundo atrás do card do formulário, que
+// cobriria os botões: sem eles, nada invisível fica no caminho do Tab.
+.minimal :global(.leaflet-control-zoom) {
+  display: none;
+
+  @include up(lg) {
+    display: block;
+  }
 }
 
-.block {
-  fill: $color-map-block;
-}
-
-.street {
-  fill: none;
-  stroke: $color-map-street;
-  stroke-width: 12;
-  vector-effect: non-scaling-stroke;
-  stroke-linecap: round;
-}
-
-.streetThin {
-  fill: none;
-  stroke: $color-map-street;
-  stroke-width: 4;
-  vector-effect: non-scaling-stroke;
-  stroke-linecap: round;
-}
-
+// Linhas: o Leaflet desenha <path> com atributos de cor; o CSS tem prioridade sobre eles.
+.route,
+.routeTracking,
 .routeOutline,
 .routeOutlineInner {
   fill: none;
-  vector-effect: non-scaling-stroke;
   stroke-linecap: round;
   stroke-linejoin: round;
-}
-
-.routeOutline {
-  stroke: $color-map-route-outline;
-  stroke-width: 14;
-}
-
-.routeOutlineInner {
-  stroke: $color-map-background;
-  stroke-width: 10;
-}
-
-.endOutline {
-  fill: $color-map-background;
-  stroke: $color-map-route-outline;
-  stroke-width: 2;
-  vector-effect: non-scaling-stroke;
-}
-
-.route,
-.routeTracking {
-  fill: none;
-  stroke-width: 4;
-  vector-effect: non-scaling-stroke;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke-opacity: 1;
 }
 
 .route {
   stroke: $color-map-route;
+  stroke-width: 4;
 }
 
 .routeTracking {
-  stroke: $color-primary;
+  stroke: $color-map-vehicle;
+  stroke-width: 4;
   stroke-dasharray: 2 8;
 }
 
+.routeOutline {
+  stroke: $color-map-route-outline;
+  stroke-width: 10;
+}
+
+.routeOutlineInner {
+  stroke: $color-map-background;
+  stroke-width: 6;
+}
+
+// Âncora de tamanho zero no ponto da coordenada; o marcador se centraliza nela.
+.markerAnchor {
+  > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.originMarker,
+.destinationMarker,
+.endOutline {
+  width: $map-marker-size;
+  height: $map-marker-size;
+  background-color: $color-card;
+  border: 3px solid $color-map-route;
+}
+
 .originMarker {
-  fill: $color-card;
-  stroke: $color-map-route;
-  stroke-width: 3;
+  border-radius: $radius-full;
 }
 
-.destinationMarker {
-  fill: $color-card;
-  stroke: $color-map-route;
-  stroke-width: 3;
-}
-
-.pinHalo {
-  fill: rgba($color-primary, 0.15);
+.endOutline {
+  width: calc(#{$map-marker-size} * 1.6);
+  border-width: 2px;
+  border-color: $color-map-route-outline;
+  border-radius: $radius-full;
 }
 
 .pin {
-  fill: $color-card;
-  stroke: $color-primary;
-  stroke-width: 2.5;
+  width: $map-pin-size;
+  height: $map-pin-size;
+  background-color: $color-card;
+  border: 3px solid $color-map-vehicle;
+  border-radius: $radius-full;
+  box-shadow: 0 0 0 $space-2 rgba($color-map-vehicle, 0.15);
 }
 
 .pinCenter {
-  fill: $color-primary;
+  width: $space-2;
+  height: $space-2;
+  background-color: $color-map-vehicle;
+  border-radius: $radius-full;
 }
 
-.car {
-  transition: transform $transition-fast;
-}
+.vehicle {
+  width: $map-vehicle-size;
+  height: $map-vehicle-size;
+  color: $color-card;
+  background-color: $color-map-vehicle;
+  border: 2px solid $color-card;
+  border-radius: $radius-full;
+  box-shadow: 0 0 0 $space-2 rgba($color-map-vehicle, 0.18);
 
-.carHalo {
-  fill: rgba($color-primary, 0.18);
-}
-
-.carBody {
-  fill: $color-primary;
-  stroke: $color-card;
-  stroke-width: 2;
-}
-
-.carGlyph {
-  fill: $color-card;
-}
-
-.carWheel {
-  fill: $color-primary;
+  svg {
+    width: 60%;
+    height: 60%;
+  }
 }
