@@ -2,6 +2,10 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { beforeEach, expect, test, vi } from 'vitest'
+import {
+  resetDevFeatureFlags,
+  saveDevFeatureFlags,
+} from '@/apps/motorista/features/featureFlags'
 import { api } from '@/service/api'
 import type { RequestRecord } from './services/requestApi'
 import { TripsPanelPage } from './TripsPanelPage'
@@ -30,6 +34,7 @@ let rows: RequestRecord[]
 let total: number
 
 beforeEach(() => {
+  resetDevFeatureFlags()
   vi.resetAllMocks()
   rows = [
     record({}),
@@ -83,11 +88,17 @@ async function requestCodes() {
     )
 }
 
-test('mostra o título, as ações rápidas e os links para as outras telas de Viagens', () => {
+test('mostra o título, as ações rápidas e os links após carregar o Painel de Viagens', async () => {
   renderPanel()
 
   expect(
-    screen.getByRole('heading', { level: 1, name: 'Painel de Viagens' }),
+    screen.getByRole('status', { name: 'Carregando painel de viagens' }),
+  ).toHaveAttribute('aria-busy', 'true')
+  expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Acessar mapa' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  expect(
+    await screen.findByRole('heading', { level: 1, name: 'Painel de Viagens' }),
   ).toBeInTheDocument()
   expect(
     screen.getByText(
@@ -97,6 +108,10 @@ test('mostra o título, as ações rápidas e os links para as outras telas de V
   for (const title of ['Solicitar Veículo', 'Mapa de Rotas', 'Novo Atendimento SVO'])
     expect(screen.getByRole('heading', { level: 3, name: title })).toBeInTheDocument()
 
+  expect(screen.getByRole('link', { name: 'Acessar mapa' })).toHaveAttribute(
+    'href',
+    '/viagens/monitoramento',
+  )
   expect(screen.getByRole('link', { name: 'Nova solicitação' })).toHaveAttribute(
     'href',
     '/viagens/solicitar',
@@ -113,10 +128,11 @@ test('mostra o título, as ações rápidas e os links para as outras telas de V
 
 test('Mapa de Rotas aparece como "Em breve", desabilitado e sem destino', async () => {
   const user = userEvent.setup()
+  saveDevFeatureFlags({ gestor_route_monitoring: false })
   renderPanel()
 
   for (const name of ['Acessar mapa Em breve', 'Abrir mapa de rotas Em breve']) {
-    const link = screen.getByRole('link', { name })
+    const link = await screen.findByRole('link', { name })
     expect(link).toHaveAttribute('aria-disabled', 'true')
     expect(link).not.toHaveAttribute('href')
     await user.click(link)
@@ -128,7 +144,7 @@ test('o link Nova solicitação abre o formulário de solicitação', async () =
   const user = userEvent.setup()
   renderPanel()
 
-  await user.click(screen.getByRole('link', { name: 'Nova solicitação' }))
+  await user.click(await screen.findByRole('link', { name: 'Nova solicitação' }))
   expect(currentPath()).toHaveTextContent(/^\/viagens\/solicitar$/)
 })
 
@@ -136,7 +152,7 @@ test('Ver todas abre a lista de solicitações pendentes', async () => {
   const user = userEvent.setup()
   renderPanel()
 
-  await user.click(screen.getByRole('link', { name: 'Ver todas' }))
+  await user.click(await screen.findByRole('link', { name: 'Ver todas' }))
   expect(currentPath()).toHaveTextContent(/^\/viagens\/solicitacoes$/)
 })
 
@@ -251,7 +267,15 @@ test('as viagens em acompanhamento levam ao acompanhamento da rota', async () =>
   const trip = within(list).getByRole('link', {
     name: /^Acompanhar Rota #101, Em viagem/,
   })
-  expect(trip).toHaveAttribute('href', '/viagens/demo-rota-101')
+  expect(trip).toHaveAttribute('href', '/viagens/monitoramento/demo-rota-101')
   await user.click(trip)
-  expect(currentPath()).toHaveTextContent('/viagens/demo-rota-101')
+  expect(currentPath()).toHaveTextContent('/viagens/monitoramento/demo-rota-101')
+})
+
+test('abre o monitoramento pelo cartão quando os detalhes estão desativados', async () => {
+  saveDevFeatureFlags({ gestor_route_details: false })
+  renderPanel()
+
+  const trip = await screen.findByRole('link', { name: /^Acompanhar Rota #101/ })
+  expect(trip).toHaveAttribute('href', '/viagens/monitoramento')
 })

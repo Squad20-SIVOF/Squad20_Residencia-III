@@ -2,6 +2,7 @@
 @use '../../../../styles/mixins' as *;
 
 .plate {
+  color-scheme: light;
   display: inline-flex;
   flex-direction: column;
   align-self: flex-start;

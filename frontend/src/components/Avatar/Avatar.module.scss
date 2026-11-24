@@ -9,7 +9,7 @@
   font-weight: 700;
   color: $color-primary;
   background-color: $color-primary-soft;
-  border: 2px solid rgba($color-primary, 0.2);
+  border: 2px solid color-mix(in srgb, $color-primary 20%, transparent);
   border-radius: 50%;
 }
 

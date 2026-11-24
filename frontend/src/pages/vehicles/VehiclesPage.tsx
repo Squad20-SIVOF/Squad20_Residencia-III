@@ -1,4 +1,5 @@
 import { currentUser } from '@/service/authService'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { deleteVehicle } from './services/vehicleService'
 import { Alert } from '@/components/Alert'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -6,8 +7,9 @@ import { VehicleForm } from './VehicleForm'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/Button'
 import { StateMessage } from '@/components/StateMessage'
+import { useAsync } from '@/hooks/useAsync'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
-import { VehiclePagination } from './components/VehiclePagination'
+import { Pagination } from '@/components/Pagination'
 import { VehicleStats } from './components/VehicleStats'
 import { VehicleTable } from './components/VehicleTable'
 import { VehicleToolbar } from './components/VehicleToolbar'
@@ -32,21 +34,12 @@ export function VehiclesPage() {
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null | undefined>(
     undefined,
   )
-  const [canManage, setCanManage] = useState(false)
+  const session = useAsync(currentUser)
+  const canManage =
+    session.status === 'success' && session.data.permissoes.includes('veiculos:gerenciar')
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
-  useEffect(() => {
-    let active = true
-    currentUser()
-      .then((user) => {
-        if (active) setCanManage(user.permissoes.includes('veiculos:gerenciar'))
-      })
-      .catch(() => {})
-    return () => {
-      active = false
-    }
-  }, [])
   const vehiclesRequest = useVehicles()
   async function confirmDelete() {
     if (!vehicleToDelete || deleting) return
@@ -71,17 +64,20 @@ export function VehiclesPage() {
   const headingRef = useRef<HTMLHeadingElement>(null)
   const hasOpenedDetailsRef = useRef(false)
 
+  const isLoading = vehiclesRequest.status === 'loading' || session.status === 'loading'
+
   // Ao voltar dos detalhes, leva o foco e a rolagem para o topo da lista.
   useEffect(() => {
     if (selectedVehicleId !== null) {
       hasOpenedDetailsRef.current = true
       return
     }
-    if (hasOpenedDetailsRef.current) {
+    if (!isLoading && editingVehicle === undefined && hasOpenedDetailsRef.current) {
+      hasOpenedDetailsRef.current = false
       window.scrollTo({ top: 0 })
       headingRef.current?.focus()
     }
-  }, [selectedVehicleId])
+  }, [editingVehicle, isLoading, selectedVehicleId])
 
   function handleEdit(vehicle: Vehicle) {
     setEditingVehicle(vehicle)
@@ -123,11 +119,9 @@ export function VehiclesPage() {
     )
   }
 
-  function renderListState() {
-    if (vehiclesRequest.status === 'loading') {
-      return <StateMessage variant="loading" title="Carregando veículos..." />
-    }
+  if (isLoading) return <LoadingState label="Carregando veículos..." />
 
+  function renderListState() {
     if (vehiclesRequest.status === 'error') {
       return (
         <StateMessage
@@ -206,27 +200,30 @@ export function VehiclesPage() {
       />
 
       {deleteError && <Alert variant="danger">{deleteError}</Alert>}
-      <div className={styles.list}>
-        <VehicleTable
-          vehicles={filters.pageVehicles}
-          {...(isLoaded ? { recordCount: filters.filteredVehicles.length } : {})}
-          state={listState}
-          onView={(vehicle) => setSelectedVehicleId(vehicle.id)}
-          onEdit={handleEdit}
-          onDelete={setVehicleToDelete}
-          canManage={canManage}
-        />
-        {!listState && (
-          <VehiclePagination
-            shownCount={filters.pageVehicles.length}
-            totalCount={filters.filteredVehicles.length}
-            hasPrevious={filters.currentPage > 1}
-            hasNext={filters.currentPage < filters.totalPages}
-            onPrevious={filters.goToPreviousPage}
-            onNext={filters.goToNextPage}
-          />
-        )}
-      </div>
+      <VehicleTable
+        vehicles={filters.pageVehicles}
+        {...(isLoaded ? { recordCount: filters.filteredVehicles.length } : {})}
+        state={listState}
+        onView={(vehicle) => setSelectedVehicleId(vehicle.id)}
+        onEdit={handleEdit}
+        onDelete={setVehicleToDelete}
+        canManage={canManage}
+        footer={
+          !listState && (
+            <Pagination
+              itemLabel="veículos"
+              shownCount={filters.pageVehicles.length}
+              totalCount={filters.filteredVehicles.length}
+              currentPage={filters.currentPage}
+              totalPages={filters.totalPages}
+              hasPrevious={filters.currentPage > 1}
+              hasNext={filters.currentPage < filters.totalPages}
+              onPrevious={filters.goToPreviousPage}
+              onNext={filters.goToNextPage}
+            />
+          )
+        }
+      />
       <ConfirmDialog
         isOpen={vehicleToDelete !== null}
         title="Excluir veículo?"

@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -24,7 +24,7 @@ test('renderiza o formulário de solicitação no item Viagens', async () => {
   renderAt('/viagens/solicitar')
 
   expect(
-    screen.getByRole('heading', { level: 1, name: 'Solicitar Veículo' }),
+    await screen.findByRole('heading', { level: 1, name: 'Solicitar Veículo' }),
   ).toBeInTheDocument()
   expect(
     screen.getByText(
@@ -41,6 +41,9 @@ test('renderiza o formulário de solicitação no item Viagens', async () => {
   expect(screen.getByLabelText('Setor solicitante')).toHaveValue('Administrativo')
   expect(screen.getByText('Status: Aguardando aprovação')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Enviar Solicitação' })).toBeInTheDocument()
+  expect(
+    screen.queryByRole('link', { name: 'Ver solicitações pendentes' }),
+  ).not.toBeInTheDocument()
   // Só veículos disponíveis entram como preferência.
   expect(
     await screen.findByRole('option', { name: /Fiat Fiorino · ABC-1D23/ }),
@@ -52,7 +55,9 @@ test('mostra o link de voltar ao Painel de Viagens acima do título', async () =
   const user = userEvent.setup()
   renderAt('/viagens/solicitar')
 
-  const backLink = screen.getByRole('link', { name: /voltar para o painel de viagens/i })
+  const backLink = await screen.findByRole('link', {
+    name: /voltar para o painel de viagens/i,
+  })
   expect(backLink).toHaveAttribute('href', '/viagens')
   expect(
     backLink.compareDocumentPosition(
@@ -73,7 +78,7 @@ test('não envia sem os campos obrigatórios e foca o primeiro erro', async () =
   const user = userEvent.setup()
   renderAt('/viagens/solicitar')
 
-  await user.click(screen.getByRole('button', { name: 'Enviar Solicitação' }))
+  await user.click(await screen.findByRole('button', { name: 'Enviar Solicitação' }))
 
   expect(screen.getByText('Corrija os campos destacados.')).toBeInTheDocument()
   expect(screen.getByText('Informe o destino.')).toBeInTheDocument()
@@ -87,7 +92,7 @@ test('limita os passageiros à lotação do veículo escolhido', async () => {
   renderAt('/viagens/solicitar')
 
   await user.selectOptions(
-    screen.getByLabelText('Veículo preferencial'),
+    await screen.findByLabelText('Veículo preferencial'),
     await screen.findByRole('option', { name: /Fiat Fiorino/ }),
   )
   await user.type(screen.getByLabelText('Nº de passageiros'), '5')
@@ -101,7 +106,10 @@ test('limita os passageiros à lotação do veículo escolhido', async () => {
 const SENT_MESSAGE = 'Solicitação enviada! Aguardando aprovação do gestor.'
 
 async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText('Destino'), 'Hospital de Urgência de Sergipe')
+  await user.type(
+    await screen.findByLabelText('Destino'),
+    'Hospital de Urgência de Sergipe',
+  )
   await user.type(screen.getByLabelText('Data da solicitação'), '31122099')
   await user.type(screen.getByLabelText('Horário de saída'), '0830')
   await user.type(screen.getByLabelText('Horário retorno previsto'), '1200')
@@ -138,27 +146,14 @@ test('mostra o aviso de envio e redireciona para as solicitações pendentes', a
   await fillAndSubmit(user)
 
   await findSentNotice()
+  expect(
+    screen.queryByRole('link', { name: 'Ver solicitações pendentes' }),
+  ).not.toBeInTheDocument()
   expect(createRequest).toHaveBeenCalledOnce()
   // O aviso aparece antes do redirecionamento.
   expect(currentPath()).toHaveTextContent('/viagens/solicitar')
 
   await act(() => vi.advanceTimersByTimeAsync(REDIRECT_DELAY_MS))
-
-  expect(currentPath()).toHaveTextContent(/^\/viagens\/solicitacoes$/)
-  expect(
-    await screen.findByRole('heading', { level: 1, name: 'Solicitações Pendentes' }),
-  ).toBeInTheDocument()
-})
-
-test('o link do aviso leva às solicitações pendentes na hora', async () => {
-  const user = userEvent.setup()
-  renderAt('/viagens/solicitar')
-
-  await fillAndSubmit(user)
-  const notice = await findSentNotice()
-  await user.click(
-    within(notice).getByRole('link', { name: 'Ver solicitações pendentes' }),
-  )
 
   expect(currentPath()).toHaveTextContent(/^\/viagens\/solicitacoes$/)
   expect(

@@ -1,11 +1,5 @@
 import { onlyDigits, parseBrDate, parseTime } from '@/utils/masks'
-import { TRIP_STAGES } from '../types'
-import type {
-  RequestFormErrors,
-  RequestFormValues,
-  RequestInput,
-  TripStage,
-} from '../types'
+import type { RequestFormErrors, RequestFormValues, RequestInput } from '../types'
 
 // ---------- Validação do formulário ----------
 
@@ -104,72 +98,4 @@ export function toRequestInput(values: RequestFormValues): RequestInput | null {
 function minutesToTime(minutes: number): string {
   const pad = (value: number) => String(value).padStart(2, '0')
   return `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`
-}
-
-// ---------- Acompanhamento da rota ----------
-
-/** Velocidade média urbana usada para estimar a chegada. */
-export const URBAN_SPEED_KMH = 23
-
-/** A partir deste ponto do trajeto o motorista está "chegando". */
-export const ARRIVING_PROGRESS = 0.8
-
-/** Sem nova posição por mais tempo que isso, avisamos que o dado pode estar velho. */
-export const STALE_LOCATION_SECONDS = 30
-
-export function getTripStage(progress: number): TripStage {
-  if (progress <= 0) return 'confirmada'
-  if (progress < ARRIVING_PROGRESS) return 'a_caminho'
-  if (progress < 1) return 'chegando'
-  return 'embarque'
-}
-
-/** Distância que falta, arredondada a 100 m. */
-export function getRemainingKm(totalKm: number, progress: number): number {
-  const clamped = Math.min(1, Math.max(0, progress))
-  return Math.round(totalKm * (1 - clamped) * 10) / 10
-}
-
-export function getEtaMinutes(remainingKm: number): number {
-  if (remainingKm <= 0) return 0
-  return Math.max(1, Math.round((remainingKm * 60) / URBAN_SPEED_KMH))
-}
-
-/** Horário previsto de chegada, a partir da última posição recebida. */
-export function getArrivalTime(updatedAt: string, etaMinutes: number): string {
-  return new Date(new Date(updatedAt).getTime() + etaMinutes * 60_000).toISOString()
-}
-
-export function getSecondsSince(isoDateTime: string, now: Date = new Date()): number {
-  return Math.max(0, Math.floor((now.getTime() - new Date(isoDateTime).getTime()) / 1000))
-}
-
-export function isLocationStale(updatedAt: string, now: Date = new Date()): boolean {
-  return getSecondsSince(updatedAt, now) > STALE_LOCATION_SECONDS
-}
-
-export function getStageIndex(stage: TripStage): number {
-  return TRIP_STAGES.indexOf(stage)
-}
-
-const STAGE_STATUS: Record<TripStage, string> = {
-  confirmada: 'Motorista confirmado',
-  a_caminho: 'Motorista a caminho',
-  chegando: 'Motorista chegando',
-  embarque: 'Motorista no ponto de embarque',
-}
-
-const STAGE_MAP_BADGE: Record<TripStage, string> = {
-  confirmada: 'Aguardando saída',
-  a_caminho: 'Em aproximação',
-  chegando: 'Em aproximação',
-  embarque: 'No ponto de embarque',
-}
-
-export function getStageStatus(stage: TripStage): string {
-  return STAGE_STATUS[stage]
-}
-
-export function getStageMapBadge(stage: TripStage): string {
-  return STAGE_MAP_BADGE[stage]
 }
