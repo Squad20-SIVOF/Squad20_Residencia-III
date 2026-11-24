@@ -1,0 +1,70 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/breakpoints' as *;
+
+// Em telas estreitas o texto do status quebra linha; tempo e distância não.
+.panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: $space-2;
+
+  @include up(sm) {
+    gap: $space-3;
+  }
+}
+
+.status {
+  min-width: 0;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: $status-dot-size;
+  height: $status-dot-size;
+  background-color: $color-success;
+  border-radius: $radius-full;
+}
+
+.updated {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}
+
+.eta,
+.distance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: $line-height-tight;
+}
+
+.distance {
+  padding-left: $space-2;
+  border-left: 1px solid $color-border;
+}
+
+.etaValue {
+  font-size: $font-size-display;
+  font-weight: 700;
+  color: $color-navy;
+  white-space: nowrap;
+}
+
+.distanceValue {
+  font-weight: 700;
+  color: $color-navy;
+  white-space: nowrap;
+}
+
+.caption {
+  font-size: $font-size-xsmall;
+  color: $color-text-muted;
+}

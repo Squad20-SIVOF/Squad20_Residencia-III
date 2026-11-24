@@ -1,13 +1,3 @@
-import { useId, type ComponentProps, type ReactNode } from 'react'
-import {
-  CalendarDays,
-  Check,
-  CircleCheck,
-  Info,
-  Mail,
-  Phone,
-  ShieldAlert,
-} from 'lucide-react'
 import { useVehicles } from '@/pages/vehicles/hooks/useVehicles'
 import { DriverVehiclesField } from '../DriverVehiclesField/DriverVehiclesField'
 import { DRIVER_FLEETS } from '../../types'
@@ -32,20 +22,6 @@ const CATEGORY_OPTIONS: SelectOption<CnhCategory | ''>[] = [
 
 const fieldId = (field: string) => `${DRIVER_FIELD_ID_PREFIX}${field}`
 
-function FieldWithIcon({
-  icon,
-  ...props
-}: ComponentProps<typeof TextField> & { icon: ReactNode }) {
-  return (
-    <div className={styles.withIcon}>
-      <TextField {...props} />
-      <span className={styles.fieldIcon} aria-hidden="true">
-        {icon}
-      </span>
-    </div>
-  )
-}
-
 export interface DriverFormProps {
   initial?: Driver | undefined
   onSubmit: (input: DriverInput) => Promise<void>
@@ -53,7 +29,6 @@ export interface DriverFormProps {
 }
 
 export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
-  const sectionId = useId()
   const form = useDriverForm(initial, onSubmit)
   const vehiclesRequest = useVehicles()
   const { values, errors, setField } = form
@@ -72,21 +47,15 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
   return (
     <form
       onSubmit={form.handleSubmit}
-      autoComplete="off"
       noValidate
       className={styles.form}
       aria-busy={form.isSubmitting}
     >
       <fieldset disabled={form.isSubmitting} className={styles.section}>
         <Card className={styles.card}>
-          <Alert variant="info" className={styles.notice}>
-            <span className={styles.noticeRow}>
-              <span className={styles.noticeText}>
-                <Info size={16} aria-hidden="true" />
-                Os dados serão validados antes de salvar o cadastro.
-              </span>
-              <strong>* Campos obrigatórios</strong>
-            </span>
+          <Alert variant="info">
+            Os dados serão validados antes de salvar o cadastro.
+            <span className={styles.required}>* Campos obrigatórios</span>
           </Alert>
 
           {(form.hasErrors || form.submitError) && (
@@ -105,12 +74,9 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
             </aside>
 
             <div className={styles.sections}>
-              <section
-                className={styles.section}
-                aria-labelledby={`${sectionId}-personal`}
-              >
+              <fieldset className={styles.section}>
                 <div className={styles.sectionHeader}>
-                  <h2 id={`${sectionId}-personal`}>Dados pessoais</h2>
+                  <legend className={styles.legend}>Dados pessoais</legend>
                   <span className={styles.sectionHint}>Identificação e contato</span>
                 </div>
                 <div className={styles.grid2}>
@@ -123,9 +89,8 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                     isInvalid={!!errors.name}
                     errorMessage={errors.name}
                   />
-                  <FieldWithIcon
+                  <TextField
                     id={fieldId('cpf')}
-                    icon={<CircleCheck size={16} />}
                     label="CPF *"
                     inputMode="numeric"
                     placeholder="000.000.000-00"
@@ -134,9 +99,8 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                     isInvalid={!!errors.cpf}
                     errorMessage={errors.cpf}
                   />
-                  <FieldWithIcon
+                  <TextField
                     id={fieldId('phone')}
-                    icon={<Phone size={16} />}
                     label="Telefone *"
                     type="tel"
                     placeholder="(79) 00000-0000"
@@ -145,9 +109,8 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                     isInvalid={!!errors.phone}
                     errorMessage={errors.phone}
                   />
-                  <FieldWithIcon
+                  <TextField
                     id={fieldId('email')}
-                    icon={<Mail size={16} />}
                     label="E-mail *"
                     type="email"
                     placeholder="email@exemplo.com"
@@ -157,14 +120,11 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                     errorMessage={errors.email}
                   />
                 </div>
-              </section>
+              </fieldset>
 
-              <section
-                className={styles.section}
-                aria-labelledby={`${sectionId}-license`}
-              >
+              <fieldset className={styles.section}>
                 <div className={styles.sectionHeader}>
-                  <h2 id={`${sectionId}-license`}>Habilitação (CNH)</h2>
+                  <legend className={styles.legend}>Habilitação (CNH)</legend>
                   <span className={styles.sectionHint}>
                     Documento obrigatório para viagens
                   </span>
@@ -188,9 +148,8 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                     onChange={(value) => setField('cnhCategory', value)}
                     errorMessage={errors.cnhCategory}
                   />
-                  <FieldWithIcon
+                  <TextField
                     id={fieldId('cnhExpiry')}
-                    icon={<CalendarDays size={16} />}
                     label="Validade *"
                     inputMode="numeric"
                     placeholder="dd/mm/aaaa"
@@ -200,18 +159,15 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                     errorMessage={errors.cnhExpiry}
                   />
                 </div>
-                <Alert variant="danger" className={styles.notice}>
-                  <span className={styles.noticeText}>
-                    <ShieldAlert size={16} aria-hidden="true" />
-                    CNH vencida bloqueia o motorista automaticamente para novas viagens. A
-                    validade deve ser posterior à data de hoje.
-                  </span>
+                <Alert variant="danger">
+                  CNH vencida bloqueia o motorista automaticamente para novas viagens. A
+                  validade deve ser posterior à data de hoje.
                 </Alert>
-              </section>
+              </fieldset>
 
-              <section className={styles.section} aria-labelledby={`${sectionId}-fleet`}>
+              <fieldset className={styles.section}>
                 <div className={styles.sectionHeader}>
-                  <h2 id={`${sectionId}-fleet`}>Vínculo com a frota</h2>
+                  <legend className={styles.legend}>Vínculo com a frota</legend>
                   <span className={styles.sectionHint}>
                     Alocação e disponibilidade operacional
                   </span>
@@ -244,15 +200,14 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
 
                 <div className={styles.wildcard}>
                   <CheckboxField
-                    variant="plain"
                     label="Motorista coringa — pode atuar em todas as frotas (inclusive SVO)"
                     description="Ao marcar, o vínculo específico de frota deixa de ser obrigatório."
                     checked={values.isWildcard}
                     onChange={(checked) => setField('isWildcard', checked)}
                   />
-                  <Info size={16} aria-hidden="true" className={styles.infoIcon} />
+                  <span className={styles.infoIcon}>ⓘ</span>
                 </div>
-              </section>
+              </fieldset>
 
               <div className={styles.footer}>
                 <fieldset disabled className={styles.status}>
@@ -275,12 +230,8 @@ export function DriverForm({ initial, onSubmit, onCancel }: DriverFormProps) {
                   <Button variant="secondary" onClick={onCancel}>
                     Cancelar
                   </Button>
-                  <Button
-                    type="submit"
-                    isLoading={form.isSubmitting}
-                    iconStart={<Check size={16} />}
-                  >
-                    Salvar
+                  <Button type="submit" isLoading={form.isSubmitting}>
+                    ✓ Salvar
                   </Button>
                 </div>
               </div>

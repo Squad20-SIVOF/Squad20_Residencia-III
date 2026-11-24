@@ -10,7 +10,6 @@ import {
   useOutletContext,
 } from 'react-router-dom'
 import { Avatar } from '@/components/Avatar'
-import { useTheme } from '@/hooks/useTheme'
 import { classNames } from '@/utils/classNames'
 import { SidebarIcon, type SidebarIconName } from './SidebarIcon'
 import styles from './AppLayout.module.scss'
@@ -95,8 +94,6 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, [canReadAlerts])
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(readIsCollapsed)
-  const { theme, toggleTheme } = useTheme()
-  const themeLabel = theme === 'dark' ? 'Modo claro' : 'Modo escuro'
   const panelId = useId()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -183,7 +180,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                     to={item.to}
                     end={item.to === '/'}
                     aria-label={isCollapsed ? item.label : undefined}
-                    data-tooltip={item.label}
                     className={({ isActive }) =>
                       classNames(
                         styles.navItem,
@@ -202,24 +198,20 @@ export function AppLayout({ children }: AppLayoutProps) {
           </nav>
 
           <div className={styles.footer}>
+            {/* A troca de tema chega junto com o tema escuro. */}
             <button
               type="button"
               className={classNames(styles.footerItem, styles.hasTooltip)}
-              aria-label={isCollapsed ? themeLabel : undefined}
-              data-tooltip={themeLabel}
-              onClick={toggleTheme}
+              aria-disabled="true"
+              aria-label={isCollapsed ? 'Modo claro' : undefined}
             >
-              <SidebarIcon
-                name={theme === 'dark' ? 'sun' : 'moon'}
-                className={styles.icon}
-              />
-              <span className={styles.label}>{themeLabel}</span>
+              <SidebarIcon name="sun" className={styles.icon} />
+              <span className={styles.label}>Modo claro</span>
             </button>
 
             {canReadAlerts && notificationsEnabled ? (
               <NavLink
                 to="/notificacoes"
-                data-tooltip="Notificações"
                 onClick={() => setIsMenuOpen(false)}
                 className={({ isActive }) =>
                   classNames(
@@ -250,7 +242,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                   styles.footerItemStrong,
                   styles.hasTooltip,
                 )}
-                data-tooltip="Notificações"
               >
                 <SidebarIcon name="alert" className={styles.icon} />
                 <span className={styles.label}>Notificações</span>
@@ -264,7 +255,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <button
                   type="button"
                   className={classNames(styles.logout, styles.hasTooltip)}
-                  data-tooltip="Sair"
                   onClick={handleLogout}
                 >
                   <SidebarIcon name="logout" className={styles.logoutIcon} />

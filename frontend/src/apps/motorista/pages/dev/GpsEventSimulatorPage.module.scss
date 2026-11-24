@@ -66,6 +66,7 @@
 }
 
 .toolbar label,
+.filter,
 .progress {
   display: flex;
   flex: 1 1 12rem;
@@ -76,17 +77,14 @@
   font-weight: 600;
 }
 
-.toolbar select {
+.toolbar select,
+.filter select {
   min-height: 2.5rem;
   padding: 0.4rem 0.6rem;
   color: #f8fafc;
   background: #0f172a;
   border: 1px solid #475569;
   border-radius: 0.5rem;
-}
-
-.eventsPanel {
-  --toolbar-label-color: #cbd5e1;
 }
 
 .columns {
@@ -111,9 +109,29 @@
 }
 
 .telemetry {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
   margin-top: 0.75rem;
 }
 
+.telemetry div {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.6rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 0.55rem;
+}
+.telemetry span {
+  color: #94a3b8;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+.telemetry strong {
+  color: #f8fafc;
+  font-size: 0.85rem;
+}
 .arrived {
   margin: 0.75rem 0 0;
   color: #86efac;
@@ -196,6 +214,9 @@
 @media (max-width: 800px) {
   .columns {
     grid-template-columns: 1fr;
+  }
+  .telemetry {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .map {
     height: 54vh;

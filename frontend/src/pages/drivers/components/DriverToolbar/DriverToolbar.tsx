@@ -38,9 +38,10 @@ export function DriverToolbar({
   onFleetChange,
 }: DriverToolbarProps) {
   return (
-    <Toolbar label="Filtrar motoristas">
+    <Toolbar>
       <TextField
         label="Buscar motoristas"
+        isLabelHidden
         type="search"
         placeholder="Buscar por nome ou CNH..."
         value={search}
@@ -49,12 +50,14 @@ export function DriverToolbar({
       />
       <SelectField
         label="Filtrar por status"
+        isLabelHidden
         value={status}
         options={STATUS_OPTIONS}
         onChange={onStatusChange}
       />
       <SelectField
         label="Filtrar por frota"
+        isLabelHidden
         value={fleet}
         options={FLEET_OPTIONS}
         onChange={onFleetChange}

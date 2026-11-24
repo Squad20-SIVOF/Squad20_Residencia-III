@@ -96,7 +96,7 @@
 }
 
 .pinHalo {
-  fill: color-mix(in srgb, $color-primary 15%, transparent);
+  fill: rgba($color-primary, 0.15);
 }
 
 .pin {
@@ -114,7 +114,7 @@
 }
 
 .carHalo {
-  fill: color-mix(in srgb, $color-primary 18%, transparent);
+  fill: rgba($color-primary, 0.18);
 }
 
 .carBody {

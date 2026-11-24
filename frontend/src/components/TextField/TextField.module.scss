@@ -37,7 +37,7 @@
 
 .inputInvalid {
   border-color: $color-error;
-  background-color: color-mix(in srgb, $color-error 2%, transparent);
+  background-color: rgba($color-error, 0.02);
 }
 
 .errorMessage {

@@ -1,9 +1,4 @@
 import { useState } from 'react'
-import { Button } from '@/components/Button'
-import { SelectField } from '@/components/SelectField'
-import { StatGrid } from '@/components/StatCard'
-import { Toolbar } from '@/components/Toolbar'
-import { DataTable, TablePanel, type DataTableColumn } from '@/components/DataTable'
 import styles from './RelatoriosPage.module.scss'
 
 type Kind = 'Viagens' | 'Manutenção' | 'Combustível' | 'Motoristas' | 'Vistorias'
@@ -42,19 +37,6 @@ const samples = [
   { vehicle: 'ABC-1234', trips: 32, km: '2.340', cost: 'R$ 8.720' },
   { vehicle: 'DEF-5678', trips: 28, km: '2.100', cost: 'R$ 6.740' },
   { vehicle: 'GHI-9012', trips: 35, km: '2.680', cost: 'R$ 9.120' },
-]
-
-const COLUMNS: DataTableColumn<(typeof samples)[number]>[] = [
-  {
-    key: 'vehicle',
-    header: 'Veículo',
-    isPrimary: true,
-    keepTogether: true,
-    render: (row) => row.vehicle,
-  },
-  { key: 'trips', header: 'Viagens', keepTogether: true, render: (row) => row.trips },
-  { key: 'km', header: 'Km', keepTogether: true, render: (row) => row.km },
-  { key: 'cost', header: 'Custo', keepTogether: true, render: (row) => row.cost },
 ]
 
 export function RelatoriosPage() {
@@ -101,40 +83,49 @@ export function RelatoriosPage() {
         <p>Gere arquivos gerenciais por período, veículo ou motorista</p>
       </header>
 
-      <Toolbar
-        className={styles.filters}
-        label="Filtros do relatório"
-        onSubmit={(event) => {
-          event.preventDefault()
-          setGenerated(true)
-          setMessage('Pré-visualização de demonstração atualizada.')
-        }}
-      >
-        <SelectField
-          label="Período"
-          value={period}
-          options={['Este mês', 'Mês anterior', 'Últimos 3 meses', 'Este ano'].map(
-            (value) => ({ value, label: value }),
-          )}
-          onChange={setPeriod}
-        />
-        <SelectField<Kind>
-          label="Tipo de Relatório"
-          value={kind}
-          options={kinds.map(({ name }) => ({ value: name, label: name }))}
-          onChange={setKind}
-        />
-        <SelectField
-          label="Veículo/Motorista"
-          value={vehicle}
-          options={['Todos', ...samples.map((row) => row.vehicle)].map((value) => ({
-            value,
-            label: value,
-          }))}
-          onChange={setVehicle}
-        />
-        <Button type="submit">Gerar Relatório</Button>
-      </Toolbar>
+      <div className={styles.filters}>
+        <label>
+          Período
+          <select value={period} onChange={(e) => setPeriod(e.target.value)}>
+            <option>Este mês</option>
+            <option>Mês anterior</option>
+            <option>Últimos 3 meses</option>
+            <option>Este ano</option>
+          </select>
+        </label>
+
+        <label>
+          Tipo de Relatório
+          <select value={kind} onChange={(e) => setKind(e.target.value as Kind)}>
+            {kinds.map((k) => (
+              <option key={k.name} value={k.name}>
+                {k.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Veículo/Motorista
+          <select value={vehicle} onChange={(e) => setVehicle(e.target.value)}>
+            <option>Todos</option>
+            <option>ABC-1234</option>
+            <option>DEF-5678</option>
+            <option>GHI-9012</option>
+          </select>
+        </label>
+
+        <button
+          type="button"
+          className={styles.generate}
+          onClick={() => {
+            setGenerated(true)
+            setMessage('Pré-visualização de demonstração atualizada.')
+          }}
+        >
+          ⚙ Gerar Relatório
+        </button>
+      </div>
 
       <div className={styles.columns}>
         <section>
@@ -187,15 +178,22 @@ export function RelatoriosPage() {
               Período: {period} | {vehicle}
             </p>
 
-            <StatGrid
-              label="Indicadores do relatório"
-              className={styles.indicators}
-              cards={[
-                { label: 'Viagens', value: 142, variant: 'success' },
-                { label: 'Km Rodados', value: '12.480' },
-                { label: 'Custo Total', value: 'R$ 18.730' },
-              ]}
-            />
+            <div className={styles.stats}>
+              <div>
+                <small>Viagens</small>
+                <strong>142</strong>
+              </div>
+
+              <div>
+                <small>Km Rodados</small>
+                <strong>12.480</strong>
+              </div>
+
+              <div>
+                <small>Custo Total</small>
+                <strong>R$ 18.730</strong>
+              </div>
+            </div>
 
             <p className={styles.srOnly}>
               Gráfico de barras com sete colunas ilustrativas.
@@ -212,18 +210,27 @@ export function RelatoriosPage() {
               ))}
             </div>
 
-            <TablePanel
-              title="Dados da pré-visualização"
-              headingLevel={3}
-              recordCount={samples.length}
-            >
-              <DataTable
-                caption="Dados da pré-visualização do relatório"
-                rows={samples}
-                columns={COLUMNS}
-                getRowKey={(row) => row.vehicle}
-              />
-            </TablePanel>
+            <table>
+              <thead>
+                <tr>
+                  <th>Veículo</th>
+                  <th>Viagens</th>
+                  <th>Km</th>
+                  <th>Custo</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {samples.map((s) => (
+                  <tr key={s.vehicle}>
+                    <td>{s.vehicle}</td>
+                    <td>{s.trips}</td>
+                    <td>{s.km}</td>
+                    <td>{s.cost}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
             {generated && (
               <p className={styles.demo}>Prévia gerada com dados ilustrativos</p>

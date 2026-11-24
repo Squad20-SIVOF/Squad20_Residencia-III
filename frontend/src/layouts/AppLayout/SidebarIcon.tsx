@@ -11,7 +11,6 @@ export type SidebarIconName =
   | 'profile'
   | 'users'
   | 'sun'
-  | 'moon'
   | 'alert'
   | 'logout'
   | 'collapse'
@@ -72,7 +71,6 @@ const PATHS: Record<SidebarIconName, ReactNode> = {
       <path d="M3.5 20a6.5 6.5 0 0 1 9.5-5.8M15 18l2 2 4-4" />
     </>
   ),
-  moon: <path d="M20.5 14.2A8.8 8.8 0 0 1 9.8 3.5 9 9 0 1 0 20.5 14.2Z" />,
   sun: (
     <>
       <circle cx="12" cy="12" r="4" />

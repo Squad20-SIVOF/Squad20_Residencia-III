@@ -10,9 +10,8 @@
 // Prefixado com .aside para vencer o estilo base do Card independente da ordem do CSS.
 .aside .card {
   gap: 0.75rem;
-  padding: clamp(0.875rem, 2cqi, 1.25rem);
+  padding: $space-3;
   background-color: $color-card;
-  box-shadow: $shadow-subtle;
 
   > h2 {
     font-size: $font-size-body;
@@ -44,7 +43,6 @@
 .meta {
   font-size: $font-size-xsmall;
   color: $color-text-muted;
-  overflow-wrap: anywhere;
 }
 
 .steps {
@@ -74,7 +72,7 @@
   flex-shrink: 0;
   width: $icon-size;
   height: $icon-size;
-  color: $color-primary;
+  color: $color-primary-dark;
 }
 
 .availability {

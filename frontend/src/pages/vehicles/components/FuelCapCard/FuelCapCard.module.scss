@@ -1,16 +1,22 @@
 @use '../../../../styles/tokens' as *;
+@use '../../../../styles/breakpoints' as *;
 
+// xs: conteúdo e botões empilhados; lg: botões em coluna à direita.
 .card {
   display: flex;
   flex-direction: column;
   gap: $space-3;
-  padding: clamp(0.875rem, 2cqi, 1.25rem);
+  padding: $space-3;
   background-color: $color-card;
   border: 1px solid $color-border;
   border-radius: $radius-lg;
-  box-shadow: $shadow-subtle;
+  box-shadow: $shadow-card;
 
-  @container vehicle-details (width >= 40rem) {
+  @include up(md) {
+    padding: $space-4;
+  }
+
+  @include up(lg) {
     flex-direction: row;
     align-items: center;
     gap: $space-4;
@@ -87,7 +93,7 @@
 }
 
 .attention {
-  --bar-color: light-dark(#e89600, #{$color-warning});
+  --bar-color: #{$color-warning};
 }
 
 .exceeded {
@@ -97,13 +103,13 @@
 .actions {
   display: flex;
   flex-direction: column;
-  gap: $space-2;
+  gap: 0.75rem;
 
   > * {
     width: 100%;
   }
 
-  @container vehicle-details (width >= 40rem) {
-    flex: 0 0 max(12rem, 30%);
+  @include up(lg) {
+    flex: 0 0 13.5rem;
   }
 }

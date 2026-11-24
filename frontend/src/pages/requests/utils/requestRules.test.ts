@@ -1,6 +1,17 @@
 import { expect, test } from 'vitest'
 import type { RequestFormValues } from '../types'
-import { toRequestInput, validateRequestForm } from './requestRules'
+import {
+  STALE_LOCATION_SECONDS,
+  getArrivalTime,
+  getEtaMinutes,
+  getRemainingKm,
+  getSecondsSince,
+  getStageIndex,
+  getTripStage,
+  isLocationStale,
+  toRequestInput,
+  validateRequestForm,
+} from './requestRules'
 import { ROUTE_POINTS, getPointAlongRoute } from './routeGeometry'
 
 // 26/10/2026, 10:00 (horário local)
@@ -92,6 +103,39 @@ test('toRequestInput monta datas ISO locais e normaliza os campos', () => {
   })
   expect(toRequestInput({ ...VALID_VALUES, returnTime: '' })?.returnAt).toBeNull()
   expect(toRequestInput({ ...VALID_VALUES, date: '31/02/2026' })).toBeNull()
+})
+
+// ---------- Acompanhamento ----------
+
+test('a etapa avança conforme o trajeto é percorrido', () => {
+  expect(getTripStage(0)).toBe('confirmada')
+  expect(getTripStage(0.3)).toBe('a_caminho')
+  expect(getTripStage(0.85)).toBe('chegando')
+  expect(getTripStage(1)).toBe('embarque')
+  expect(getStageIndex('chegando')).toBe(2)
+})
+
+test('distância restante e tempo estimado diminuem até zero', () => {
+  expect(getRemainingKm(2.6, 0)).toBe(2.6)
+  expect(getRemainingKm(2.6, 0.5)).toBe(1.3)
+  expect(getRemainingKm(2.6, 1.2)).toBe(0)
+  expect(getEtaMinutes(2.3)).toBe(6)
+  expect(getEtaMinutes(0.1)).toBe(1) // nunca mostra "0 min" antes de chegar
+  expect(getEtaMinutes(0)).toBe(0)
+})
+
+test('previsão de chegada e idade da última posição', () => {
+  const updatedAt = new Date(2026, 9, 26, 9, 41).toISOString()
+  expect(new Date(getArrivalTime(updatedAt, 6)).getMinutes()).toBe(47)
+
+  const later = new Date(new Date(updatedAt).getTime() + 12_000)
+  expect(getSecondsSince(updatedAt, later)).toBe(12)
+  expect(isLocationStale(updatedAt, later)).toBe(false)
+
+  const muchLater = new Date(
+    new Date(updatedAt).getTime() + (STALE_LOCATION_SECONDS + 1) * 1000,
+  )
+  expect(isLocationStale(updatedAt, muchLater)).toBe(true)
 })
 
 test('posição do carro no trajeto do mapa', () => {

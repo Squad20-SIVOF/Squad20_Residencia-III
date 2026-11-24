@@ -1,6 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import { LoadingState } from '@/components/LoadingState/LoadingState'
-
 import { ButtonLink } from '@/components/ButtonLink'
 import { useState } from 'react'
 import { Button } from '@/components/Button'
@@ -22,9 +20,6 @@ export function SessionVehiclePage() {
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
-  if (result.status === 'loading')
-    return <LoadingState label="Carregando veículo da sessão" />
-
   async function select(value: string) {
     if (saving) return
     setSaving(true)

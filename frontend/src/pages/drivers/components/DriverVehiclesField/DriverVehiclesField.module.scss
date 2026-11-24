@@ -4,38 +4,39 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: $space-1;
+  gap: $space-2;
   min-width: 0;
 }
 
 .label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.25rem;
-  color: $color-text;
+  font-size: $font-size-small;
+  font-weight: 500;
+  color: #1e293b;
 }
 
 .picker {
   display: flex;
   align-items: center;
+  gap: $space-2;
   border: 1px solid $color-border;
-  border-radius: $radius-md;
-  padding-inline: $space-1;
+  border-radius: $radius-sm;
+  padding: 0.25rem 0.5rem;
   background: $color-card;
-  min-height: $touch-target;
+  min-height: 2.5rem;
 }
 
 .chipsContainer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: $space-1;
+  gap: 0.5rem;
   flex: 1;
-  min-width: 0;
 }
 
 .chip {
-  font-weight: 600;
+  background-color: #e0e7ff !important;
+  color: #3730a3 !important;
+  font-weight: 500;
   gap: 0.25rem;
   border-radius: 4px;
 }
@@ -44,7 +45,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: $color-primary;
+  color: #3730a3;
   background: none;
   border: 0;
   font-size: 1rem;
@@ -54,37 +55,30 @@
 
 .addSelect {
   display: flex;
-  flex: 1 1 12.5rem;
-  flex-wrap: wrap;
   align-items: center;
-  gap: $space-1;
-  min-width: 0;
+  gap: 0.5rem;
 }
 
 .select {
-  flex: 1 1 7.5rem;
+  min-width: 120px;
+  border: none !important;
+  background: transparent !important;
 
-  select:not(:focus-visible) {
-    border-color: transparent;
+  input {
+    border: none !important;
   }
 }
 
 .addBtn {
   background: none;
   border: none;
-  color: $color-primary;
+  color: #2563eb;
   font-weight: 600;
-  font-size: $font-size-small;
-  min-height: $touch-target;
-  padding-inline: $space-2;
+  font-size: 0.85rem;
   cursor: pointer;
 
   &:disabled {
-    color: $color-text-muted;
+    color: #94a3b8;
     cursor: not-allowed;
-  }
-
-  &:focus-visible {
-    @include focus-ring;
   }
 }

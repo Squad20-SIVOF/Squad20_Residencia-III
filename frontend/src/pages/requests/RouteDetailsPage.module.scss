@@ -1,100 +1,54 @@
 @use '@/styles/tokens' as *;
-
 .page {
   display: grid;
-  min-width: 0;
-  gap: $space-3;
-  container-type: inline-size;
+  gap: 1rem;
 }
-
-.header h1 {
-  color: $color-heading;
-  font-weight: 500;
+.back {
+  color: $color-primary;
+  font-weight: 700;
+  text-decoration: none;
 }
-
-.page .map {
-  height: clamp(14rem, 32cqw, 24rem);
+.demo {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  color: $color-text-muted;
+  background: $color-background;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
 }
-
+.map {
+  min-height: 20rem;
+}
 .cards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: $space-3;
-  align-items: start;
-
-  article {
-    padding: $space-3 1.15rem;
-    background: $color-card;
-    border: 1px solid $color-border;
-    border-radius: $radius-md;
-    box-shadow: $shadow-subtle;
-  }
-
-  h2 {
-    margin: 0 0 0.7rem;
-    color: $color-primary;
-    font-size: $font-size-body;
-    font-weight: 700;
-  }
-
-  dl {
-    display: grid;
-    gap: 0.3rem;
-    margin: 0;
-    font-size: $font-size-small;
-
-    > div {
-      display: flex;
-      align-items: baseline;
-      gap: 0.25rem;
-    }
-  }
-
-  dt {
-    flex-shrink: 0;
-    color: $color-text;
-    font-weight: 600;
-  }
-
-  dd {
-    min-width: 0;
-    margin: 0;
-    color: $color-text-muted;
-    overflow-wrap: anywhere;
-  }
-
-  @container (width < 36rem) {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
 }
-
-.assignment {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: $space-1 0.75rem;
-  padding: 0.55rem 0.65rem;
-  color: $color-success;
-  background: $color-success-soft;
-  border-radius: $radius-sm;
-  font-size: $font-size-small;
-  font-weight: 600;
-
-  > span {
-    display: inline-flex;
-    align-items: center;
-    gap: $space-1;
-    min-width: 0;
-    overflow-wrap: anywhere;
-  }
-
-  svg {
-    flex-shrink: 0;
-  }
+.cards article {
+  padding: 1rem;
+  background: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
 }
-
-.unassigned {
+.cards h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+.cards dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 0.75rem;
   margin: 0;
+}
+.cards dt {
   color: $color-text-muted;
-  font-size: $font-size-small;
+}
+.cards dd {
+  margin: 0;
+  text-align: right;
+}
+@media (max-width: 800px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
 }

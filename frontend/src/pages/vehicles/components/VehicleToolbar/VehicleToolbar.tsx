@@ -3,9 +3,9 @@ import { Button } from '@/components/Button'
 import { SelectField } from '@/components/SelectField'
 import type { SelectOption } from '@/components/SelectField'
 import { TextField } from '@/components/TextField'
-import { Toolbar } from '@/components/Toolbar'
 import type { FleetFilter, VehicleStatusFilter } from '../../types'
 import { VEHICLE_STATUS_LABEL } from '../VehicleStatusBadge'
+import styles from './VehicleToolbar.module.scss'
 
 const STATUS_OPTIONS: SelectOption<VehicleStatusFilter>[] = [
   { value: 'todos', label: 'Status: Todos' },
@@ -44,28 +44,48 @@ export function VehicleToolbar({ search, status, fleet, onApply }: VehicleToolba
   }
 
   return (
-    <Toolbar label="Filtrar veículos" onSubmit={handleSubmit}>
-      <TextField
-        label="Modelo / Placa"
-        type="search"
-        placeholder="Buscar por identificação, modelo ou placa..."
-        value={draft.search}
-        onChange={(value) => setDraft((current) => ({ ...current, search: value }))}
-        autoComplete="off"
-      />
-      <SelectField
-        label="Status"
-        value={draft.status}
-        options={STATUS_OPTIONS}
-        onChange={(value) => setDraft((current) => ({ ...current, status: value }))}
-      />
-      <SelectField
-        label="Frota"
-        value={draft.fleet}
-        options={FLEET_OPTIONS}
-        onChange={(value) => setDraft((current) => ({ ...current, fleet: value }))}
-      />
-      <Button type="submit">Filtrar</Button>
-    </Toolbar>
+    <search className={styles.toolbar}>
+      <form className={styles.form} onSubmit={handleSubmit} aria-label="Filtrar veículos">
+        <div className={styles.search}>
+          <TextField
+            label="Modelo / Placa"
+            type="search"
+            placeholder="Buscar por identificação, modelo ou placa..."
+            value={draft.search}
+            onChange={(value) => setDraft((current) => ({ ...current, search: value }))}
+            autoComplete="off"
+          />
+          <svg
+            className={styles.searchIcon}
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="9" cy="9" r="5.5" />
+            <path d="M13 13l3.5 3.5" />
+          </svg>
+        </div>
+        <SelectField
+          className={styles.filter}
+          label="Status"
+          value={draft.status}
+          options={STATUS_OPTIONS}
+          onChange={(value) => setDraft((current) => ({ ...current, status: value }))}
+        />
+        <SelectField
+          className={styles.filter}
+          label="Frota"
+          value={draft.fleet}
+          options={FLEET_OPTIONS}
+          onChange={(value) => setDraft((current) => ({ ...current, fleet: value }))}
+        />
+        <Button type="submit" className={styles.submit}>
+          Filtrar
+        </Button>
+      </form>
+    </search>
   )
 }

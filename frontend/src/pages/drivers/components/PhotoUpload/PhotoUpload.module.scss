@@ -8,37 +8,6 @@
   gap: $space-2;
 }
 
-.wrapper .preview,
-.placeholder {
-  width: min(100%, 7.25rem);
-  height: auto;
-  aspect-ratio: 1;
-}
-
-.placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: $space-1;
-  color: $color-primary;
-  background: $color-primary-soft;
-  border: 2px solid color-mix(in srgb, $color-primary 18%, transparent);
-  border-radius: 50%;
-  font-size: $font-size-small;
-  font-weight: 700;
-}
-
-.wrapper .upload {
-  color: $color-primary;
-  background-color: $color-card;
-  border-color: $color-primary;
-
-  &:hover {
-    background-color: $color-primary-soft;
-  }
-}
-
 .input {
   @include visually-hidden;
 }
@@ -46,7 +15,6 @@
 .hint {
   font-size: $font-size-xsmall;
   color: $color-text-muted;
-  text-align: center;
 }
 
 .error {

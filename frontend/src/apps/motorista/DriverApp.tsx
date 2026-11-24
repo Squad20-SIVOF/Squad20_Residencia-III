@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react'
 import { RequireDriverVehicle } from './components/RequireDriverVehicle'
 import { SessionVehiclePage } from './pages/flow/SessionVehiclePage'
 import { RequireAuth } from '@/components/RequireAuth/RequireAuth'
-import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { LoginMobile } from './pages/LoginMobile/LoginMobile'
 import { TripCaptureProvider } from './components/TripCaptureContext'
@@ -38,7 +37,7 @@ function FeatureFlaggedGpsSimulator() {
   const enabled = useFeatureFlag('gps_event_simulator')
   if (!isDevFeatureFlagsEnabled()) return <NotFoundPage />
   return enabled ? (
-    <Suspense fallback={<LoadingState label="Carregando simulador…" />}>
+    <Suspense fallback={<p>Carregando simulador…</p>}>
       <GpsEventSimulatorPage />
     </Suspense>
   ) : (
@@ -56,7 +55,7 @@ export function DriverRoutes() {
           path="/dev/feature-flags"
           element={
             isDevFeatureFlagsEnabled() ? (
-              <Suspense fallback={<LoadingState label="Carregando configuração…" />}>
+              <Suspense fallback={<p>Carregando configuração…</p>}>
                 <DevFeatureFlagsPage />
               </Suspense>
             ) : (

@@ -71,10 +71,10 @@ const getNearMaintance = async (
   return result.rows;
 };
 
-const createVehicle = async (vehicle: VehicleInput) => {
+const createVehicle = async (vehicle: Vehicle) => {
   const result = await pool.query(
-    `INSERT INTO veiculos (modelo, placa, tipo_combustivel, capacidade_maxima, teto_gasto_mensal, quilometragem, ultimo_km_alertado, frota, exclusivo_svo, identificacao, marca, proxima_vistoria, checklist_vistoria, ativo, status)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb, $14, CASE WHEN $14 THEN 'Disponível' ELSE 'Inativo' END)
+    `INSERT INTO veiculos (modelo, placa, tipo_combustivel, capacidade_maxima, teto_gasto_mensal, quilometragem, ultimo_km_alertado, frota, exclusivo_svo, identificacao, marca, proxima_vistoria, checklist_vistoria)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb)
       RETURNING ${columns}`,
     [
       vehicle.modelo,
@@ -90,7 +90,6 @@ const createVehicle = async (vehicle: VehicleInput) => {
       vehicle.marca ?? null,
       vehicle.proxima_vistoria ?? null,
       JSON.stringify(vehicle.checklist_vistoria ?? []),
-      vehicle.ativo ?? true,
     ],
   );
 

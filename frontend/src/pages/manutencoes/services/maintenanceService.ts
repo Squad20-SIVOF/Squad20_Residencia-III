@@ -109,9 +109,6 @@ export const vehicleService = {
       marca: '',
       modelo: v.model,
       quilometragem: v.mileageKm,
-      frota: v.fleet,
-      combustivel: v.fuelType,
-      capacidadeLitros: v.maxCapacity,
       status: (
         {
           ativo: 'Disponível',

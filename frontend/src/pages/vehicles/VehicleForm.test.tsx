@@ -39,7 +39,6 @@ test('cadastra veículo com valores numéricos e prévia da placa', async () => 
     capacidade_maxima: 58,
     quilometragem: 0,
     ultimo_km_alertado: 0,
-    ativo: true,
   })
   expect(onSave).toHaveBeenCalledOnce()
 })
@@ -96,7 +95,7 @@ test('reaproveita o formulário e envia PUT ao editar', async () => {
   )
 })
 
-test('link Voltar usa a ação de retorno à lista', async () => {
+test('breadcrumb retorna para a lista em vez de reabrir detalhes na edição', async () => {
   const user = userEvent.setup()
   const onBackToList = vi.fn<() => void>()
   const onCancel = vi.fn<() => void>()
@@ -108,14 +107,19 @@ test('link Voltar usa a ação de retorno à lista', async () => {
       onBackToList={onBackToList}
     />,
   )
-  const link = screen.getByRole('link', { name: 'Voltar para Veículos' })
+  const link = screen.getByRole('link', { name: 'Veículos' })
   expect(link).toHaveAttribute('href', '/veiculos')
+  expect(
+    within(screen.getByRole('navigation', { name: 'Você está em' })).getByText(
+      'Novo cadastro',
+    ),
+  ).toHaveAttribute('aria-current', 'page')
   await user.click(link)
   expect(onBackToList).toHaveBeenCalledOnce()
   expect(onCancel).not.toHaveBeenCalled()
 })
 
-test('atualiza a prévia e envia a disponibilidade e a exclusividade selecionadas', async () => {
+test('prévia acompanha a digitação e o interruptor Exclusivo SVO define a frota', async () => {
   const user = userEvent.setup()
   vi.mocked(api).mockResolvedValueOnce({})
   renderWithRouter(
@@ -137,8 +141,6 @@ test('atualiza a prévia e envia a disponibilidade e a exclusividade selecionada
   expect(within(preview).getByText('ABC1D23')).toBeInTheDocument()
   expect(within(preview).getByText('Não informada · Flex · 58 L')).toBeInTheDocument()
 
-  await user.click(screen.getByRole('switch', { name: 'Disponível para viagens' }))
-  await user.click(screen.getByText('Exclusividade SVO e vistoria', { exact: true }))
   const exclusive = screen.getByRole('switch', { name: 'Exclusivo SVO' })
   await user.click(exclusive)
   expect(exclusive).toBeChecked()
@@ -150,6 +152,5 @@ test('atualiza a prévia e envia a disponibilidade e a exclusividade selecionada
     exclusivo_svo: true,
     marca: 'Fiat',
     identificacao: 'SVO-01',
-    ativo: false,
   })
 })

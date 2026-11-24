@@ -2,7 +2,6 @@ import { useId } from 'react'
 import type { ReactNode } from 'react'
 import { Badge } from '@/components/Badge'
 import { TextField } from '@/components/TextField'
-import { Toolbar } from '@/components/Toolbar'
 import { classNames } from '@/utils/classNames'
 import styles from './ResourceColumn.module.scss'
 
@@ -43,17 +42,16 @@ export function ResourceColumn({
         </h2>
         {count !== undefined && <Badge variant="success">{count} disponíveis</Badge>}
       </header>
-      <Toolbar label={searchLabel}>
-        <TextField
-          type="search"
-          label={searchLabel}
-          placeholder={searchPlaceholder}
-          value={search}
-          onChange={onSearchChange}
-          disabled={count === undefined}
-          autoComplete="off"
-        />
-      </Toolbar>
+      <TextField
+        type="search"
+        label={searchLabel}
+        isLabelHidden
+        placeholder={searchPlaceholder}
+        value={search}
+        onChange={onSearchChange}
+        disabled={count === undefined}
+        autoComplete="off"
+      />
       {state ?? (
         <div className={styles.list} role="radiogroup" aria-labelledby={headingId}>
           {children}
