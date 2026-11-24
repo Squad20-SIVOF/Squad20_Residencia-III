@@ -34,7 +34,9 @@ export function Pagination({
       aria-label={`Paginação de ${itemLabel}`}
     >
       <p className={styles.summary} aria-live="polite">
-        <span>Mostrando {shownCount} de {totalCount} {itemLabel}</span>
+        <span>
+          Mostrando {shownCount} de {totalCount} {itemLabel}
+        </span>
         {currentPage !== undefined && totalPages !== undefined && (
           <>
             {!stacked && <span aria-hidden="true"> · </span>}
