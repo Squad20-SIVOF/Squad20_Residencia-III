@@ -3,6 +3,7 @@ import { fleetSchema } from "./fleetSchema";
 
 export const vehicleSchema = z
   .object({
+    fornecedor_id: z.string().uuid("Fornecedor inválido").nullable().optional(),
     identificacao: z.string().trim().max(50).nullable().optional(),
     marca: z.string().trim().max(100).nullable().optional(),
     proxima_vistoria: z.iso.date().nullable().optional(),

@@ -25,7 +25,7 @@ export interface VehicleMaintenanceRow {
 }
 
 const columns = `
-    id, identificacao, marca, to_char(proxima_vistoria, 'YYYY-MM-DD') AS proxima_vistoria, checklist_vistoria,
+    id, fornecedor_id, identificacao, marca, to_char(proxima_vistoria, 'YYYY-MM-DD') AS proxima_vistoria, checklist_vistoria,
     placa,
     modelo,
     tipo_combustivel,
@@ -73,8 +73,8 @@ const getNearMaintance = async (
 
 const createVehicle = async (vehicle: Vehicle) => {
   const result = await pool.query(
-    `INSERT INTO veiculos (modelo, placa, tipo_combustivel, capacidade_maxima, teto_gasto_mensal, quilometragem, ultimo_km_alertado, frota, exclusivo_svo, identificacao, marca, proxima_vistoria, checklist_vistoria)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb)
+    `INSERT INTO veiculos (modelo, placa, tipo_combustivel, capacidade_maxima, teto_gasto_mensal, quilometragem, ultimo_km_alertado, frota, exclusivo_svo, identificacao, marca, proxima_vistoria, checklist_vistoria, fornecedor_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb, $14)
       RETURNING ${columns}`,
     [
       vehicle.modelo,
@@ -90,6 +90,7 @@ const createVehicle = async (vehicle: Vehicle) => {
       vehicle.marca ?? null,
       vehicle.proxima_vistoria ?? null,
       JSON.stringify(vehicle.checklist_vistoria ?? []),
+      vehicle.fornecedor_id ?? null,
     ],
   );
 
@@ -106,7 +107,8 @@ const updateVehicle = async (
       identificacao=CASE WHEN $12::jsonb ? 'identificacao' THEN $12::jsonb->>'identificacao' ELSE identificacao END,
       marca=CASE WHEN $12::jsonb ? 'marca' THEN $12::jsonb->>'marca' ELSE marca END,
       proxima_vistoria=CASE WHEN $12::jsonb ? 'proxima_vistoria' THEN ($12::jsonb->>'proxima_vistoria')::date ELSE proxima_vistoria END,
-      checklist_vistoria=COALESCE($12::jsonb->'checklist_vistoria',checklist_vistoria)
+      checklist_vistoria=COALESCE($12::jsonb->'checklist_vistoria',checklist_vistoria),
+      fornecedor_id=CASE WHEN $12::jsonb ? 'fornecedor_id' THEN ($12::jsonb->>'fornecedor_id')::uuid ELSE fornecedor_id END
       WHERE id = $8
       RETURNING ${columns}`,
     [
@@ -122,6 +124,7 @@ const updateVehicle = async (
       vehicle.exclusivo_svo ?? null,
       vehicle.frota !== undefined,
       JSON.stringify({
+        fornecedor_id: vehicle.fornecedor_id,
         identificacao: vehicle.identificacao,
         marca: vehicle.marca,
         proxima_vistoria: vehicle.proxima_vistoria,

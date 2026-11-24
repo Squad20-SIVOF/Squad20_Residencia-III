@@ -20,6 +20,11 @@ const notFound = () => error("Vehicle not found", 404);
 const handleDuplicateKeyError = (cause: unknown) => {
   const dbError = cause as { code?: string; constraint?: string };
   if (
+    dbError?.code === "23503" &&
+    dbError.constraint === "veiculos_fornecedor_id_fkey"
+  )
+    return error("Fornecedor inexistente", 409);
+  if (
     dbError?.code === "23514" &&
     ["motoristas_veiculos_frota", "veiculos_exclusivo_svo_frota"].includes(
       dbError.constraint ?? "",

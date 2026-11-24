@@ -1,4 +1,8 @@
 export const PERMISSIONS = [
+  "fornecedores:ler",
+  "fornecedores:gerenciar",
+  "multas:ler",
+  "multas:gerenciar",
   "veiculos:vistoriar-proprios",
   "abastecimentos:criar-proprio",
   "abastecimentos:ler",

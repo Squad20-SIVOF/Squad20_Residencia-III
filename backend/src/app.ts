@@ -22,6 +22,8 @@ import driverTripRoutes from "./routes/driverTripRoutes";
 import tripRoutes from "./routes/tripRoutes";
 import deathController from "./controller/deathController";
 import { authorize } from "./middleware/authorization";
+import fornecedorRoutes from "./routes/fornecedorRoutes";
+import multaRoutes from "./routes/multaRoutes";
 
 export const app = express();
 
@@ -36,6 +38,8 @@ app.get("/health", (_req, res) => {
 app.use("/auth", authRoutes);
 
 app.use("/vehicles", authenticate, vehicleRoutes);
+app.use("/fornecedores", authenticate, fornecedorRoutes);
+app.use("/multas", authenticate, multaRoutes);
 app.use("/drivers", authenticate, driverRoutes);
 app.use("/maintance", authenticate, maintanceRoutes);
 app.use("/notification", authenticate, notifRoutes);
