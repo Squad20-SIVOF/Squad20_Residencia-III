@@ -1,0 +1,124 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/breakpoints' as *;
+.card
+ { width:100%;
+     min-height:5.1rem;
+      display:flex;
+       flex-direction:column;
+        gap:.4rem;
+         padding:.7rem .75rem;
+          border:1px solid $color-border;
+           border-radius:$radius-lg;
+            background:$color-surface;
+             text-align:left;
+              cursor:pointer;
+            font-size: 12px; }
+
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  width: 100%;
+  padding: .7rem .75rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-surface;
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: .4rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cardContent:focus-visible,
+.detailsButton:focus-visible {
+  outline: 2px solid 
+  $color-primary;
+  outline-offset: 3px;
+  border: 1px solid var(--color-primary);
+}
+
+.selected {
+  border: 1.5px solid $color-primary;
+  box-shadow: 0 0 0 1px #1266d410;
+}
+
+.detailsButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  align-self: flex-start;
+  padding: .4rem .65rem;
+  border: 1px solid var(--color-border);
+  border-radius: $radius-md;
+  background: transparent;
+  color:$color-text;
+  $color-border: var(--color-border);
+  box-shadow: $color-border;
+  font-size: .7rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity .2s ease;
+
+  &:hover {
+    opacity: .85;
+  }
+}
+
+            
+.selected
+ { border:1.5px solid $color-primary;
+     box-shadow:0 0 0 1px #1266d410; }
+
+.top 
+{ display:flex;
+     align-items:center;
+      flex-direction:column;
+       gap:.4rem; }
+       
+.title 
+{ color:$color-text;
+     font-size:.75rem;
+      font-weight:500; }
+      
+.meta 
+{ color:$color-muted;
+     font-size:.58rem; }
+     
+.route 
+{ color:$color-primary-dark;
+     font-size:9px; }
+
+.status 
+{ padding:.25rem .55rem;
+     border-radius:2rem;
+      font-size:10px;
+       font-weight:700;
+        white-space:nowrap; }
+.blue 
+{ color:#15529e;
+     background:#eaf2fc; }
+    
+.green 
+{ color:#267b37;
+     background:#e8f5e9; }
+    
+ .red 
+{ color:#d52222;
+     background:#ffeded; }
+
+.yellow 
+{ color:#926900;
+     background:#fff5d8; }
+
+@include up(md) { .top { flex-direction:row; justify-content:space-between; } }

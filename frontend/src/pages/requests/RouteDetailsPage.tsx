@@ -1,91 +1,146 @@
-import { Link, useParams } from 'react-router-dom'
+import { CarFront, UserRound } from 'lucide-react'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
+import { useParams } from 'react-router-dom'
+import { useFeatureFlag } from '@/apps/motorista/features/useFeatureFlags'
+import { Badge } from '@/components/Badge'
+import { Button } from '@/components/Button'
 import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
 import { useAsync } from '@/hooks/useAsync'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
-import { RouteMap } from './components/RouteMap'
+import { TrackedTripPreview } from './components/TrackedTripMap'
+import { BackLink } from '@/components/BackLink/BackLink'
+import { DEMO_ROUTES } from './services/demoRoutes'
 import { listTrackedTrips } from './services/trackedTripService'
+import {
+  getTrackedTripStatusLabel,
+  getTrackedTripStatusVariant,
+} from './utils/tripsPanelRules'
 import styles from './RouteDetailsPage.module.scss'
+
+function InfoCard({ title, rows }: { title: string; rows: [string, string][] }) {
+  return (
+    <article>
+      <h2>{title}</h2>
+      <dl>
+        {rows.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}:</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </article>
+  )
+}
 
 export function RouteDetailsPage() {
   const { tripId = '' } = useParams()
+  const monitoringEnabled = useFeatureFlag('gestor_route_monitoring')
   const result = useAsync(listTrackedTrips)
   const trip =
     result.status === 'success'
       ? result.data.find((item) => item.id === tripId)
       : undefined
-  useDocumentTitle(`Detalhes da rota ${trip?.routeCode ?? ''}`)
+  const route = trip && DEMO_ROUTES[trip.id]
+  const details = route?.requestDetails
+  const title = trip ? `Detalhes da Rota #${trip.routeCode}` : 'Detalhes da Rota'
+  const isAssigned = Boolean(trip?.driverName && trip.plate)
+  useDocumentTitle(title)
 
   if (result.status === 'loading')
-    return <StateMessage variant="loading" title="Carregando detalhes da rota…" />
-  if (result.status === 'error')
-    return (
-      <StateMessage
-        variant="error"
-        title="Não foi possível carregar os detalhes"
-        action={<button onClick={result.reload}>Tentar novamente</button>}
-      />
-    )
-  if (!trip)
-    return (
-      <StateMessage
-        title="Viagem não encontrada"
-        description="A rota não está disponível na demonstração atual."
-      />
-    )
+    return <LoadingState label="Carregando detalhes da rota…" />
 
   return (
-    <main className={styles.page}>
-      <Link to="/viagens/monitoramento" className={styles.back}>
-        ← Voltar para o monitoramento
-      </Link>
+    <div className={styles.page}>
       <PageHeader
-        title={`Detalhes da rota #${trip.routeCode}`}
-        subtitle={`Status: ${trip.status.replace(/_/g, ' ')}`}
+        title={title}
+        subtitle={
+          details
+            ? `Solicitada às ${details.requestedTime} · Prioridade ${details.priority} · Dados demonstrativos`
+            : 'Dados demonstrativos da viagem.'
+        }
+        className={styles.header}
+        breadcrumb={
+          <BackLink to={monitoringEnabled ? '/viagens/monitoramento' : '/viagens'}>
+            {monitoringEnabled
+              ? 'Voltar para o Monitoramento de Viagens'
+              : 'Voltar para o Painel de Viagens'}
+          </BackLink>
+        }
       />
-      <p className={styles.demo}>
-        Demonstração: as informações abaixo usam dados estáticos até a API de rastreamento
-        ser integrada.
-      </p>
-      <RouteMap
-        label={`Mapa da rota ${trip.origin} para ${trip.destination}`}
-        className={styles.map}
-      />
-      <section className={styles.cards} aria-label="Informações da viagem">
-        <article>
-          <h2>Rota</h2>
-          <dl>
-            <dt>Origem</dt>
-            <dd>{trip.origin}</dd>
-            <dt>Destino</dt>
-            <dd>{trip.destination}</dd>
-            <dt>Código</dt>
-            <dd>#{trip.routeCode}</dd>
-          </dl>
-        </article>
-        <article>
-          <h2>Motorista</h2>
-          <dl>
-            <dt>Nome</dt>
-            <dd>{trip.driverName}</dd>
-            <dt>Veículo</dt>
-            <dd>{trip.plate}</dd>
-          </dl>
-        </article>
-        <article>
-          <h2>Acompanhamento</h2>
-          <dl>
-            <dt>Status</dt>
-            <dd>{trip.status.replace(/_/g, ' ')}</dd>
-            <dt>Atraso</dt>
-            <dd>
-              {trip.delayMinutes
-                ? `${trip.delayMinutes} minutos`
-                : 'Sem atraso informado'}
-            </dd>
-          </dl>
-        </article>
-      </section>
-    </main>
+      {result.status === 'error' && (
+        <StateMessage
+          variant="error"
+          title="Não foi possível carregar os detalhes"
+          action={
+            <Button variant="secondary" onClick={result.reload}>
+              Tentar novamente
+            </Button>
+          }
+        />
+      )}
+      {result.status === 'success' && !trip && (
+        <StateMessage title="Viagem não encontrada" />
+      )}
+      {trip && (
+        <>
+          <div title={getTrackedTripStatusLabel(trip)}>
+            {isAssigned ? (
+              <Badge variant="success">Atribuído</Badge>
+            ) : (
+              <Badge variant={getTrackedTripStatusVariant(trip.status)}>
+                {getTrackedTripStatusLabel(trip)}
+              </Badge>
+            )}
+          </div>
+          <TrackedTripPreview trip={trip} route={route} className={styles.map} />
+          <section className={styles.cards} aria-label="Informações da viagem">
+            <InfoCard
+              title="Rota"
+              rows={[
+                ['Origem', trip.origin],
+                ['Destino', trip.destination],
+                ['Paradas', details?.stops.join(', ') || 'Não informadas'],
+              ]}
+            />
+            <InfoCard
+              title="Solicitante"
+              rows={[
+                ['Nome', route?.requesterName ?? 'Não informado'],
+                ['Setor', route?.requesterSector ?? 'Não informado'],
+                ['Contato', details?.requesterContact ?? 'Não informado'],
+              ]}
+            />
+            <InfoCard
+              title="Detalhes da Carga"
+              rows={[
+                ['Tipo', details?.cargo.type ?? 'Não informado'],
+                ['Peso total', details?.cargo.weight ?? 'Não informado'],
+                ['Volumes', details?.cargo.volumes ?? 'Não informados'],
+              ]}
+            />
+            <article>
+              <h2>Veículo Atribuído</h2>
+              {isAssigned ? (
+                <div className={styles.assignment}>
+                  <span>
+                    <UserRound size={16} aria-hidden="true" /> {trip.driverName}
+                  </span>
+                  <span>
+                    <CarFront size={16} aria-hidden="true" />
+                    {details?.vehicleModel
+                      ? `${details.vehicleModel} / ${trip.plate}`
+                      : trip.plate}
+                  </span>
+                </div>
+              ) : (
+                <p className={styles.unassigned}>Atribuição não informada.</p>
+              )}
+            </article>
+          </section>
+        </>
+      )}
+    </div>
   )
 }

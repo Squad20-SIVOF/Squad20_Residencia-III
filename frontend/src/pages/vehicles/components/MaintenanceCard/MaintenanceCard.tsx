@@ -29,6 +29,7 @@ export interface MaintenanceCardProps {
 
 export function MaintenanceCard({ maintenances, className }: MaintenanceCardProps) {
   const hiddenCount = maintenances.length - RECENT_LIMIT
+  const recent = maintenances.slice(0, RECENT_LIMIT)
 
   return (
     <Card title="Manutenções" className={className}>
@@ -36,7 +37,7 @@ export function MaintenanceCard({ maintenances, className }: MaintenanceCardProp
         <p className={styles.empty}>Nenhuma manutenção registrada para este veículo.</p>
       ) : (
         <ul className={styles.list}>
-          {maintenances.slice(0, RECENT_LIMIT).map((maintenance) => (
+          {recent.map((maintenance) => (
             <li key={maintenance.id} className={styles.item}>
               <div className={styles.heading}>
                 <span className={styles.description}>
@@ -68,6 +69,9 @@ export function MaintenanceCard({ maintenances, className }: MaintenanceCardProp
             </li>
           ))}
         </ul>
+      )}
+      {recent.some(({ status }) => status === 'Agendada') && (
+        <p className={styles.note}>Agendamento sem bloqueio imediato de viagens.</p>
       )}
       {hiddenCount > 0 && (
         <Link to="/manutencoes" className={styles.more}>

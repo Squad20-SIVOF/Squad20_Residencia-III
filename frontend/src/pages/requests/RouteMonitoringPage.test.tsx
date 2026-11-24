@@ -15,11 +15,11 @@ test('mostra o mapa da viagem selecionada', async () => {
   )
 
   expect(
-    await screen.findByRole('region', { name: 'Mapa de Central SVO até Posto Sul' }),
+    await screen.findByRole('region', { name: 'Mapa demonstrativo da rota #101' }),
   ).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: /Rota #102/ }))
   expect(
-    screen.getByRole('region', { name: 'Mapa de Terminal Norte até Base SVO' }),
+    screen.getByRole('region', { name: 'Mapa demonstrativo da rota #102' }),
   ).toBeInTheDocument()
 })

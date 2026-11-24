@@ -7,8 +7,7 @@
   gap: $space-4;
   min-width: 0;
 }
-.backLink,
-.detailsLink {
+.backLink {
   display: inline-flex;
   align-items: center;
   min-height: $touch-target;
@@ -18,47 +17,13 @@
     @include focus-ring;
   }
 }
-.filterBar,
-.cardHeader,
-.cardActions,
-.pagination {
+.filterBar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: $space-3;
 }
-.filterBar > div {
+.filterBar > search {
   flex: 1;
   min-width: min(100%, 16rem);
-}
-.list {
-  display: grid;
-  gap: $space-3;
-}
-.cardHeader {
-  justify-content: space-between;
-  h2 {
-    margin: 0;
-    font-size: $font-size-h4;
-    color: $color-navy;
-  }
-}
-.card {
-  min-width: 0;
-}
-.cardDetails {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
-  gap: $space-3;
-  dt {
-    color: $color-text-muted;
-    font-size: $font-size-small;
-  }
-  dd {
-    margin: $space-1 0 0;
-    overflow-wrap: anywhere;
-  }
-}
-.pagination {
-  justify-content: flex-end;
 }

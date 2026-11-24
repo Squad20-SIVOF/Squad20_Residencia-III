@@ -1,6 +1,5 @@
 @use '../../styles/tokens' as *;
 @use '../../styles/breakpoints' as *;
-@use '../../styles/mixins' as *;
 
 // Mobile: título, rota e campos em coluna única.
 // A partir de lg: mapa grande à esquerda e, à direita, uma coluna branca de cima a baixo
@@ -48,24 +47,12 @@
     font-weight: 500;
   }
 
+  > p {
+    margin-top: $space-2;
+  }
+
   @include up(lg) {
     padding: $space-4 $space-4 0;
-  }
-}
-
-.backLink {
-  display: inline-flex;
-  align-items: center;
-  gap: $space-1;
-  align-self: flex-start;
-  min-height: $touch-target;
-  font-size: $font-size-small;
-  font-weight: 600;
-  color: $color-primary;
-  text-decoration: none;
-
-  @include hover {
-    text-decoration: underline;
   }
 }
 
@@ -86,20 +73,4 @@
   @include up(lg) {
     padding: 0 $space-4 $space-4;
   }
-}
-
-// Herda a cor do aviso de sucesso; o sublinhado indica que é link sem depender da cor.
-.noticeLink {
-  display: inline-flex;
-  align-items: center;
-  min-height: $touch-target;
-  font-weight: 600;
-  color: inherit;
-  text-decoration: underline;
-}
-
-.breadcrumbLinks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $space-3;
 }

@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import { ButtonLink } from '@/components/ButtonLink'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { TablePanel } from '@/components/DataTable'
 import { PageHeader } from '@/components/PageHeader'
 import { Pagination } from '@/components/Pagination'
 import { StateMessage } from '@/components/StateMessage'
@@ -29,6 +31,9 @@ export function DriversPage() {
   const [driverToDelete, setDriverToDelete] = useState<Driver | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
+  if (driversRequest.status === 'loading')
+    return <LoadingState label="Carregando motoristas..." />
+
   const summary = summarizeDrivers(drivers)
   const alertCount = summary.expiring + summary.expired
 
@@ -46,10 +51,6 @@ export function DriversPage() {
   }
 
   function renderList() {
-    if (driversRequest.status === 'loading') {
-      return <StateMessage variant="loading" title="Carregando motoristas..." />
-    }
-
     if (driversRequest.status === 'error') {
       return (
         <StateMessage
@@ -154,15 +155,12 @@ export function DriversPage() {
         </>
       )}
 
-      <section className={styles.list} aria-label="Motoristas">
-        <div className={styles.tableHeader}>
-          <h2 className={styles.tableTitle}>Motoristas cadastrados</h2>
-          <span className={styles.tableCount}>
-            {filters.filteredDrivers.length} registros
-          </span>
-        </div>
+      <TablePanel
+        title="Motoristas cadastrados"
+        recordCount={filters.filteredDrivers.length}
+      >
         {renderList()}
-      </section>
+      </TablePanel>
 
       <ConfirmDialog
         isOpen={driverToDelete !== null}

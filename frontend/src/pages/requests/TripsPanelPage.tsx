@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { Link } from 'react-router-dom'
 import { useFeatureFlag } from '@/apps/motorista/features/useFeatureFlags'
 import { Button } from '@/components/Button'
@@ -28,7 +29,6 @@ const QUICK_ACTIONS: QuickActionCardProps[] = [
     to: '/viagens/solicitar',
   },
   {
-    // Mapa de Rotas ainda não existe: o link aparece como "Em breve".
     icon: 'route',
     title: 'Mapa de Rotas',
     description: 'Acompanhe viagens e ocorrências da frota.',
@@ -46,17 +46,17 @@ const QUICK_ACTIONS: QuickActionCardProps[] = [
 /** Entrada do módulo Viagens (`/viagens`): atalhos, solicitações pendentes e rotas em andamento. */
 export function TripsPanelPage() {
   const monitoringEnabled = useFeatureFlag('gestor_route_monitoring')
+  const detailsEnabled = useFeatureFlag('gestor_route_details')
   useDocumentTitle('Painel de Viagens')
   const quickActionsId = useId()
   const tripsId = useId()
   const pendingRequests = useAsync(loadPendingRequests)
   const trips = useAsync(listTrackedTrips)
 
-  function renderTrips() {
-    if (trips.status === 'loading') {
-      return <StateMessage variant="loading" title="Carregando viagens..." />
-    }
+  if (pendingRequests.status === 'loading' || trips.status === 'loading')
+    return <LoadingState label="Carregando painel de viagens" />
 
+  const renderTrips = () => {
     if (trips.status === 'error') {
       return (
         <StateMessage
@@ -79,7 +79,16 @@ export function TripsPanelPage() {
       <ul className={styles.tripList}>
         {trips.data.map((trip) => (
           <li key={trip.id}>
-            <TrackedTripCard trip={trip} />
+            <TrackedTripCard
+              trip={trip}
+              to={
+                detailsEnabled
+                  ? `/viagens/monitoramento/${encodeURIComponent(trip.id)}`
+                  : monitoringEnabled
+                    ? '/viagens/monitoramento'
+                    : undefined
+              }
+            />
           </li>
         ))}
       </ul>
@@ -89,6 +98,7 @@ export function TripsPanelPage() {
   return (
     <div className={styles.page}>
       <PageHeader
+        className={styles.header}
         title="Painel de Viagens"
         subtitle="Gerencie solicitações, acompanhe rotas e inicie novos atendimentos de viagens."
       />
@@ -126,7 +136,10 @@ export function TripsPanelPage() {
               Abrir mapa de rotas
             </Link>
           ) : (
-            <ComingSoonLink label="Abrir mapa de rotas" />
+            <ComingSoonLink
+              label="Abrir mapa de rotas"
+              className={styles.monitoringLink}
+            />
           )}
         </div>
         <p className={styles.demoNote}>

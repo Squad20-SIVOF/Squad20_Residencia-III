@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
+import { useNavigate } from 'react-router-dom'
 import { Alert } from '@/components/Alert'
 import { PageHeader } from '@/components/PageHeader'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useVehicles } from '@/pages/vehicles/hooks/useVehicles'
 import { RequestForm } from './components/RequestForm'
 import { RouteCard } from './components/RouteCard'
+import { BackLink } from '@/components/BackLink/BackLink'
 import { REQUEST_FORM_ID, requestFieldId, useRequestForm } from './hooks/useRequestForm'
 import { createRequest } from './services/requestService'
 import type { RequestInput } from './types'
@@ -40,26 +42,19 @@ export function RequestFormPage() {
     return () => clearTimeout(timer)
   }, [isSent, navigate])
 
+  if (vehiclesRequest.status === 'loading')
+    return <LoadingState label="Carregando veículos..." />
+
   return (
     <div className={styles.page}>
-      <PageHeader
-        className={styles.header}
-        title="Solicitar Veículo"
-        breadcrumb={
-          <>
-            <p>Envio demonstrativo: este formulário ainda não registra solicitações.</p>
-            <nav className={styles.breadcrumbLinks} aria-label="Navegação de viagens">
-              <Link to="/viagens" className={styles.backLink}>
-                <span aria-hidden="true">←</span> Voltar para o Painel de Viagens
-              </Link>
-              <Link to="/viagens/solicitacoes" className={styles.backLink}>
-                Ver solicitações pendentes
-              </Link>
-            </nav>
-          </>
-        }
-        subtitle="Preencha os dados abaixo para reservar um veículo oficial do setor SVO."
-      />
+      <div className={styles.header}>
+        <PageHeader
+          title="Solicitar Veículo"
+          breadcrumb={<BackLink to="/viagens">Voltar para o Painel de Viagens</BackLink>}
+          subtitle="Preencha os dados abaixo para reservar um veículo oficial do setor SVO."
+        />
+        <p>Envio demonstrativo: este formulário ainda não registra solicitações.</p>
+      </div>
 
       <RouteCard
         className={styles.route}
@@ -84,14 +79,7 @@ export function RequestFormPage() {
         onReloadVehicles={vehiclesRequest.reload}
         notice={
           isSent && (
-            <Alert
-              variant="success"
-              action={
-                <Link to={PENDING_REQUESTS_PATH} className={styles.noticeLink}>
-                  Ver solicitações pendentes
-                </Link>
-              }
-            >
+            <Alert variant="success">
               Solicitação enviada! Aguardando aprovação do gestor.
             </Alert>
           )
