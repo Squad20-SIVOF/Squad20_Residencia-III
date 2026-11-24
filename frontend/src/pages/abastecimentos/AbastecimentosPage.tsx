@@ -6,7 +6,9 @@ import { ButtonLink } from '@/components/ButtonLink'
 import { StatGrid } from '@/components/StatCard'
 import { Toolbar } from '@/components/Toolbar'
 import { DataTable, TablePanel, type DataTableColumn } from '@/components/DataTable'
+import { Pagination, TABLE_PAGE_SIZE } from '@/components/Pagination'
 import { useCallback, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { currentUser } from '@/service/authService'
 import { useAsync } from '@/hooks/useAsync'
 import { StateMessage } from '@/components/StateMessage'
@@ -18,14 +20,19 @@ import { fuelService, monthRange, money, type FuelRecord } from './services/fuel
 import styles from './AbastecimentosPage.module.scss'
 
 export default function AbastecimentosPage() {
+  const [params, setParams] = useSearchParams()
+  const linkedId = params.get('registro')
   const [month, setMonth] = useState(() => {
+    const period = params.get('periodo')
+    if (period && /^\d{4}-(0[1-9]|1[0-2])$/.test(period)) return period
     const now = new Date()
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
   })
   const [vehicle, setVehicle] = useState('')
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
   const [hoveredVehicleId, setHoveredVehicleId] = useState<string | null>(null)
-  const [selected, setSelected] = useState<FuelRecord | null>(null)
+  const [selectedRecord, setSelected] = useState<FuelRecord | null>(null)
   const [removing, setRemoving] = useState<FuelRecord | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -44,12 +51,19 @@ export default function AbastecimentosPage() {
 
   const all = request.status === 'success' ? request.data.rows : []
   const canManage = request.status === 'success' && request.data.canManage
+  const selected = selectedRecord ?? all.find((record) => record.id === linkedId)
 
   const monthly = all.filter((row) => !vehicle || row.veiculo_id === vehicle)
   const rows = monthly.filter((row) =>
     `${row.motorista_nome ?? ''} ${row.posto ?? ''} ${row.placa ?? ''}`
       .toLocaleLowerCase('pt-BR')
       .includes(search.toLocaleLowerCase('pt-BR')),
+  )
+  const totalPages = Math.max(1, Math.ceil(rows.length / TABLE_PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageRows = rows.slice(
+    (currentPage - 1) * TABLE_PAGE_SIZE,
+    currentPage * TABLE_PAGE_SIZE,
   )
 
   const total = rows.reduce((sum, row) => sum + Number(row.valor_total), 0)
@@ -77,6 +91,13 @@ export default function AbastecimentosPage() {
   const hoveredPercentage =
     hoveredCap > 0 ? Math.min((hoveredTotal / hoveredCap) * 100, 100) : 0
 
+  function clearLinkedRecord() {
+    if (!linkedId) return
+    const next = new URLSearchParams(params)
+    next.delete('registro')
+    setParams(next, { replace: true })
+  }
+
   async function remove() {
     if (!removing || saving) return
     setSaving(true)
@@ -84,6 +105,7 @@ export default function AbastecimentosPage() {
     try {
       await fuelService.remove(removing.id)
       setSelected((current) => (current?.id === removing.id ? null : current))
+      if (removing.id === linkedId) clearLinkedRecord()
       setRemoving(null)
       request.reload()
     } catch (cause) {
@@ -303,14 +325,20 @@ export default function AbastecimentosPage() {
               label="Buscar motorista ou posto"
               type="search"
               value={search}
-              onChange={setSearch}
+              onChange={(value) => {
+                setSearch(value)
+                setPage(1)
+              }}
               placeholder="Buscar nos registros..."
             />
             <SelectField
               id="filtroVeiculo"
               label="Veículo"
               value={vehicle}
-              onChange={setVehicle}
+              onChange={(value) => {
+                setVehicle(value)
+                setPage(1)
+              }}
               options={[
                 { value: '', label: 'Todos os veículos' },
                 ...options.map((option) => ({ value: option.id, label: option.label })),
@@ -326,6 +354,8 @@ export default function AbastecimentosPage() {
                 if (value) {
                   setMonth(value)
                   setVehicle('')
+                  setPage(1)
+                  clearLinkedRecord()
                 }
               }}
             />
@@ -334,7 +364,23 @@ export default function AbastecimentosPage() {
             </Button>
           </Toolbar>
 
-          <TablePanel title="Histórico de abastecimentos" recordCount={rows.length}>
+          <TablePanel
+            title="Histórico de abastecimentos"
+            recordCount={rows.length}
+            footer={
+              <Pagination
+                itemLabel="abastecimentos"
+                shownCount={pageRows.length}
+                totalCount={rows.length}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                hasPrevious={currentPage > 1}
+                hasNext={currentPage < totalPages}
+                onPrevious={() => setPage(currentPage - 1)}
+                onNext={() => setPage(currentPage + 1)}
+              />
+            }
+          >
             {!rows.length ? (
               <StateMessage
                 title="Nenhum abastecimento encontrado."
@@ -343,7 +389,7 @@ export default function AbastecimentosPage() {
             ) : (
               <DataTable
                 caption="Histórico de abastecimentos"
-                rows={rows}
+                rows={pageRows}
                 columns={columns}
                 getRowKey={(row) => row.id}
                 renderActions={(row) => (
@@ -389,6 +435,7 @@ export default function AbastecimentosPage() {
           error={error}
           onClose={() => {
             setSelected(null)
+            clearLinkedRecord()
             setError('')
           }}
           onDelete={() => {

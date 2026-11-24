@@ -42,14 +42,14 @@ const columns = `
 
 const getAllVehicles = async () => {
   const result = await pool.query(
-    `SELECT ${columns} FROM veiculos ORDER BY modelo, id`,
+    `SELECT ${columns}, foto IS NOT NULL AS tem_foto FROM veiculos ORDER BY modelo, id`,
   );
   return result.rows;
 };
 
-const getVehicleById = async (id: string) => {
+const getVehicleById = async (id: string, includePhoto = false) => {
   const result = await pool.query(
-    `SELECT ${columns} FROM veiculos WHERE id = $1`,
+    `SELECT ${columns}${includePhoto ? ", foto" : ""} FROM veiculos WHERE id = $1`,
     [id],
   );
   return result.rows[0];
@@ -73,8 +73,8 @@ const getNearMaintance = async (
 
 const createVehicle = async (vehicle: VehicleInput) => {
   const result = await pool.query(
-    `INSERT INTO veiculos (modelo, placa, tipo_combustivel, capacidade_maxima, teto_gasto_mensal, quilometragem, ultimo_km_alertado, frota, exclusivo_svo, identificacao, marca, proxima_vistoria, checklist_vistoria, ativo, status)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb, $14, CASE WHEN $14 THEN 'Disponível' ELSE 'Inativo' END)
+    `INSERT INTO veiculos (modelo, placa, tipo_combustivel, capacidade_maxima, teto_gasto_mensal, quilometragem, ultimo_km_alertado, frota, exclusivo_svo, identificacao, marca, proxima_vistoria, checklist_vistoria, ativo, foto, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb, $14, $15, CASE WHEN $14 THEN 'Disponível' ELSE 'Inativo' END)
       RETURNING ${columns}`,
     [
       vehicle.modelo,
@@ -91,6 +91,7 @@ const createVehicle = async (vehicle: VehicleInput) => {
       vehicle.proxima_vistoria ?? null,
       JSON.stringify(vehicle.checklist_vistoria ?? []),
       vehicle.ativo ?? true,
+      vehicle.foto ?? null,
     ],
   );
 
@@ -107,7 +108,8 @@ const updateVehicle = async (
       identificacao=CASE WHEN $12::jsonb ? 'identificacao' THEN $12::jsonb->>'identificacao' ELSE identificacao END,
       marca=CASE WHEN $12::jsonb ? 'marca' THEN $12::jsonb->>'marca' ELSE marca END,
       proxima_vistoria=CASE WHEN $12::jsonb ? 'proxima_vistoria' THEN ($12::jsonb->>'proxima_vistoria')::date ELSE proxima_vistoria END,
-      checklist_vistoria=COALESCE($12::jsonb->'checklist_vistoria',checklist_vistoria)
+      checklist_vistoria=COALESCE($12::jsonb->'checklist_vistoria',checklist_vistoria),
+      foto=CASE WHEN $12::jsonb ? 'foto' THEN $12::jsonb->>'foto' ELSE foto END
       WHERE id = $8
       RETURNING ${columns}`,
     [
@@ -127,6 +129,7 @@ const updateVehicle = async (
         marca: vehicle.marca,
         proxima_vistoria: vehicle.proxima_vistoria,
         checklist_vistoria: vehicle.checklist_vistoria,
+        foto: vehicle.foto,
       }),
     ],
   );

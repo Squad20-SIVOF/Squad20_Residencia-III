@@ -49,7 +49,9 @@ test('renderiza a página de login em /login', () => {
 test('renderiza o início dentro do menu lateral', async () => {
   renderAt('/')
 
-  expect(screen.getByRole('heading', { name: 'Dashboard Principal' })).toBeInTheDocument()
+  expect(
+    await screen.findByRole('heading', { name: 'Dashboard Principal' }),
+  ).toBeInTheDocument()
   expect(screen.getByRole('button', { name: /abrir menu/i })).toBeInTheDocument()
   expect(await screen.findByText('Veículos disponíveis')).toBeInTheDocument()
 })
@@ -94,11 +96,7 @@ test('navega pelo menu lateral e marca o item ativo', async () => {
   expect(screen.queryByText(/módulo em construção/i)).not.toBeInTheDocument()
 })
 
-test('abre a exportação de relatórios implementada', async () => {
-  localStorage.setItem(
-    'frotamanager.dev.feature-flags',
-    JSON.stringify({ gestor_relatorios: true }),
-  )
+test('abre a exportação de relatórios pelo menu com a configuração padrão', async () => {
   const user = userEvent.setup()
   renderAt('/')
 
@@ -110,6 +108,25 @@ test('abre a exportação de relatórios implementada', async () => {
   ).toBeInTheDocument()
   expect(screen.getByText(/Gere arquivos gerenciais por período/i)).toBeInTheDocument()
   expect(screen.queryByText(/módulo em construção/i)).not.toBeInTheDocument()
+  expect(screen.getByText('Mostrando 3 de 3 registros')).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Anterior' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Próxima' })).toBeDisabled()
+
+  await user.selectOptions(screen.getByLabelText('Período'), 'Mês anterior')
+  await user.selectOptions(screen.getByLabelText('Tipo de Relatório'), 'Manutenção')
+  await user.selectOptions(screen.getByLabelText('Veículo/Motorista'), 'ABC-1234')
+  expect(
+    screen.getByRole('heading', { name: 'Relatório de Viagens — Este mês' }),
+  ).toBeVisible()
+  expect(screen.getByRole('row', { name: /DEF-5678/ })).toBeVisible()
+
+  await user.click(screen.getByRole('button', { name: 'Gerar Relatório' }))
+
+  expect(
+    screen.getByRole('heading', { name: 'Relatório de Manutenção — Mês anterior' }),
+  ).toBeVisible()
+  expect(screen.getByRole('row', { name: /ABC-1234/ })).toBeVisible()
+  expect(screen.queryByRole('row', { name: /DEF-5678/ })).not.toBeInTheDocument()
 })
 
 test('/viagens abre o Painel de Viagens, sem redirecionar', async () => {

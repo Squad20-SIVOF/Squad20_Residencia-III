@@ -4,13 +4,11 @@ import { Avatar } from '@/components/Avatar'
 import { Badge } from '@/components/Badge'
 import { Button } from '@/components/Button'
 import { DataTable, type DataTableColumn } from '@/components/DataTable'
-import { Pagination } from '@/components/Pagination'
+import { Pagination, TABLE_PAGE_SIZE } from '@/components/Pagination'
 import { TextField } from '@/components/TextField'
 import { normalizeText } from '@/utils/format'
 import type { User } from '../types'
 import styles from '../UsersPage.module.scss'
-
-const PAGE_SIZE = 6
 
 const columns: DataTableColumn<User>[] = [
   {
@@ -57,9 +55,12 @@ export function UsersDirectory({ users, saving, onManage }: UsersDirectoryProps)
   const filtered = users.filter((user) =>
     normalizeText(`${user.nome} ${user.email}`).includes(term),
   )
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const pageCount = Math.max(1, Math.ceil(filtered.length / TABLE_PAGE_SIZE))
   const currentPage = Math.min(page, pageCount)
-  const rows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const rows = filtered.slice(
+    (currentPage - 1) * TABLE_PAGE_SIZE,
+    currentPage * TABLE_PAGE_SIZE,
+  )
 
   return (
     <section className={styles.directory} aria-labelledby="users-directory-title">

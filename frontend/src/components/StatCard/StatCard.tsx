@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { classNames } from '@/utils/classNames'
 import styles from './StatCard.module.scss'
 
@@ -7,7 +8,8 @@ export interface StatCardProps {
   total?: number
   hint?: string
   detail?: string
-  variant?: 'success' | 'warning' | 'danger' | 'info'
+  to?: string
+  variant?: 'success' | 'warning' | 'danger' | 'info' | 'neutral'
   className?: string
 }
 
@@ -17,11 +19,12 @@ export function StatCard({
   total,
   hint,
   detail,
+  to,
   variant = 'info',
   className,
 }: StatCardProps) {
-  return (
-    <article className={classNames(styles.card, styles[variant], className)}>
+  const card = (
+    <article className={classNames(styles.card, styles[variant], !to && className)}>
       <p className={styles.label}>{label}</p>
       <p className={styles.value}>
         {value}
@@ -34,6 +37,14 @@ export function StatCard({
         </div>
       )}
     </article>
+  )
+
+  return to ? (
+    <Link to={to} className={classNames(styles.link, className)}>
+      {card}
+    </Link>
+  ) : (
+    card
   )
 }
 

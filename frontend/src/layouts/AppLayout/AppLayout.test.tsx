@@ -2,12 +2,25 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom'
 import { afterEach, expect, test, vi } from 'vitest'
-import { getAlertCount } from '@/service/alertService'
+import { getAlertSummary } from '@/service/alertService'
 import { logout, type SessionUser } from '@/service/authService'
 import { AppLayout } from './AppLayout'
 
 vi.mock('@/service/alertService', () => ({
-  getAlertCount: vi.fn<() => Promise<number>>().mockResolvedValue(3),
+  getAlertSummary: vi.fn<typeof getAlertSummary>().mockResolvedValue({
+    cnh: {
+      total: 6,
+      criticas: 0,
+      itens: Array.from({ length: 3 }, (_, index) => ({
+        id: String(index),
+        nome: `Motorista ${index}`,
+        validade_cnh: '2026-12-01',
+        dias_restantes: 10,
+        severity: 'aviso',
+      })),
+    },
+    manutencao: { total: 0, criticas: 0, itens: [] },
+  }),
 }))
 
 afterEach(() => {
@@ -152,18 +165,18 @@ test('abre e fecha o menu no celular, inclusive com Esc', async () => {
   ).not.toBeInTheDocument()
 })
 
-test('mostra o número de alertas para quem pode ler manutenções', async () => {
+test('conta somente as notificações listadas', async () => {
   await renderLayout(makeUser(['manutencoes:ler']))
 
-  expect(await screen.findByText('3')).toHaveTextContent('3 alertas')
-  expect(getAlertCount).toHaveBeenCalledTimes(1)
+  expect(await screen.findByText('3')).toHaveTextContent('3 notificações')
+  expect(getAlertSummary).toHaveBeenCalledTimes(1)
 })
 
 test('não consulta alertas sem permissão', async () => {
   await renderLayout(makeUser([]))
 
-  expect(getAlertCount).not.toHaveBeenCalled()
-  expect(screen.queryByText(/alertas?$/)).not.toBeInTheDocument()
+  expect(getAlertSummary).not.toHaveBeenCalled()
+  expect(screen.queryByText('3')).not.toBeInTheDocument()
 })
 
 test('Sair encerra a sessão e volta ao login', async () => {

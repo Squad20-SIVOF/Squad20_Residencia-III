@@ -9,10 +9,11 @@ interface RecordDetailsDialogProps {
   description: string
   titleAccessory?: ReactNode
   plate?: string | null | undefined
-  vehicleName: string
+  vehicleName?: string
   notice?: ReactNode
   children: ReactNode
   editTo?: string | undefined
+  primaryAction?: ReactNode
   onDelete?: (() => void) | undefined
   deleting?: boolean
   onClose: () => void
@@ -27,6 +28,7 @@ export function RecordDetailsDialog({
   notice,
   children,
   editTo,
+  primaryAction,
   onDelete,
   deleting = false,
   onClose,
@@ -57,18 +59,21 @@ export function RecordDetailsDialog({
               Fechar
             </Button>
             {editTo && <ButtonLink to={editTo}>Editar</ButtonLink>}
+            {primaryAction}
           </div>
         </footer>
       }
     >
       {notice}
-      <div className={styles.detailVehicle}>
-        {plate && <span className={styles.detailPlate}>{plate}</span>}
-        <div>
-          <p className={styles.detailLabel}>Veículo</p>
-          <p className={styles.detailValue}>{vehicleName}</p>
+      {vehicleName !== undefined && (
+        <div className={styles.detailVehicle}>
+          {plate && <span className={styles.detailPlate}>{plate}</span>}
+          <div>
+            <p className={styles.detailLabel}>Veículo</p>
+            <p className={styles.detailValue}>{vehicleName}</p>
+          </div>
         </div>
-      </div>
+      )}
       {children}
     </ConfirmDialog>
   )

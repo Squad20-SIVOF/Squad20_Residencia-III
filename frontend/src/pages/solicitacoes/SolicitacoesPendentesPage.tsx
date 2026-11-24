@@ -1,90 +1,205 @@
 import { useCallback, useState } from 'react'
-import { LoadingState } from '@/components/LoadingState/LoadingState'
-import { Link } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
+import { Car, Check, Clock, Info, X } from 'lucide-react'
+import { BackLink } from '@/components/BackLink/BackLink'
 import { Badge } from '@/components/Badge'
 import { Button } from '@/components/Button'
 import { ButtonLink } from '@/components/ButtonLink'
-import { DataTable, TablePanel, type DataTableColumn } from '@/components/DataTable'
-import { Pagination } from '@/components/Pagination'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { PageHeader } from '@/components/PageHeader'
+import { Pagination, TABLE_PAGE_SIZE } from '@/components/Pagination'
+import { RecordDetailsDialog } from '@/components/RecordDetailsDialog/RecordDetailsDialog'
+import detailStyles from '@/components/RecordDetailsDialog/RecordDetailsDialog.module.scss'
 import { StateMessage } from '@/components/StateMessage'
 import { TextField } from '@/components/TextField'
 import { Toolbar } from '@/components/Toolbar'
 import { useAsync } from '@/hooks/useAsync'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
-import { normalizeText } from '@/utils/format'
+import { listPendingRequests } from '@/pages/requests/services/requestApi'
+import { assignmentExamples } from '@/pages/requests/services/assignmentExamples'
 import {
-  listPendingRequests,
-  type RequestRecord,
-} from '@/pages/requests/services/requestApi'
-import { getRequestCode } from '@/pages/requests/utils/tripsPanelRules'
+  formatPendingCount,
+  getRequestCode,
+  sortPendingRequests,
+} from '@/pages/requests/utils/tripsPanelRules'
+import { formatShortDateTime, normalizeText } from '@/utils/format'
 import styles from './SolicitacoesPendentesPage.module.scss'
 
-const COLUMNS: DataTableColumn<RequestRecord>[] = [
-  {
-    key: 'code',
-    header: 'Solicitação',
-    isPrimary: true,
-    keepTogether: true,
-    render: (row) => getRequestCode(row.id),
-  },
-  {
-    key: 'requester',
-    header: 'Solicitante',
-    minWidth: 9,
-    render: (row) => row.solicitante_nome || 'Não informado',
-  },
-  {
-    key: 'sector',
-    header: 'Setor',
-    minWidth: 8,
-    render: (row) => row.setor_nome || 'Não informado',
-  },
-  { key: 'category', header: 'Categoria', minWidth: 8, render: (row) => row.categoria },
-  {
-    key: 'date',
-    header: 'Necessidade',
-    keepTogether: true,
-    render: (row) => (
-      <time dateTime={row.data_necessidade}>
-        {new Date(row.data_necessidade).toLocaleString('pt-BR')}
-      </time>
-    ),
-  },
-  {
-    key: 'priority',
-    header: 'Prioridade',
-    render: (row) =>
-      row.flag_urgencia ? <Badge variant="warning">Urgente</Badge> : 'Normal',
-  },
-]
+interface RequestCardData {
+  code: string
+  important: boolean
+  schedule: string
+  neededAt?: string
+  fields: [label: string, value: string][]
+  detailsPath?: string
+  assignmentPath: string
+}
+
+const examples: RequestCardData[] = assignmentExamples.map((example) => ({
+  code: `#${example.code}`,
+  important: example.important,
+  schedule: example.schedule,
+  fields: [
+    ['Origem', example.origin ?? '—'],
+    ['Destino', example.destination ?? '—'],
+    ['Carga', example.category],
+    ['Setor', example.sector ?? '—'],
+  ],
+  assignmentPath: `/viagens/solicitacoes/${encodeURIComponent(example.id)}/atribuir`,
+}))
+
+function RequestFields({
+  fields,
+  detailed = false,
+}: {
+  fields: RequestCardData['fields']
+  detailed?: boolean
+}) {
+  return (
+    <dl className={detailed ? detailStyles.details : styles.fields}>
+      {fields.map(([label, value]) => (
+        <div key={label}>
+          <dt className={detailed ? detailStyles.detailLabel : undefined}>{label}</dt>
+          <dd className={detailed ? detailStyles.detailValue : undefined}>{value}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+function RequestCard({
+  row,
+  onShowExample,
+}: {
+  row: RequestCardData
+  onShowExample: () => void
+}) {
+  return (
+    <article className={styles.card} data-important={row.important || undefined}>
+      <header className={styles.cardHeader}>
+        <div className={styles.cardTitle}>
+          <h2>Descrição da Solicitação {row.code}</h2>
+          {row.important && <Badge variant="danger">Importante</Badge>}
+        </div>
+        <span className={styles.schedule}>
+          <Clock size={15} aria-hidden="true" />
+          {row.neededAt ? (
+            <time dateTime={row.neededAt}>{row.schedule}</time>
+          ) : (
+            row.schedule
+          )}
+        </span>
+      </header>
+
+      <RequestFields fields={row.fields} />
+
+      <div className={styles.actions}>
+        <Button
+          variant="secondary"
+          className={styles.approve}
+          iconStart={<Check size={16} />}
+          disabled
+        >
+          Aprovar
+        </Button>
+        <Button
+          variant="secondary"
+          className={styles.reject}
+          iconStart={<X size={16} />}
+          disabled
+        >
+          Recusar
+        </Button>
+        <ButtonLink
+          variant="secondary"
+          className={styles.assign}
+          to={row.assignmentPath}
+          aria-label={`Atribuir veículo e motorista à solicitação ${row.code}`}
+          iconStart={<Car size={16} />}
+        >
+          Atribuir
+        </ButtonLink>
+        {row.detailsPath ? (
+          <ButtonLink
+            variant="secondary"
+            to={row.detailsPath}
+            aria-label={`Ver detalhes da solicitação ${row.code}`}
+            iconStart={<Info size={16} />}
+          >
+            Ver detalhes
+          </ButtonLink>
+        ) : (
+          <Button
+            variant="secondary"
+            aria-label={`Ver detalhes da solicitação ${row.code}`}
+            iconStart={<Info size={16} />}
+            onClick={onShowExample}
+          >
+            Ver detalhes
+          </Button>
+        )}
+      </div>
+    </article>
+  )
+}
 
 export default function SolicitacoesPendentesPage() {
   useDocumentTitle('Solicitações pendentes')
+  const [params] = useSearchParams()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const load = useCallback(() => listPendingRequests(page), [page])
+  const [showExamples, setShowExamples] = useState(() => params.get('exemplos') === '1')
+  const [openedExample, setOpenedExample] = useState<RequestCardData | null>(null)
+  const load = useCallback(() => listPendingRequests(page, TABLE_PAGE_SIZE), [page])
   const result = useAsync(load)
   if (result.status === 'loading') return <LoadingState label="Carregando solicitações" />
 
   const data = result.status === 'success' ? result.data : null
-  const rows =
-    data?.dados.filter((row) =>
-      normalizeText(
-        [row.id, row.categoria, row.solicitante_nome, row.setor_nome].join(' '),
-      ).includes(normalizeText(search)),
-    ) ?? []
+  const showingExamples = Boolean(data && (data.total === 0 || showExamples))
+  const cards: RequestCardData[] = showingExamples
+    ? examples
+    : sortPendingRequests(data?.dados ?? [], 'importantes').map((row) => ({
+        code: getRequestCode(row.id),
+        important: row.flag_urgencia,
+        schedule: formatShortDateTime(row.data_necessidade),
+        neededAt: row.data_necessidade,
+        detailsPath: `/viagens/solicitacoes/${encodeURIComponent(row.id)}`,
+        assignmentPath: `/viagens/solicitacoes/${encodeURIComponent(row.id)}/atribuir`,
+        fields: [
+          ['Solicitante', row.solicitante_nome || 'Não informado'],
+          ['Categoria', row.categoria],
+          ['Setor', row.setor_nome || 'Não informado'],
+        ],
+      }))
+  const term = normalizeText(search.replace(/^#/, ''))
+  const rows = cards.filter((row) =>
+    normalizeText(
+      [row.code, row.detailsPath, ...row.fields.map(([, value]) => value)].join(' '),
+    ).includes(term),
+  )
+  const total = showingExamples ? examples.length : (data?.total ?? 0)
+  const currentPage = showingExamples ? 1 : (data?.pagina ?? 1)
+  const totalPages = showingExamples
+    ? 1
+    : Math.max(1, Math.ceil(total / (data?.limite || TABLE_PAGE_SIZE)))
+  const important = cards.filter((row) => row.important).length
+
+  function goToPage(target: number) {
+    setSearch('')
+    setPage(target)
+  }
+
+  function closeExample() {
+    setOpenedExample(null)
+  }
 
   return (
     <section className={styles.page}>
-      <Link to="/viagens" className={styles.backLink}>
-        ← Voltar para Viagens
-      </Link>
       <PageHeader
         title="Solicitações Pendentes"
-        subtitle="Consulte as solicitações que aguardam análise."
+        subtitle="Analise as novas solicitações e atribua veículos e motoristas."
+        breadcrumb={<BackLink to="/viagens">Voltar para o Painel de Viagens</BackLink>}
       />
-      <p>Aprovação e recusa ainda indisponíveis.</p>
       {result.status === 'error' && (
         <StateMessage
           title="Não foi possível carregar as solicitações"
@@ -96,90 +211,107 @@ export default function SolicitacoesPendentesPage() {
         />
       )}
       {data && (
-        <TablePanel
-          title="Solicitações em análise"
-          recordCount={data.total}
-          recordLabel={['pendente', 'pendentes']}
-          footer={
-            <Pagination
-              itemLabel="solicitações"
-              shownCount={rows.length}
-              totalCount={data.total}
-              currentPage={data.pagina}
-              totalPages={Math.max(1, Math.ceil(data.total / data.limite))}
-              hasPrevious={page > 1}
-              hasNext={page * data.limite < data.total}
-              onPrevious={() => {
-                setSearch('')
-                setPage((current) => current - 1)
-              }}
-              onNext={() => {
-                setSearch('')
-                setPage((current) => current + 1)
-              }}
-            />
-          }
-        >
+        <>
           <div className={styles.filterBar}>
-            <Badge variant="danger">
-              {data.dados.filter((row) => row.flag_urgencia).length} urgentes nesta página
-            </Badge>
-            <Toolbar label="Filtrar solicitações pendentes">
+            <div className={styles.counts}>
+              <Badge variant="warning">{formatPendingCount(total)}</Badge>
+              {important > 0 && (
+                <Badge variant="danger">
+                  {important} {important === 1 ? 'importante' : 'importantes'}
+                  {totalPages > 1 && ' nesta página'}
+                </Badge>
+              )}
+              {showingExamples && <Badge variant="info">Demonstração</Badge>}
+            </div>
+            <Toolbar className={styles.search} label="Filtrar solicitações pendentes">
               <TextField
                 type="search"
                 label="Buscar nesta página"
-                placeholder="Identificador, categoria, solicitante ou setor"
+                isLabelHidden
+                placeholder="Buscar solicitação..."
                 value={search}
                 onChange={setSearch}
               />
             </Toolbar>
+            {data.total > 0 && (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setSearch('')
+                  setShowExamples(!showExamples)
+                }}
+              >
+                {showingExamples ? 'Ver solicitações reais' : 'Ver exemplos'}
+              </Button>
+            )}
           </div>
-          {rows.length > 0 ? (
-            <DataTable
-              caption="Solicitações pendentes"
-              rows={rows}
-              columns={COLUMNS}
-              getRowKey={(row) => row.id}
-              renderActions={(row) => {
-                const detailsPath = `/viagens/solicitacoes/${encodeURIComponent(row.id)}`
-                const code = getRequestCode(row.id)
-
-                return (
-                  <>
-                    <Button variant="secondary" disabled>
-                      Aprovar
-                    </Button>
-                    <Button variant="secondary" disabled>
-                      Recusar
-                    </Button>
-                    <ButtonLink
-                      variant="secondary"
-                      to={`${detailsPath}/atribuir`}
-                      aria-label={`Atribuir veículo e motorista à solicitação ${code}`}
-                    >
-                      Atribuir
-                    </ButtonLink>
-                    <ButtonLink
-                      variant="secondary"
-                      to={detailsPath}
-                      aria-label={`Ver detalhes da solicitação ${code}`}
-                    >
-                      Ver detalhes
-                    </ButtonLink>
-                  </>
-                )
-              }}
-            />
-          ) : (
-            <StateMessage
-              title={
-                data.total === 0
-                  ? 'Nenhuma solicitação pendente.'
-                  : 'Nenhuma solicitação encontrada nesta página.'
-              }
-            />
+          {data.total === 0 && (
+            <p className={styles.note}>Nenhuma solicitação pendente.</p>
           )}
-        </TablePanel>
+          {rows.length ? (
+            <div className={styles.cards}>
+              {rows.map((row) => (
+                <RequestCard
+                  key={row.detailsPath ?? row.code}
+                  row={row}
+                  onShowExample={() => setOpenedExample(row)}
+                />
+              ))}
+            </div>
+          ) : (
+            <StateMessage title="Nenhuma solicitação encontrada nesta página." />
+          )}
+          {!showingExamples && (
+            <p className={styles.note}>Aprovação e recusa ainda indisponíveis.</p>
+          )}
+          <Pagination
+            itemLabel="solicitações"
+            shownCount={rows.length}
+            totalCount={total}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasPrevious={currentPage > 1}
+            hasNext={currentPage < totalPages}
+            onPrevious={() => goToPage(currentPage - 1)}
+            onNext={() => goToPage(currentPage + 1)}
+          />
+        </>
+      )}
+      {openedExample && (
+        <RecordDetailsDialog
+          title={`Detalhes da Solicitação ${openedExample.code}`}
+          description="Exemplo demonstrativo de solicitação."
+          titleAccessory={<Badge variant="warning">Pendente</Badge>}
+          onClose={closeExample}
+          primaryAction={
+            <ButtonLink to={openedExample.assignmentPath}>Atribuir</ButtonLink>
+          }
+        >
+          <section
+            className={`${detailStyles.detailService} ${styles.detailSection} ${styles.detailRoute}`}
+          >
+            <h3>Trajeto solicitado</h3>
+            <RequestFields fields={openedExample.fields.slice(0, 2)} detailed />
+          </section>
+          <section className={`${detailStyles.detailService} ${styles.detailSection}`}>
+            <h3>Informações da solicitação</h3>
+            <RequestFields fields={openedExample.fields.slice(2)} detailed />
+          </section>
+          <dl className={`${detailStyles.details} ${detailStyles.detailHighlight}`}>
+            <div>
+              <dt>Horário solicitado</dt>
+              <dd className={detailStyles.detailValue}>{openedExample.schedule}</dd>
+            </div>
+            <div>
+              <dt>Prioridade</dt>
+              <dd>
+                <Badge variant={openedExample.important ? 'danger' : 'neutral'}>
+                  {openedExample.important ? 'Importante' : 'Normal'}
+                </Badge>
+              </dd>
+            </div>
+          </dl>
+        </RecordDetailsDialog>
       )}
     </section>
   )

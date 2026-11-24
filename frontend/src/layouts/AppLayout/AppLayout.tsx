@@ -1,6 +1,5 @@
-import { getAlertCount } from '@/service/alertService'
 import { currentUser, logout, type SessionUser } from '@/service/authService'
-import { useEffect, useId, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   NavLink,
@@ -10,7 +9,9 @@ import {
   useOutletContext,
 } from 'react-router-dom'
 import { Avatar } from '@/components/Avatar'
+import { useAsync } from '@/hooks/useAsync'
 import { useTheme } from '@/hooks/useTheme'
+import { loadNotifications } from '@/pages/notifications/notificationFeed'
 import { classNames } from '@/utils/classNames'
 import { SidebarIcon, type SidebarIconName } from './SidebarIcon'
 import styles from './AppLayout.module.scss'
@@ -77,22 +78,35 @@ export interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const session = useOutletContext<SessionUser | undefined>()
-  const [user, setUser] = useState<SessionUser | null>(session ?? null)
+  const [fetchedUser, setUser] = useState<SessionUser | null>(null)
+  const user = session ?? fetchedUser
   useEffect(() => {
     if (session) return
     currentUser()
       .then(setUser)
       .catch(() => {})
   }, [session])
-  const [alertCount, setAlertCount] = useState(0)
   const canReadAlerts = Boolean(user?.permissoes.includes('manutencoes:ler'))
+  const canReadFuel = Boolean(user?.permissoes.includes('abastecimentos:ler'))
+  const fuelEnabled = useFeatureFlag('gestor_abastecimentos')
+  const driversEnabled = useFeatureFlag('gestor_motoristas')
+  const maintenanceEnabled = useFeatureFlag('gestor_manutencoes')
   const notificationsEnabled = useFeatureFlag('gestor_notificacoes')
-  useEffect(() => {
-    if (!canReadAlerts) return
-    getAlertCount()
-      .then(setAlertCount)
-      .catch(() => {})
-  }, [canReadAlerts])
+  const canViewNotifications =
+    notificationsEnabled && (canReadAlerts || (canReadFuel && fuelEnabled))
+  const loadFeed = useCallback(
+    async () =>
+      user && canViewNotifications
+        ? loadNotifications(user, fuelEnabled, driversEnabled, maintenanceEnabled)
+        : null,
+    [user, canViewNotifications, fuelEnabled, driversEnabled, maintenanceEnabled],
+  )
+  const notificationFeed = useAsync(loadFeed)
+  const { reload: reloadNotifications } = notificationFeed
+  const notificationCount =
+    notificationFeed.status === 'success'
+      ? (notificationFeed.data?.notifications.length ?? 0)
+      : 0
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(readIsCollapsed)
   const { theme, toggleTheme } = useTheme()
@@ -100,7 +114,14 @@ export function AppLayout({ children }: AppLayoutProps) {
   const panelId = useId()
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const onNotificationsPage = pathname === '/notificacoes'
+  const wasOnNotificationsPage = useRef(onNotificationsPage)
   const userName = user?.nome ?? 'Usuário'
+
+  useEffect(() => {
+    if (onNotificationsPage && !wasOnNotificationsPage.current) reloadNotifications()
+    wasOnNotificationsPage.current = onNotificationsPage
+  }, [onNotificationsPage, reloadNotifications])
 
   useEffect(() => {
     if (!isMenuOpen) return
@@ -216,7 +237,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               <span className={styles.label}>{themeLabel}</span>
             </button>
 
-            {canReadAlerts && notificationsEnabled ? (
+            {canViewNotifications ? (
               <NavLink
                 to="/notificacoes"
                 data-tooltip="Notificações"
@@ -232,11 +253,11 @@ export function AppLayout({ children }: AppLayoutProps) {
               >
                 <span className={styles.iconWrap}>
                   <SidebarIcon name="alert" className={styles.icon} />
-                  {alertCount > 0 ? (
+                  {notificationCount > 0 ? (
                     <span className={styles.badge}>
-                      {alertCount}
+                      {notificationCount}
                       <span className={styles.visuallyHidden}>
-                        {alertCount === 1 ? ' alerta' : ' alertas'}
+                        {notificationCount === 1 ? ' notificação' : ' notificações'}
                       </span>
                     </span>
                   ) : null}
@@ -278,7 +299,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       <main className={styles.main}>
         <div key={pathname} className={styles.content}>
-          {children ?? <Outlet />}
+          {children ?? <Outlet context={notificationFeed} />}
         </div>
       </main>
     </div>

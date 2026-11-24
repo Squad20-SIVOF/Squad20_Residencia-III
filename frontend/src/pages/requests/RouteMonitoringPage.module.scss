@@ -51,6 +51,12 @@
   align-items: start;
 }
 
+.tripPanel {
+  display: grid;
+  min-width: 0;
+  gap: $space-3;
+}
+
 .list {
   display: grid;
   gap: 0.65rem;

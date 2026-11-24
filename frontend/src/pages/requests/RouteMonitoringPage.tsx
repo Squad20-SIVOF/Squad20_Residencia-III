@@ -6,6 +6,7 @@ import { Badge } from '@/components/Badge'
 import { Button } from '@/components/Button'
 import { ButtonLink } from '@/components/ButtonLink'
 import { PageHeader } from '@/components/PageHeader'
+import { Pagination, TABLE_PAGE_SIZE } from '@/components/Pagination'
 import { StateMessage } from '@/components/StateMessage'
 import { TextField } from '@/components/TextField'
 import { Toolbar } from '@/components/Toolbar'
@@ -29,6 +30,7 @@ export function RouteMonitoringPage() {
   const result = useAsync(listTrackedTrips)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
   if (result.status === 'loading') return <LoadingState label="Carregando viagens…" />
 
   const trips = result.status === 'success' ? result.data : []
@@ -40,8 +42,13 @@ export function RouteMonitoringPage() {
       ),
     ).includes(term),
   )
-  const selectedTrip =
-    filteredTrips.find((trip) => trip.id === selectedId) ?? filteredTrips[0]
+  const totalPages = Math.max(1, Math.ceil(filteredTrips.length / TABLE_PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageTrips = filteredTrips.slice(
+    (currentPage - 1) * TABLE_PAGE_SIZE,
+    currentPage * TABLE_PAGE_SIZE,
+  )
+  const selectedTrip = pageTrips.find((trip) => trip.id === selectedId) ?? pageTrips[0]
   const route = selectedTrip && DEMO_ROUTES[selectedTrip.id]
 
   return (
@@ -73,7 +80,10 @@ export function RouteMonitoringPage() {
                 isLabelHidden
                 placeholder="Buscar veículo, motorista ou rota…"
                 value={query}
-                onChange={setQuery}
+                onChange={(value) => {
+                  setQuery(value)
+                  setPage(1)
+                }}
               />
             </Toolbar>
             <output className={styles.tripCount}>
@@ -82,44 +92,58 @@ export function RouteMonitoringPage() {
           </div>
           {selectedTrip ? (
             <section className={styles.layout}>
-              <ul className={styles.list} aria-label="Lista de viagens">
-                {filteredTrips.map((trip) => (
-                  <li key={trip.id} className={styles.trip}>
-                    <button
-                      type="button"
-                      aria-pressed={selectedTrip.id === trip.id}
-                      onClick={() => setSelectedId(trip.id)}
-                    >
-                      <span className={styles.tripHeader}>
-                        <strong>Rota #{trip.routeCode}</strong>
-                        <Badge
-                          variant={getTrackedTripStatusVariant(trip.status)}
-                          className={styles.tripBadge}
-                        >
-                          {getTrackedTripStatusLabel(trip)}
-                        </Badge>
-                      </span>
-                      <span className={styles.tripMeta}>
-                        {trip.plate} · {trip.driverName}
-                      </span>
-                      <span className={styles.tripRoute}>
-                        {trip.origin} → {trip.destination}
-                      </span>
-                    </button>
-                    {detailsEnabled && (
-                      <ButtonLink
-                        variant="secondary"
-                        className={styles.detailsLink}
-                        to={`/viagens/monitoramento/${encodeURIComponent(trip.id)}`}
-                        aria-label={`Ver detalhes da rota #${trip.routeCode}`}
-                        iconStart={<Info size={14} />}
+              <div className={styles.tripPanel}>
+                <ul className={styles.list} aria-label="Lista de viagens">
+                  {pageTrips.map((trip) => (
+                    <li key={trip.id} className={styles.trip}>
+                      <button
+                        type="button"
+                        aria-pressed={selectedTrip.id === trip.id}
+                        onClick={() => setSelectedId(trip.id)}
                       >
-                        Ver detalhes
-                      </ButtonLink>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                        <span className={styles.tripHeader}>
+                          <strong>Rota #{trip.routeCode}</strong>
+                          <Badge
+                            variant={getTrackedTripStatusVariant(trip.status)}
+                            className={styles.tripBadge}
+                          >
+                            {getTrackedTripStatusLabel(trip)}
+                          </Badge>
+                        </span>
+                        <span className={styles.tripMeta}>
+                          {trip.plate} · {trip.driverName}
+                        </span>
+                        <span className={styles.tripRoute}>
+                          {trip.origin} → {trip.destination}
+                        </span>
+                      </button>
+                      {detailsEnabled && (
+                        <ButtonLink
+                          variant="secondary"
+                          className={styles.detailsLink}
+                          to={`/viagens/monitoramento/${encodeURIComponent(trip.id)}`}
+                          aria-label={`Ver detalhes da rota #${trip.routeCode}`}
+                          iconStart={<Info size={14} />}
+                        >
+                          Ver detalhes
+                        </ButtonLink>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <Pagination
+                  itemLabel="viagens"
+                  stacked
+                  shownCount={pageTrips.length}
+                  totalCount={filteredTrips.length}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  hasPrevious={currentPage > 1}
+                  hasNext={currentPage < totalPages}
+                  onPrevious={() => setPage(currentPage - 1)}
+                  onNext={() => setPage(currentPage + 1)}
+                />
+              </div>
               <TrackedTripPreview
                 trip={selectedTrip}
                 route={route}

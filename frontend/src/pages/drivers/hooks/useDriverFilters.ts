@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react'
+import { TABLE_PAGE_SIZE } from '@/components/Pagination'
 import { normalizeText } from '@/utils/format'
 import { onlyDigits } from '@/utils/masks'
 import type { Driver, DriverFleetFilter, DriverStatusFilter } from '../types'
 import { getCnhSituation, getEffectiveStatus } from '../utils/driverRules'
-
-export const DRIVERS_PAGE_SIZE = 6
 
 export function useDriverFilters(drivers: Driver[]) {
   const [search, setSearchState] = useState('')
@@ -31,11 +30,11 @@ export function useDriverFilters(drivers: Driver[]) {
     })
   }, [drivers, search, status, fleet, onlyAlerts])
 
-  const totalPages = Math.max(1, Math.ceil(filteredDrivers.length / DRIVERS_PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(filteredDrivers.length / TABLE_PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
   const pageDrivers = filteredDrivers.slice(
-    (currentPage - 1) * DRIVERS_PAGE_SIZE,
-    currentPage * DRIVERS_PAGE_SIZE,
+    (currentPage - 1) * TABLE_PAGE_SIZE,
+    currentPage * TABLE_PAGE_SIZE,
   )
 
   // Qualquer mudança de filtro volta para a primeira página.

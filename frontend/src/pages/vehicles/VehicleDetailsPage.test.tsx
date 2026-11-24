@@ -27,6 +27,9 @@ const VEHICLE: Vehicle = {
   nextInspection: '',
 }
 
+const photo =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jR7sAAAAASUVORK5CYII='
+
 function mockPermissions(permissoes: string[]) {
   vi.mocked(currentUser).mockResolvedValue({
     id: 'gestor',
@@ -66,6 +69,7 @@ test('exibe card de vistoria indisponível e abre/fecha o histórico sem inventa
     screen.getByText('Seu usuário não tem acesso aos abastecimentos deste veículo.'),
   ).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Editar veículo' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Adicionar foto' })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Ver histórico completo' }))
   const dialog = screen.getByRole('dialog', { name: 'Histórico de viagens' })
   expect(
@@ -91,6 +95,7 @@ test('mostra teto mensal, abastecimentos e manutenções da API com as ações p
       brand: 'Fiat',
       model: 'Fiorino 1.4',
       plate: 'ABC-1D23',
+      photo,
       mileageKm: 45320,
       fleet: 'Administrativa',
       fuelType: 'Flex',
@@ -155,6 +160,10 @@ test('mostra teto mensal, abastecimentos e manutenções da API com as ações p
     }),
   ).toBeInTheDocument()
   expect(screen.getByText('Fiat Fiorino 1.4 · ABC-1D23')).toBeInTheDocument()
+  expect(screen.getByRole('img', { name: 'Foto do veículo' })).toHaveAttribute(
+    'src',
+    photo,
+  )
 
   const cap = screen.getByRole('region', { name: 'Teto mensal de abastecimento' })
   expect(within(cap).getByText('R$ 850,00')).toBeInTheDocument()
