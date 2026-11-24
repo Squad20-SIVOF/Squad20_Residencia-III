@@ -27,6 +27,9 @@ test('login válido carrega a página inicial', async ({ page }) => {
 
 test('modo escuro preserva o dashboard e persiste ao recarregar', async ({ page }) => {
   await signIn(page)
+  await expect(
+    page.getByRole('heading', { name: 'Dashboard Principal', exact: true }),
+  ).toBeVisible()
   const darkMode = page.getByRole('button', { name: 'Modo escuro', exact: true })
   if (!(await darkMode.isVisible()))
     await page.getByRole('button', { name: /abrir menu/i }).click()
