@@ -163,6 +163,12 @@
   margin-top: 1rem;
 }
 
+.mobileActions {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
 .dialog {
   width: min(100% - 2rem, 32rem);
   max-width: none;

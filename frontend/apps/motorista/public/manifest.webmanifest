@@ -1,6 +1,6 @@
 {
-  "name": "FrotaManager Motorista",
-  "short_name": "Motorista",
+  "name": "SIVOF Driver",
+  "short_name": "SIVOF Driver",
   "description": "App do motorista — viagens, checklist e abastecimento da frota FSPH.",
   "lang": "pt-BR",
   "start_url": "/?source=pwa",
