@@ -41,8 +41,8 @@ test('renderiza o formulário de solicitação no item Viagens', async () => {
   expect(screen.getByText('Status: Aguardando aprovação')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Enviar Solicitação' })).toBeInTheDocument()
   expect(
-    screen.queryByRole('link', { name: 'Ver solicitações pendentes' }),
-  ).not.toBeInTheDocument()
+    screen.getByRole('link', { name: 'Ver solicitações pendentes' }),
+  ).toHaveAttribute('href', '/viagens/solicitacoes')
   // Só veículos disponíveis entram como preferência.
   expect(
     await screen.findByRole('option', { name: /Fiat Fiorino · ABC-1D23/ }),
@@ -146,8 +146,8 @@ test('mostra o aviso de envio e redireciona para as solicitações pendentes', a
 
   await findSentNotice()
   expect(
-    screen.queryByRole('link', { name: 'Ver solicitações pendentes' }),
-  ).not.toBeInTheDocument()
+    screen.getByRole('link', { name: 'Ver solicitações pendentes' }),
+  ).toHaveAttribute('href', '/viagens/solicitacoes')
   expect(createRequest).toHaveBeenCalledOnce()
   // O aviso aparece antes do redirecionamento.
   expect(currentPath()).toHaveTextContent('/viagens/solicitar')
