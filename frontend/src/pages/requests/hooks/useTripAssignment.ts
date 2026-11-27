@@ -1,6 +1,11 @@
 import { useCallback } from 'react'
 import { useAsync } from '@/hooks/useAsync'
 import {
+  assignmentExampleDrivers,
+  assignmentExampleVehicles,
+  assignmentExamples,
+} from '../services/assignmentExamples'
+import {
   getAssignmentRequest,
   getAvailableDrivers,
   getAvailableVehicles,
@@ -8,10 +13,23 @@ import {
 
 /** Solicitação, veículos e motoristas da tela de atribuição, cada um com seu estado. */
 export function useTripAssignment(requestId: string) {
-  const loadRequest = useCallback(() => getAssignmentRequest(requestId), [requestId])
+  const example = assignmentExamples.find((item) => item.id === requestId)
+  const loadRequest = useCallback(
+    () => (example ? Promise.resolve(example) : getAssignmentRequest(requestId)),
+    [example, requestId],
+  )
+  const loadVehicles = useCallback(
+    () => (example ? Promise.resolve(assignmentExampleVehicles) : getAvailableVehicles()),
+    [example],
+  )
+  const loadDrivers = useCallback(
+    () => (example ? Promise.resolve(assignmentExampleDrivers) : getAvailableDrivers()),
+    [example],
+  )
   return {
+    example,
     request: useAsync(loadRequest),
-    vehicles: useAsync(getAvailableVehicles),
-    drivers: useAsync(getAvailableDrivers),
+    vehicles: useAsync(loadVehicles),
+    drivers: useAsync(loadDrivers),
   }
 }

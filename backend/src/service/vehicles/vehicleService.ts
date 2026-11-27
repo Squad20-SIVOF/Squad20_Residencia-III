@@ -1,4 +1,4 @@
-import vehicleModel, { Vehicle } from "../../models/vehicleModel";
+import vehicleModel from "../../models/vehicleModel";
 import vehicleSchema, {
   vehicleIdSchema,
 } from "../../middleware/validations/schemas/vehicleSchema";
@@ -49,7 +49,7 @@ const getAllVehicles = async () =>
 
 const getVehicleById = async (id: string) => {
   if (invalidId(id)) return error("Invalid vehicle ID", 400);
-  const vehicle = await vehicleModel.getVehicleById(id);
+  const vehicle = await vehicleModel.getVehicleById(id, true);
   return vehicle ? success(checkVehicleAvailability(vehicle)) : notFound();
 };
 
@@ -69,9 +69,7 @@ const createVehicle = async (body: unknown) => {
   const validation = vehicleSchema.safeParse(body);
   if (!validation.success) return error(validation.error.message, 400);
   try {
-    const createdVehicle = await vehicleModel.createVehicle(
-      validation.data as Vehicle,
-    );
+    const createdVehicle = await vehicleModel.createVehicle(validation.data);
     return success(checkVehicleAvailability(createdVehicle), 201);
   } catch (cause) {
     return handleDuplicateKeyError(cause);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useAsync } from '@/hooks/useAsync'
 import { currentUser } from '@/service/authService'
 
 // Atribuir veículo e motorista cria a viagem: exige a permissão de gerenciar viagens.
@@ -13,19 +13,7 @@ async function loadCanAssign(): Promise<boolean> {
   }
 }
 
-/** Se o usuário logado pode atribuir veículo e motorista (falso enquanto carrega ou em erro). */
-export function useCanAssignTrip(): boolean {
-  const [canAssign, setCanAssign] = useState(false)
-
-  useEffect(() => {
-    let isActive = true
-    void loadCanAssign().then((allowed) => {
-      if (isActive) setCanAssign(allowed)
-    })
-    return () => {
-      isActive = false
-    }
-  }, [])
-
-  return canAssign
+/** Disponibilidade da ação de atribuição para o usuário logado. */
+export function useCanAssignTrip() {
+  return useAsync(loadCanAssign)
 }

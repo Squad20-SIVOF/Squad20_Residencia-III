@@ -1,6 +1,8 @@
+@use '@/styles/dark';
 @use '../../../styles/tokens' as *;
 
 .page {
+  container: fuel-page / inline-size;
   display: flex;
   flex-direction: column;
   gap: $space-4;
@@ -12,7 +14,7 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 2rem;
 
-  @media (min-width: 1024px) {
+  @container fuel-page (min-width: 1024px) {
     grid-template-columns: minmax(0, 2fr) minmax(350px, 1fr);
   }
 }
@@ -25,13 +27,17 @@
   min-width: 0;
 }
 
+.formColumn {
+  container: fuel-form / inline-size;
+}
+
 .card {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   padding: 1.5rem;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: light-dark(#ffffff, dark.$card);
+  border: 1px solid light-dark(#e2e8f0, dark.$border);
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
@@ -39,13 +45,13 @@
 .cardTitle {
   font-size: 1.15rem;
   font-weight: 600;
-  color: #1e40af;
+  color: light-dark(#1e40af, dark.$primary);
   margin: 0;
 }
 
 .cardSubtitle {
   font-size: 0.85rem;
-  color: #64748b;
+  color: light-dark(#64748b, dark.$muted);
   margin-top: -0.5rem;
 }
 
@@ -54,7 +60,7 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 
-  @media (min-width: 600px) {
+  @container fuel-form (min-width: 600px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -68,7 +74,7 @@
   label {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #334155;
+    color: light-dark(#334155, dark.$text);
   }
 
   input,
@@ -77,14 +83,14 @@
     min-height: 42px;
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
-    color: #1e293b;
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
+    color: light-dark(#1e293b, dark.$text);
+    background: light-dark(#ffffff, dark.$card);
+    border: 1px solid light-dark(#cbd5e1, dark.$border);
     border-radius: 6px;
     outline: none;
 
     &:focus-visible {
-      border-color: #3b82f6;
+      border-color: light-dark(#3b82f6, dark.$primary);
       box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
     }
   }
@@ -92,7 +98,7 @@
 
 .helperText {
   font-size: 0.75rem;
-  color: #64748b;
+  color: light-dark(#64748b, dark.$muted);
   margin-top: 0.2rem;
 }
 
@@ -101,7 +107,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem;
-  background: #eff6ff;
+  background: light-dark(#eff6ff, dark.$primary-soft);
   border-radius: 8px;
   margin-top: 0.5rem;
 
@@ -115,18 +121,18 @@
     margin: 0;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #1e40af;
+    color: light-dark(#1e40af, dark.$primary);
   }
 
   span {
     font-size: 0.8rem;
-    color: #60a5fa;
+    color: light-dark(#60a5fa, dark.$primary);
   }
 
   strong {
     font-size: 1.8rem;
     font-weight: 700;
-    color: #1e40af;
+    color: light-dark(#1e40af, dark.$primary);
   }
 }
 
@@ -136,9 +142,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed light-dark(#cbd5e1, dark.$border);
   border-radius: 8px;
-  background: #f8fafc;
+  background: light-dark(#f8fafc, dark.$surface);
   cursor: pointer;
 }
 
@@ -150,28 +156,28 @@
   p {
     font-size: 0.9rem;
     font-weight: 500;
-    color: #1e293b;
+    color: light-dark(#1e293b, dark.$text);
     margin: 0;
   }
 
   span {
     font-size: 0.75rem;
-    color: #64748b;
+    color: light-dark(#64748b, dark.$muted);
   }
 }
 
 .attachBtn {
   padding: 0.5rem 1rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid light-dark(#cbd5e1, dark.$border);
   border-radius: 6px;
-  background: white;
+  background: light-dark(white, dark.$card);
   font-size: 0.85rem;
   font-weight: 600;
-  color: #475569;
+  color: light-dark(#475569, dark.$muted);
   cursor: pointer;
 
   &:hover {
-    background: #f1f5f9;
+    background: light-dark(#f1f5f9, dark.$surface);
   }
 }
 
@@ -187,7 +193,7 @@
 
 .footerText {
   font-size: 0.85rem;
-  color: #64748b;
+  color: light-dark(#64748b, dark.$muted);
 }
 
 .actions {
@@ -199,7 +205,7 @@
 .vehicleTitle {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: light-dark(#1e293b, dark.$text);
   margin: 0;
 }
 
@@ -213,14 +219,14 @@
 .plate {
   display: flex;
   flex-direction: column;
-  border: 2px solid #1e293b;
+  border: 2px solid light-dark(#1e293b, dark.$border);
   border-radius: 4px;
   overflow: hidden;
   width: fit-content;
 }
 
 .plateHeader {
-  background: #1e40af;
+  background: light-dark(#1e40af, dark.$primary-fill);
   color: white;
   font-size: 0.55rem;
   text-align: center;
@@ -229,8 +235,8 @@
 }
 
 .plateText {
-  background: white;
-  color: #1e293b;
+  background: light-dark(white, dark.$card);
+  color: light-dark(#1e293b, dark.$text);
   font-size: 1.1rem;
   font-weight: bold;
   padding: 0 0.5rem;
@@ -238,8 +244,8 @@
 }
 
 .badgeAvailable {
-  background: #dcfce7;
-  color: #166534;
+  background: light-dark(#dcfce7, dark.$success-soft);
+  color: light-dark(#166534, dark.$success);
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.25rem 0.5rem;
@@ -248,7 +254,7 @@
 
 .vehicleInfo {
   font-size: 0.8rem;
-  color: #64748b;
+  color: light-dark(#64748b, dark.$muted);
   margin: 0;
 }
 
@@ -257,7 +263,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.85rem;
-  color: #64748b;
+  color: light-dark(#64748b, dark.$muted);
   margin-bottom: 0.2rem;
 }
 
@@ -269,43 +275,43 @@
 
   strong {
     font-size: 1.1rem;
-    color: #1e293b;
+    color: light-dark(#1e293b, dark.$text);
   }
   span {
     font-size: 0.8rem;
-    color: #64748b;
+    color: light-dark(#64748b, dark.$muted);
   }
 }
 
 .progressBarBg {
   width: 100%;
   height: 8px;
-  background: #e2e8f0;
+  background: light-dark(#e2e8f0, dark.$border);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progressBarBlue {
   height: 100%;
-  background: #2563eb;
+  background: light-dark(#2563eb, dark.$primary-fill);
   transition: width 0.4s ease;
 }
 
 .progressBarWarning {
   height: 100%;
-  background: #f59e0b;
+  background: light-dark(#f59e0b, dark.$warning);
   transition: width 0.4s ease;
 }
 
 .progressBarDanger {
   height: 100%;
-  background: #ef4444;
+  background: light-dark(#ef4444, dark.$danger);
   transition: width 0.4s ease;
 }
 
 .progressSub {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: light-dark(#94a3b8, dark.$muted);
   margin-top: 0.4rem;
 }
 
@@ -314,14 +320,14 @@
 }
 
 .textBlue {
-  color: #2563eb;
+  color: light-dark(#2563eb, dark.$primary);
 }
 
 .badgeWarning {
   display: inline-block;
   margin-top: 0.5rem;
-  background: #fef3c7;
-  color: #b45309;
+  background: light-dark(#fef3c7, dark.$warning-soft);
+  color: light-dark(#b45309, dark.$warning);
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.25rem 0.75rem;
@@ -329,21 +335,21 @@
 }
 
 .badgeDanger {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: light-dark(#fee2e2, dark.$danger-soft);
+  color: light-dark(#b91c1c, dark.$danger);
 }
 
 .warningBox {
   margin-top: 1rem;
   padding: 1rem;
-  background: #fef3c7;
+  background: light-dark(#fef3c7, dark.$warning-soft);
   border-radius: 6px;
-  border: 1px solid #fde68a;
+  border: 1px solid light-dark(#fde68a, dark.$warning);
 
   p {
     margin: 0;
     font-size: 0.8rem;
-    color: #92400e;
+    color: light-dark(#92400e, dark.$warning);
     line-height: 1.4;
   }
 
@@ -355,13 +361,39 @@
 /* Último abastecimento */
 .lastFuelInfo {
   font-size: 0.85rem;
-  color: #334155;
+  color: light-dark(#334155, dark.$text);
   margin: 0.5rem 0;
   font-weight: 500;
 }
 
 .lastFuelDriver {
   font-size: 0.8rem;
-  color: #64748b;
+  color: light-dark(#64748b, dark.$muted);
   margin: 0;
+}
+
+@container fuel-form (width < 600px) {
+  .card {
+    padding: 1rem;
+  }
+
+  .uploadArea,
+  .totalBox {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .uploadInfo {
+    min-width: 0;
+  }
+
+  .footer,
+  .actions {
+    width: 100%;
+  }
+
+  .actions > * {
+    flex: 1;
+    min-width: 0;
+  }
 }

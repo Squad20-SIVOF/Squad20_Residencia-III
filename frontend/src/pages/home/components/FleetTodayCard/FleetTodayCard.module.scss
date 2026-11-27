@@ -1,43 +1,8 @@
 @use '../../../../styles/tokens' as *;
 @use '../../../../styles/breakpoints' as *;
-@use '../../../../styles/mixins' as *;
 
 .card {
-  display: flex;
-  flex-direction: column;
-  gap: $space-1;
-  min-height: $touch-target;
-  padding: $space-3;
-  color: $color-text;
-  text-decoration: none;
-  background-color: $color-card;
-  border: 1px solid $color-border;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-card;
-  transition: border-color $transition-fast;
-
   @include up(lg) {
     min-width: $fleet-today-min-width;
   }
-
-  @include hover {
-    border-color: $color-primary;
-  }
-}
-
-.label {
-  font-size: $font-size-xsmall;
-  color: $color-text-muted;
-}
-
-.value {
-  font-size: $font-size-h4;
-  font-weight: 700;
-  line-height: $line-height-tight;
-}
-
-.breakdown {
-  font-size: $font-size-xsmall;
-  line-height: $line-height-small;
-  color: $color-text-muted;
 }

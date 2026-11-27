@@ -1,89 +1,189 @@
 @use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
 
 .page {
   display: grid;
-  gap: 1rem;
+  gap: $space-4;
+  min-width: 0;
+  container-type: inline-size;
 }
-.summary {
+
+.header,
+.toolbar,
+.footer {
   display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
   flex-wrap: wrap;
-  padding: 1rem 1.25rem;
-  background: $color-card;
-  border: 1px solid $color-border;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-gutter-xs;
+}
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-gutter-xs;
+  padding: $space-3;
+  color: $color-warning-text;
+  background-color: $color-warning-soft;
   border-radius: $radius-md;
+  font-size: $font-size-small;
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  p {
+    margin: $space-1 0 0;
+  }
 }
-.summary strong {
-  color: $color-primary;
-  font-size: 1.5rem;
-}
-.summary > span:last-child {
-  margin-left: auto;
-  color: $color-text-muted;
-  font-size: 0.875rem;
-}
-.groups {
-  display: grid;
-  gap: 1rem;
-}
+
+.feed,
 .list {
   display: grid;
-  gap: 0.5rem;
-  padding: 0;
-  margin: 0;
-  list-style: none;
+  gap: $space-gutter-xs;
+  min-width: 0;
 }
-.item {
+
+.toolbar {
+  align-items: center;
+}
+
+.toolbar > span,
+.footer {
+  color: $color-text-muted;
+  font-size: $font-size-xsmall;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  button {
+    background-color: $color-card;
+  }
+
+  button[aria-pressed='true'] {
+    color: $color-primary;
+    background-color: $color-primary-soft;
+    border-color: $color-primary;
+  }
+}
+
+.notification {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.8rem;
+  grid-template-areas:
+    'icon content status'
+    '. content action';
+  align-items: start;
+  gap: $space-2 $space-3;
+  padding: $space-4;
+  background-color: $color-card;
   border: 1px solid $color-border;
-  border-radius: $radius-md;
+  border-radius: $radius-lg;
 }
-.item > div {
+
+.icon {
+  grid-area: icon;
   display: grid;
-  gap: 0.25rem;
+  place-items: center;
+  width: 2.5rem;
+  aspect-ratio: 1;
+  border-radius: $radius-md;
+
+  &[data-tone='danger'] {
+    color: $color-danger;
+    background-color: $color-danger-soft;
+  }
+
+  &[data-tone='warning'] {
+    color: $color-warning-text;
+    background-color: $color-warning-soft;
+  }
+
+  &[data-tone='success'] {
+    color: $color-success;
+    background-color: $color-success-soft;
+  }
 }
-.item > div span {
+
+.content {
+  grid-area: content;
+  overflow-wrap: anywhere;
+
+  h2 {
+    margin: 0 0 $space-2;
+    font-size: $font-size-body;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    color: $color-text-muted;
+    font-size: $font-size-small;
+  }
+
+  .context {
+    margin-top: $space-3;
+    font-size: $font-size-xsmall;
+  }
+}
+
+.status {
+  grid-area: status;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: $space-2;
   color: $color-text-muted;
-  font-size: 0.85rem;
+  font-size: $font-size-xsmall;
 }
-.item a {
+
+.unread {
+  padding: $space-1;
   color: $color-primary;
-  font-size: 0.875rem;
-  font-weight: 700;
-  white-space: nowrap;
+  font: inherit;
+  font-weight: 600;
+  background: none;
+  border: 0;
+  border-radius: $radius-sm;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  @include hover {
+    text-decoration: underline;
+  }
 }
-.severity {
-  padding: 0.25rem 0.5rem;
-  color: $color-warning-text;
-  background: $color-warning-soft;
-  border-radius: $radius-full;
-  font-size: 0.75rem;
-  font-weight: 700;
+
+.action {
+  grid-area: action;
+  justify-self: end;
+  align-self: end;
 }
-.critica {
-  color: $color-error;
-  background: rgba(220, 38, 38, 0.1);
-}
-.alta {
-  color: $color-warning-text;
-}
-.empty {
-  margin: 0;
-  color: $color-text-muted;
-}
-@media (max-width: 640px) {
-  .item {
+
+@container (width < 40rem) {
+  .notification {
     grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'icon content'
+      '. status'
+      '. action';
+    padding: $space-3;
   }
-  .item a {
-    grid-column: 2;
+
+  .status {
+    justify-content: flex-start;
   }
-  .summary > span:last-child {
-    margin-left: 0;
+
+  .action {
+    justify-self: stretch;
   }
 }

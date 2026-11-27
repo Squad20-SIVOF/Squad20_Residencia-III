@@ -10,8 +10,9 @@
 // Prefixado com .aside para vencer o estilo base do Card independente da ordem do CSS.
 .aside .card {
   gap: 0.75rem;
-  padding: $space-3;
+  padding: clamp(0.875rem, 2cqi, 1.25rem);
   background-color: $color-card;
+  box-shadow: $shadow-subtle;
 
   > h2 {
     font-size: $font-size-body;
@@ -34,6 +35,29 @@
   gap: $space-1;
 }
 
+.photo {
+  width: 100%;
+  max-height: 12rem;
+  object-fit: contain;
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.aside .photoButton {
+  width: 100%;
+  padding-inline: $space-2;
+  color: $color-primary;
+  background-color: $color-card;
+  border-color: $color-primary;
+  white-space: normal;
+}
+
+.photoError {
+  color: $color-danger;
+  font-size: $font-size-small;
+}
+
 .name {
   font-size: $font-size-small;
   color: $color-text;
@@ -43,6 +67,7 @@
 .meta {
   font-size: $font-size-xsmall;
   color: $color-text-muted;
+  overflow-wrap: anywhere;
 }
 
 .steps {
@@ -72,7 +97,7 @@
   flex-shrink: 0;
   width: $icon-size;
   height: $icon-size;
-  color: $color-primary-dark;
+  color: $color-primary;
 }
 
 .availability {

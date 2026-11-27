@@ -23,12 +23,12 @@ test('lista os motoristas e o resumo, com paginação', async () => {
     await screen.findByRole('table', { name: /motoristas da frota/i }),
   ).toBeInTheDocument()
   expect(screen.getByText('João da Silva')).toBeInTheDocument()
-  expect(screen.getByText(/mostrando 6 de 8 motoristas/i)).toBeInTheDocument()
+  expect(screen.getByText(/mostrando 5 de 8 motoristas/i)).toBeInTheDocument()
   expect(screen.getByText('Motoristas ativos')).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Próxima' }))
 
-  expect(screen.getByText(/mostrando 2 de 8 motoristas/i)).toBeInTheDocument()
+  expect(screen.getByText(/mostrando 3 de 8 motoristas/i)).toBeInTheDocument()
 })
 
 test('filtra por nome e informa quando não há resultados', async () => {

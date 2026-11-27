@@ -3,6 +3,8 @@ export interface VehicleResponse {
   id: string
   identificacao?: string | null
   marca?: string | null
+  foto?: string | null
+  tem_foto?: boolean
   proxima_vistoria?: string | null
   checklist_vistoria?: InspectionItem[]
   placa: string
@@ -35,6 +37,8 @@ export interface Vehicle {
   id: string
   identification: string
   brand?: string
+  photo?: string | null
+  hasPhoto?: boolean
   inspectionChecklist?: InspectionItem[]
   plate: string
   model: string

@@ -3,6 +3,8 @@ import { Badge } from '@/components/Badge'
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { CheckboxField } from '@/components/CheckboxField'
+import { DataTable, TablePanel, type DataTableColumn } from '@/components/DataTable'
+import { Pagination, TABLE_PAGE_SIZE } from '@/components/Pagination'
 import type { Delegation } from '../types'
 import styles from '../UsersPage.module.scss'
 
@@ -29,11 +31,18 @@ interface Props {
 export function PermissionsPanel({ delegation, saving, onSave }: Props) {
   const [selected, setSelected] = useState('')
   const [permissions, setPermissions] = useState<string[]>([])
+  const [page, setPage] = useState(1)
   const user = delegation.usuarios.find((item) => item.id === selected)
   const available = delegation.permissoesDisponiveis
   const modules = [
     ...new Set(available.map((permission) => permission.split(':')[0] ?? permission)),
-  ]
+  ].map((key) => ({ key, ...(MODULES[key] ?? { title: key, description: '' }) }))
+  const totalPages = Math.max(1, Math.ceil(modules.length / TABLE_PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageModules = modules.slice(
+    (currentPage - 1) * TABLE_PAGE_SIZE,
+    currentPage * TABLE_PAGE_SIZE,
+  )
   const extra = available.filter(
     (permission) => !ACTIONS.some(({ key }) => permission.endsWith(`:${key}`)),
   )
@@ -55,6 +64,45 @@ export function PermissionsPanel({ delegation, saving, onSave }: Props) {
         : current.filter((value) => value !== permission),
     )
   }
+
+  const columns: DataTableColumn<(typeof modules)[number]>[] = [
+    {
+      key: 'module',
+      header: 'Módulo',
+      isRowHeader: true,
+      minWidth: 10,
+      render: (module) => (
+        <>
+          <strong>{module.title}</strong>
+          {module.description && <span>{module.description}</span>}
+        </>
+      ),
+    },
+    ...ACTIONS.map(({ key, label }) => ({
+      key,
+      header: label,
+      render: (module: (typeof modules)[number]) => {
+        const permission = `${module.key}:${key}`
+        if (!available.includes(permission))
+          return <span aria-label="Não disponível">—</span>
+
+        const isInherited = inherited.includes(permission)
+        return (
+          <>
+            <CheckboxField
+              variant="plain"
+              className={styles.matrixCheckbox}
+              label={`${label} ${module.title.toLocaleLowerCase('pt-BR')}${isInherited ? ' (herdado do perfil)' : ''}`}
+              checked={permissions.includes(permission) || isInherited}
+              disabled={disabled || isInherited}
+              onChange={(checked) => toggle(permission, checked)}
+            />
+            {isInherited && <span className={styles.muted}>Do perfil</span>}
+          </>
+        )
+      },
+    })),
+  ]
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -91,6 +139,7 @@ export function PermissionsPanel({ delegation, saving, onSave }: Props) {
                 onChange={(event) => {
                   const id = event.target.value
                   setSelected(id)
+                  setPage(1)
                   setPermissions(
                     delegation.usuarios.find((item) => item.id === id)?.permissoes ?? [],
                   )
@@ -130,14 +179,29 @@ export function PermissionsPanel({ delegation, saving, onSave }: Props) {
           </div>
           {user && (
             <>
-              <div className={styles.matrixHeader}>
-                <div>
-                  <h3>Permissões por módulo</h3>
-                  <p className={styles.muted}>
-                    Gerenciar permite criar, editar e excluir registros. Acessos herdados
-                    do perfil não podem ser removidos aqui.
-                  </p>
-                </div>
+              <TablePanel
+                title="Permissões por módulo"
+                headingLevel={3}
+                recordCount={modules.length}
+                recordLabel={['módulo', 'módulos']}
+                footer={
+                  <Pagination
+                    itemLabel="módulos"
+                    shownCount={pageModules.length}
+                    totalCount={modules.length}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    hasPrevious={currentPage > 1}
+                    hasNext={currentPage < totalPages}
+                    onPrevious={() => setPage(currentPage - 1)}
+                    onNext={() => setPage(currentPage + 1)}
+                  />
+                }
+              >
+                <p className={styles.muted}>
+                  Gerenciar permite criar, editar e excluir registros. Acessos herdados do
+                  perfil não podem ser removidos aqui.
+                </p>
                 <div className={styles.bulkActions}>
                   <Button
                     type="button"
@@ -167,66 +231,14 @@ export function PermissionsPanel({ delegation, saving, onSave }: Props) {
                     Limpar seleção
                   </Button>
                 </div>
-              </div>
-              <div className={styles.matrixWrapper}>
-                <table className={styles.matrix}>
-                  <caption className={styles.srOnly}>
-                    Permissões operacionais por módulo
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Módulo</th>
-                      {ACTIONS.map((action) => (
-                        <th key={action.key} scope="col">
-                          {action.label}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {modules.map((module) => {
-                      const info = MODULES[module] ?? { title: module, description: '' }
-                      return (
-                        <tr key={module}>
-                          <th scope="row">
-                            <strong>{info.title}</strong>
-                            <span>{info.description}</span>
-                          </th>
-                          {ACTIONS.map((action) => {
-                            const permission = `${module}:${action.key}`
-                            return (
-                              <td key={action.key}>
-                                {available.includes(permission) ? (
-                                  <>
-                                    <CheckboxField
-                                      variant="plain"
-                                      className={styles.matrixCheckbox}
-                                      label={`${action.label} ${info.title.toLocaleLowerCase('pt-BR')}${inherited.includes(permission) ? ' (herdado do perfil)' : ''}`}
-                                      checked={
-                                        permissions.includes(permission) ||
-                                        inherited.includes(permission)
-                                      }
-                                      disabled={
-                                        disabled || inherited.includes(permission)
-                                      }
-                                      onChange={(checked) => toggle(permission, checked)}
-                                    />
-                                    {inherited.includes(permission) && (
-                                      <span className={styles.muted}>Do perfil</span>
-                                    )}
-                                  </>
-                                ) : (
-                                  <span aria-label="Não disponível">—</span>
-                                )}
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                <DataTable
+                  caption="Permissões operacionais por módulo"
+                  className={styles.matrix}
+                  rows={pageModules}
+                  columns={columns}
+                  getRowKey={(module) => module.key}
+                />
+              </TablePanel>
               {extra.length > 0 && (
                 <fieldset disabled={disabled} className={styles.extraPermissions}>
                   <legend>Outros acessos</legend>

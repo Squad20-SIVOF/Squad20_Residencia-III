@@ -119,7 +119,7 @@
   background-color: $color-card;
   border: 3px solid $color-map-vehicle;
   border-radius: $radius-full;
-  box-shadow: 0 0 0 $space-2 rgba($color-map-vehicle, 0.15);
+  box-shadow: 0 0 0 $space-2 color-mix(in srgb, $color-map-vehicle 15%, transparent);
 }
 
 .pinCenter {
@@ -136,7 +136,7 @@
   background-color: $color-map-vehicle;
   border: 2px solid $color-card;
   border-radius: $radius-full;
-  box-shadow: 0 0 0 $space-2 rgba($color-map-vehicle, 0.18);
+  box-shadow: 0 0 0 $space-2 color-mix(in srgb, $color-map-vehicle 18%, transparent);
 
   svg {
     width: 60%;

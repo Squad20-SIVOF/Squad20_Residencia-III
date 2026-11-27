@@ -1,36 +1,52 @@
 @use '../../../../styles/tokens' as *;
-@use '../../../../styles/breakpoints' as *;
 
 .hero {
   --van-fill: #{$color-navy};
+  --hero-padding: clamp(0.875rem, 2cqi, 1.25rem);
 
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  display: grid;
+  grid-template-rows: 1fr auto;
   gap: $space-3;
+  min-width: 0;
   height: 100%;
-  min-height: 11rem;
-  padding: $space-3;
+  min-height: clamp(11rem, 25cqi, 14.5rem);
+  padding: var(--hero-padding);
   margin: 0;
   color: $color-on-navy;
   background-color: $color-navy;
   border-bottom: 4px solid $color-accent-yellow;
   border-radius: $radius-lg;
-  box-shadow: $shadow-card;
+  box-shadow: $shadow-subtle;
 
-  @include up(md) {
-    min-height: 11.25rem;
-    padding: $space-4 $space-4 $space-3;
+  &[data-has-photo] {
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+
+    .footer {
+      padding: var(--hero-padding);
+    }
   }
 }
 
 .illustration {
-  width: min(70%, 9rem);
-  margin-left: $space-4;
+  align-self: center;
+  width: min(70%, 11.5rem);
+  margin-inline-start: $space-2;
+  opacity: 0.85;
+}
 
-  @include up(lg) {
-    width: min(60%, 9.5rem);
-  }
+.photoArea {
+  position: relative;
+  min-height: clamp(8rem, 18cqi, 13rem);
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .footer {
@@ -44,4 +60,5 @@
 .identification {
   font-size: $font-size-h4;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }

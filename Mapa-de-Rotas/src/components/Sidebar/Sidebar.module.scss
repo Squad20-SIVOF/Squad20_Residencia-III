@@ -1,0 +1,382 @@
+@use '../../styles/tokens' as *;
+@use '../../styles/breakpoints' as *;
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  width: 15rem;
+  min-height: 100dvh;
+  padding: 1.25rem .7rem 1rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: $color-sidebar-text;
+  background: $color-sidebar;
+  border-right: 1px solid rgba(255, 255, 255, .08);
+  transform: translateX(-105%);
+  transition: transform $transition-fast, width .25s ease, min-width .25s ease;
+}
+
+.sidebarOpen {
+  transform: translateX(0);
+  box-shadow: 1rem 0 2rem #07172c30;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  min-height: 3.25rem;
+  padding: 0 .1rem 1rem;
+}
+
+.brandMark,
+.profileAvatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 50%;
+  background: #2670bd;
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 800;
+}
+
+.brandText {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.brandName {
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.brandSubtitle {
+  margin-top: .2rem;
+  color: #91a8c3;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.collapseButton,
+.closeButton {
+  display: none;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  border-radius: .4rem;
+  cursor: pointer;
+}
+
+.collapseButton:hover,
+.closeButton:hover {
+  background: rgba(255, 255, 255, .1);
+}
+
+.navList {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  margin-top: .35rem;
+  padding: .45rem 0;
+}
+
+.navItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 2.85rem;
+  padding: 0 .8rem;
+  border-radius: .45rem;
+  color: $color-sidebar-text;
+  text-decoration: none;
+  font-size: .7rem;
+  white-space: nowrap;
+  transition: background .2s ease, color .2s ease;
+}
+
+.navItem:hover {
+  background: rgba(255, 255, 255, .08);
+}
+
+.navItem:focus-visible,
+.collapseButton:focus-visible,
+.closeButton:focus-visible,
+.utilityItem:focus-visible {
+  outline: 2px solid #ffbd00;
+  outline-offset: 3px;
+}
+
+.active {
+  color: #fff;
+  background: #286ab4;
+  font-weight: 700;
+}
+
+.active::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  content: '';
+  background: #f4c51d;
+  border-radius: .45rem 0 0 .45rem;
+}
+
+.sidebarBottom {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  margin-top: auto;
+  padding: .75rem 0 .15rem;
+}
+
+.utilityItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  width: 100%;
+  min-height: 2.65rem;
+  padding: 0 .8rem;
+  color: $color-sidebar-text;
+  background: transparent;
+  border: 0;
+  border-radius: .4rem;
+  text-align: left;
+  font-size: .68rem;
+  cursor: pointer;
+}
+
+.utilityItem:hover {
+  background: rgba(255, 255, 255, .08);
+}
+
+.notificationCount {
+  margin-left: auto;
+  color: #f5ca36;
+  font-size: .65rem;
+  font-weight: 700;
+}
+
+.notificationLabel {
+  transition: color .2s ease, font-weight .2s ease;
+}
+
+.hasNotifications {
+  color: #ffffff;
+  background: rgba(255, 255, 255, .07);
+  font-weight: 700;
+}
+
+.hasNotifications .notificationLabel {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.hasNotifications svg {
+  color: #faf9f8;
+}
+
+.notificationCount {
+  margin-left: -13px;
+  height: 25px;
+  color: #ffd84d;
+  font-size: .7rem;
+  font-weight: 700;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  min-height: 2.8rem;
+  margin-top: .65rem;
+  padding: .55rem .2rem 0;
+  color: #fff;
+  border-top: 1px solid rgba(255, 255, 255, .1);
+  font-size: .6rem;
+}
+
+.profileAvatar {
+  width: 1.8rem;
+  height: 1.8rem;
+  background: #e8eefb;
+  color: #174d92;
+  font-size: .65rem;
+}
+
+.profileText {
+  min-width: 0;
+}
+
+.profile strong {
+  display: block;
+  white-space: nowrap;
+}
+
+.profile button {
+  padding: .2rem 0;
+  color: #ffada6;
+  background: none;
+  border: 0;
+  font-size: .6rem;
+  cursor: pointer;
+}
+
+.mobileHeader {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  height: 3.5rem;
+  margin: 0 -1rem 1.3rem;
+  padding: 0 1rem;
+  color: $color-text;
+  background: $color-background;
+  border-bottom: 1px solid $color-border;
+  font-size: .85rem;
+  font-weight: 700;
+}
+
+.menuButton {
+  display: grid;
+  place-items: center;
+  min-width: $touch-target;
+  min-height: $touch-target;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  display: block;
+  background: #07172c70;
+  border: 0;
+}
+
+@include up(md) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    inset: auto;
+    flex: 0 0 auto;
+    width: 4.75rem;
+    min-width: 4.75rem;
+    height: 100dvh;
+    min-height: 100dvh;
+    padding: 1.25rem .45rem 1rem;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .sidebarExpanded {
+    width: 15rem;
+    min-width: 15rem;
+    padding-inline: .7rem;
+  }
+
+  .brand {
+    justify-content: center;
+    gap: .45rem;
+    padding-inline: 0;
+  }
+
+  .brandText {
+    display: none;
+  }
+
+  .sidebarExpanded .brand {
+    justify-content: flex-start;
+    padding-inline: .1rem;
+  }
+
+  .sidebarExpanded .brandText {
+    display: block;
+  }
+
+  .collapseButton {
+    display: grid;
+    margin-left: auto;
+  }
+
+  .sidebarCollapsed .brand {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: .35rem;
+  }
+
+  .sidebarCollapsed .collapseButton {
+    width: 100%;
+    height: 1.6rem;
+    margin: 0;
+  }
+
+  .sidebarExpanded .collapseButton {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .navList {
+    gap: .35rem;
+  }
+
+  .navItem {
+    justify-content: flex-start;
+    padding-inline: .8rem;
+  }
+
+  .sidebarCollapsed .navItem {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .sidebarCollapsed .navItem span,
+  .sidebarCollapsed .utilityItem > span:not(.notificationCount),
+  .sidebarCollapsed .profileText {
+    display: none;
+  }
+
+  .sidebarCollapsed .active {
+    padding-left: 0;
+  }
+
+  .sidebarCollapsed .utilityItem {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .sidebarCollapsed .notificationCount {
+     margin-left: -13px;
+  height: 25px;
+  color: #ffd84d;
+  font-size: .7rem;
+  font-weight: 700;
+  }
+
+  .sidebarCollapsed .profile {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .mobileHeader,
+  .closeButton,
+  .scrim {
+    display: none;
+  }
+}

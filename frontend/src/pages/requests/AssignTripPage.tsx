@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Alert } from '@/components/Alert'
+import { BackLink } from '@/components/BackLink/BackLink'
 import { Button } from '@/components/Button'
 import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
@@ -13,6 +15,11 @@ import { DriverOption } from './components/DriverOption'
 import { ResourceColumn } from './components/ResourceColumn'
 import { VehicleOption } from './components/VehicleOption'
 import { useTripAssignment } from './hooks/useTripAssignment'
+import {
+  assignmentExampleDrivers,
+  assignmentExampleSpecs,
+  assignmentExampleVehicles,
+} from './services/assignmentExamples'
 import { saveAssignment } from './services/assignmentService'
 import {
   formatPlate,
@@ -31,7 +38,6 @@ const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : 'Tente novamente.'
 
 interface ColumnStateLabels {
-  loading: string
   error: string
   empty: string
   notFound: string
@@ -39,12 +45,10 @@ interface ColumnStateLabels {
 
 /** Carregando, erro, vazio ou busca sem resultado; `undefined` quando há itens para listar. */
 function getColumnState<T>(
-  result: AsyncResult<T[]>,
+  result: Exclude<AsyncResult<T[]>, { status: 'loading' }>,
   visibleCount: number,
   labels: ColumnStateLabels,
 ): ReactNode {
-  if (result.status === 'loading')
-    return <StateMessage variant="loading" title={labels.loading} />
   if (result.status === 'error')
     return (
       <StateMessage
@@ -65,13 +69,22 @@ export function AssignTripPage() {
   useDocumentTitle('Atribuir veículo e motorista')
   const navigate = useNavigate()
   const { id = '' } = useParams()
-  const detailsPath = `/viagens/solicitacoes/${encodeURIComponent(id)}`
-  const { request, vehicles, drivers } = useTripAssignment(id)
+  const { example, request, vehicles, drivers } = useTripAssignment(id)
+  const returnPath = example
+    ? '/viagens/solicitacoes?exemplos=1'
+    : `/viagens/solicitacoes/${encodeURIComponent(id)}`
+  const returnLabel = example
+    ? 'Voltar para as solicitações pendentes'
+    : 'Voltar para os detalhes da solicitação'
 
   const [vehicleSearch, setVehicleSearch] = useState('')
   const [driverSearch, setDriverSearch] = useState('')
-  const [vehicleId, setVehicleId] = useState<string | null>(null)
-  const [driverId, setDriverId] = useState<string | null>(null)
+  const [vehicleId, setVehicleId] = useState(() =>
+    example ? (assignmentExampleVehicles[0]?.id ?? null) : null,
+  )
+  const [driverId, setDriverId] = useState(() =>
+    example ? (assignmentExampleDrivers[0]?.id ?? null) : null,
+  )
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [saveError, setSaveError] = useState<string | null>(null)
   const [returnAt, setReturnAt] = useState('')
@@ -96,21 +109,23 @@ export function AssignTripPage() {
 
   useEffect(() => {
     if (saveStatus !== 'saved') return
-    const timer = setTimeout(() => navigate(detailsPath), REDIRECT_DELAY_MS)
+    const timer = setTimeout(() => navigate(returnPath), REDIRECT_DELAY_MS)
     return () => clearTimeout(timer)
-  }, [saveStatus, detailsPath, navigate])
+  }, [saveStatus, returnPath, navigate])
 
   async function handleConfirm() {
     if (!selectedVehicle || !selectedDriver || saveStatus !== 'idle') return
     setSaveStatus('saving')
     setSaveError(null)
     try {
-      await saveAssignment({
-        requestId: id,
-        vehicleId: selectedVehicle.id,
-        driverId: selectedDriver.id,
-        ...(returnAt ? { returnAt: new Date(returnAt).toISOString() } : {}),
-      })
+      if (!example) {
+        await saveAssignment({
+          requestId: id,
+          vehicleId: selectedVehicle.id,
+          driverId: selectedDriver.id,
+          ...(returnAt ? { returnAt: new Date(returnAt).toISOString() } : {}),
+        })
+      }
       setSaveStatus('saved')
     } catch (cause) {
       setSaveError(
@@ -122,20 +137,27 @@ export function AssignTripPage() {
     }
   }
 
+  if (
+    request.status === 'loading' ||
+    vehicles.status === 'loading' ||
+    drivers.status === 'loading'
+  )
+    return <LoadingState label="Carregando atribuição da viagem" />
+
   return (
     <div className={styles.page}>
-      <Link to={detailsPath} className={styles.backLink}>
-        <span aria-hidden="true">←</span> Voltar para os detalhes da solicitação
-      </Link>
       <PageHeader
-        className={styles.header}
         title="Atribuir veículo e motorista"
         subtitle="Selecione os recursos disponíveis para realizar esta viagem."
+        breadcrumb={<BackLink to={returnPath}>{returnLabel}</BackLink>}
       />
-
-      {request.status === 'loading' && (
-        <StateMessage variant="loading" title="Carregando solicitação" />
+      {example && (
+        <Alert variant="info">
+          Demonstração com veículos e motoristas de exemplo. Nenhuma atribuição será
+          gravada.
+        </Alert>
       )}
+
       {request.status === 'error' && (
         <StateMessage
           variant="error"
@@ -164,7 +186,6 @@ export function AssignTripPage() {
           search={vehicleSearch}
           onSearchChange={setVehicleSearch}
           state={getColumnState(vehicles, visibleVehicles.length, {
-            loading: 'Carregando veículos',
             error: 'Não foi possível carregar os veículos',
             empty: 'Nenhum veículo disponível',
             notFound: 'Nenhum veículo encontrado',
@@ -174,6 +195,7 @@ export function AssignTripPage() {
             <VehicleOption
               key={vehicle.id}
               vehicle={vehicle}
+              specifications={example ? assignmentExampleSpecs[vehicle.id] : undefined}
               isSelected={vehicle.id === vehicleId}
               onSelect={setVehicleId}
             />
@@ -188,7 +210,6 @@ export function AssignTripPage() {
           search={driverSearch}
           onSearchChange={setDriverSearch}
           state={getColumnState(drivers, visibleDrivers.length, {
-            loading: 'Carregando motoristas',
             error: 'Não foi possível carregar os motoristas',
             empty: 'Nenhum motorista disponível',
             notFound: 'Nenhum motorista encontrado',
@@ -210,19 +231,21 @@ export function AssignTripPage() {
         <Alert
           variant="success"
           action={
-            <Link to={detailsPath} className={styles.noticeLink}>
-              Ver detalhes da solicitação
+            <Link to={returnPath} className={styles.noticeLink}>
+              {example ? 'Ver solicitações pendentes' : 'Ver detalhes da solicitação'}
             </Link>
           }
         >
-          Viagem agendada: {vehicleLabel} com {selectedDriver?.name}.
+          {example
+            ? `Atribuição registrada (demonstrativo): ${vehicleLabel} com ${selectedDriver?.name}. A seleção vale só nesta tela.`
+            : `Viagem agendada: ${vehicleLabel} com ${selectedDriver?.name}.`}
         </Alert>
       )}
 
       <AssignmentFooter
         vehicleLabel={vehicleLabel}
         driverLabel={selectedDriver?.name}
-        cancelTo={detailsPath}
+        cancelTo={returnPath}
         canConfirm={canConfirm}
         isSaving={saveStatus === 'saving'}
         onConfirm={handleConfirm}

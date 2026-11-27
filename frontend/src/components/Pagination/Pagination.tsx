@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button'
+import { classNames } from '@/utils/classNames'
 import styles from './Pagination.module.scss'
 
 export interface PaginationProps {
@@ -8,6 +9,7 @@ export interface PaginationProps {
   itemLabel: string
   currentPage?: number
   totalPages?: number
+  stacked?: boolean
   hasPrevious: boolean
   hasNext: boolean
   onPrevious: () => void
@@ -20,20 +22,28 @@ export function Pagination({
   itemLabel,
   currentPage,
   totalPages,
+  stacked = false,
   hasPrevious,
   hasNext,
   onPrevious,
   onNext,
 }: PaginationProps) {
   return (
-    <nav className={styles.pagination} aria-label={`Paginação de ${itemLabel}`}>
+    <nav
+      className={classNames(styles.pagination, stacked && styles.stacked)}
+      aria-label={`Paginação de ${itemLabel}`}
+    >
       <p className={styles.summary} aria-live="polite">
-        Mostrando {shownCount} de {totalCount} {itemLabel}
+        <span>
+          Mostrando {shownCount} de {totalCount} {itemLabel}
+        </span>
         {currentPage !== undefined && totalPages !== undefined && (
-          <span className={styles.page}>
-            {' '}
-            · Página {currentPage} de {totalPages}
-          </span>
+          <>
+            {!stacked && <span aria-hidden="true"> · </span>}
+            <span className={styles.pageNumber}>
+              Página {currentPage} de {totalPages}
+            </span>
+          </>
         )}
       </p>
       <div className={styles.buttons}>

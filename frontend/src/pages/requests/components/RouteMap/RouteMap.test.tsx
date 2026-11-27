@@ -58,6 +58,39 @@ test('cria o mapa com o texto alternativo, a camada do OpenStreetMap e a rota', 
   expect(lastMap().fitBounds).toHaveBeenCalledTimes(1)
 })
 
+test('usa os pontos específicos da rota selecionada e atualiza o mapa ao trocar a rota', () => {
+  const points = [
+    { lat: -10.9, lng: -37.1 },
+    { lat: -10.8, lng: -37.2 },
+  ]
+  const { rerender } = render(<RouteMap label="Rota selecionada" points={points} />)
+  expect(L.polyline).toHaveBeenLastCalledWith(
+    [
+      [-10.9, -37.1],
+      [-10.8, -37.2],
+    ],
+    expect.any(Object),
+  )
+  const previousMap = lastMap()
+  rerender(
+    <RouteMap
+      label="Outra rota"
+      points={[
+        { lat: -10.7, lng: -37.3 },
+        { lat: -10.6, lng: -37.4 },
+      ]}
+    />,
+  )
+  expect(previousMap.remove).toHaveBeenCalledOnce()
+  expect(L.polyline).toHaveBeenLastCalledWith(
+    [
+      [-10.7, -37.3],
+      [-10.6, -37.4],
+    ],
+    expect.any(Object),
+  )
+})
+
 test('mostra marcadores de origem e destino', () => {
   render(<RouteMap label="Mapa da rota" />)
 

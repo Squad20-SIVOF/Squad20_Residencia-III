@@ -1,0 +1,42 @@
+@use './tokens' as *;
+
+* { box-sizing: border-box; }
+
+:root, :root[data-theme='light'] {
+  color-scheme: light;
+  --color-primary: #1769c9;
+  --color-primary-dark: #174da0;
+  --color-background: #f4f7fb;
+  --color-surface: #ffffff;
+  --color-sidebar: #0c2747;
+  --color-sidebar-text: #c4d1e2;
+  --color-text: #202a39;
+  --color-muted: #66758a;
+  --color-border: #d5deea;
+  --color-active: #e8f1fc;
+  --color-input: #ffffff;
+  --color-map-background: #dce4eb;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-primary: #79b2ff;
+  --color-primary-dark: #9bc5ff;
+  --color-background: #111827;
+  --color-surface: #1e293b;
+  --color-sidebar: #0b1423;
+  --color-sidebar-text: #c2cede;
+  --color-text: #f1f5f9;
+  --color-muted: #a5b4c7;
+  --color-border: #37465a;
+  --color-active: #263e5d;
+  --color-input: #172235;
+}
+
+html { min-width: 20rem; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-synthesis: none; text-rendering: optimizeLegibility; background: $color-background; transition: background $transition-fast, color $transition-fast; }
+body { min-width: 20rem; min-height: 100dvh; margin: 0; color: $color-text; background: $color-background; transition: background $transition-fast, color $transition-fast; }
+button, input { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid #f4c51d; outline-offset: 2px; }
+::selection { color: #fff; background: var(--color-primary); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }

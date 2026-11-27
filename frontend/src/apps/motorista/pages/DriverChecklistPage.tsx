@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { api } from '@/service/api'
 import { useAsync } from '@/hooks/useAsync'
 import { Alert } from '@/components/Alert'
@@ -27,6 +28,8 @@ export function DriverChecklistPage() {
   const [saving, setSaving] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
+  if (request.status === 'loading') return <LoadingState label="Carregando checklist" />
+
   const vehicles = request.status === 'success' ? request.data : []
   const selected = vehicles.find((v) => v.id === vehicleId)
   const items =
@@ -56,9 +59,7 @@ export function DriverChecklistPage() {
         title="Checklist do veículo"
         subtitle="Selecione o veículo e marque os itens verificados."
       />
-      {request.status === 'loading' ? (
-        <StateMessage variant="loading" title="Carregando checklist" />
-      ) : request.status === 'error' ? (
+      {request.status === 'error' ? (
         <StateMessage
           variant="error"
           title="Não foi possível carregar a vistoria"

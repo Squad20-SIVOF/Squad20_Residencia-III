@@ -2,10 +2,9 @@
 @use '../../../../styles/breakpoints' as *;
 @use '../../../../styles/mixins' as *;
 
-// Celular: tudo em coluna. A partir de md, trajeto à esquerda e carga/paradas à direita.
 .summary {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: $space-3;
   padding: $space-3;
   background-color: $color-card;
@@ -14,9 +13,8 @@
   box-shadow: $shadow-subtle;
 
   @include up(md) {
-    flex-direction: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
-    justify-content: space-between;
     padding: $space-3 $space-4;
   }
 }

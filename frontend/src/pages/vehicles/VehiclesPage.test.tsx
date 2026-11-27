@@ -61,17 +61,18 @@ test('mostra os cards da frota, a tabela paginada e filtra só ao clicar em Filt
   renderPage()
 
   const stats = await screen.findByRole('list', { name: 'Resumo da frota' })
-  expect(within(stats).getByText('5 / 7')).toBeInTheDocument()
+  const active = within(stats).getByText('Veículos ativos').closest('article')
+  expect(active).toHaveTextContent('5 / 7')
   expect(within(stats).getByText('Ativos / Total Cadastrados')).toBeInTheDocument()
   expect(within(stats).getByText('Exigem atenção')).toBeInTheDocument()
   expect(within(stats).getByText('Fora de serviço')).toBeInTheDocument()
 
   const table = screen.getByRole('region', { name: 'Veículos cadastrados' })
   expect(within(table).getByText('7 registros')).toBeInTheDocument()
-  expect(within(table).getAllByRole('row')).toHaveLength(7) // cabeçalho + 6 por página
-  expect(screen.getByText('Mostrando 6 de 7 veículos')).toBeInTheDocument()
+  expect(within(table).getAllByRole('row')).toHaveLength(6) // cabeçalho + 5 por página
+  expect(screen.getByText('Mostrando 5 de 7 veículos')).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Próxima' }))
-  expect(screen.getByText('Mostrando 1 de 7 veículos')).toBeInTheDocument()
+  expect(screen.getByText('Mostrando 2 de 7 veículos')).toBeInTheDocument()
 
   await user.selectOptions(screen.getByLabelText('Status'), 'inativo')
   expect(within(table).getByText('7 registros')).toBeInTheDocument()

@@ -227,7 +227,7 @@ function profileData(user: SessionUser) {
     matricula: user.matricula ?? '',
   }
 }
-export default function ProfilePage() {
+export default function ProfilePage({ children }: { children?: React.ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null)
   const [error, setError] = useState('')
   const [photo, setPhoto] = useState<string | null>(null)
@@ -420,6 +420,7 @@ export default function ProfilePage() {
           </div>
         </section>
       </div>
+      {children}
       <PasswordDialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen} />
     </div>
   )
