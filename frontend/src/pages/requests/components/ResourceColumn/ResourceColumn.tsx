@@ -47,6 +47,7 @@ export function ResourceColumn({
         <TextField
           type="search"
           label={searchLabel}
+          isLabelHidden
           placeholder={searchPlaceholder}
           value={search}
           onChange={onSearchChange}

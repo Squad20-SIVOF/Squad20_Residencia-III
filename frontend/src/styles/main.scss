@@ -66,10 +66,9 @@ html {
   color: $color-primary;
 }
 
-// Gestor: barra de rolagem invisível; a rolagem segue por mouse, toque e teclado.
-// O atributo fica no index.html do gestor, então o app do motorista não muda.
-[data-app='gestor'],
-[data-app='gestor'] * {
+// A rolagem continua disponível por mouse, toque e teclado.
+:is([data-app='gestor'], [data-app='motorista']),
+:is([data-app='gestor'], [data-app='motorista']) * {
   scrollbar-width: none;
 
   &::-webkit-scrollbar {

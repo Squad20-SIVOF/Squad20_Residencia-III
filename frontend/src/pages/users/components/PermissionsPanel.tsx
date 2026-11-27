@@ -4,6 +4,7 @@ import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { CheckboxField } from '@/components/CheckboxField'
 import { DataTable, TablePanel, type DataTableColumn } from '@/components/DataTable'
+import { Pagination, TABLE_PAGE_SIZE } from '@/components/Pagination'
 import type { Delegation } from '../types'
 import styles from '../UsersPage.module.scss'
 
@@ -30,11 +31,18 @@ interface Props {
 export function PermissionsPanel({ delegation, saving, onSave }: Props) {
   const [selected, setSelected] = useState('')
   const [permissions, setPermissions] = useState<string[]>([])
+  const [page, setPage] = useState(1)
   const user = delegation.usuarios.find((item) => item.id === selected)
   const available = delegation.permissoesDisponiveis
   const modules = [
     ...new Set(available.map((permission) => permission.split(':')[0] ?? permission)),
   ].map((key) => ({ key, ...(MODULES[key] ?? { title: key, description: '' }) }))
+  const totalPages = Math.max(1, Math.ceil(modules.length / TABLE_PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageModules = modules.slice(
+    (currentPage - 1) * TABLE_PAGE_SIZE,
+    currentPage * TABLE_PAGE_SIZE,
+  )
   const extra = available.filter(
     (permission) => !ACTIONS.some(({ key }) => permission.endsWith(`:${key}`)),
   )
@@ -131,6 +139,7 @@ export function PermissionsPanel({ delegation, saving, onSave }: Props) {
                 onChange={(event) => {
                   const id = event.target.value
                   setSelected(id)
+                  setPage(1)
                   setPermissions(
                     delegation.usuarios.find((item) => item.id === id)?.permissoes ?? [],
                   )
@@ -175,6 +184,19 @@ export function PermissionsPanel({ delegation, saving, onSave }: Props) {
                 headingLevel={3}
                 recordCount={modules.length}
                 recordLabel={['módulo', 'módulos']}
+                footer={
+                  <Pagination
+                    itemLabel="módulos"
+                    shownCount={pageModules.length}
+                    totalCount={modules.length}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    hasPrevious={currentPage > 1}
+                    hasNext={currentPage < totalPages}
+                    onPrevious={() => setPage(currentPage - 1)}
+                    onNext={() => setPage(currentPage + 1)}
+                  />
+                }
               >
                 <p className={styles.muted}>
                   Gerenciar permite criar, editar e excluir registros. Acessos herdados do
@@ -212,7 +234,7 @@ export function PermissionsPanel({ delegation, saving, onSave }: Props) {
                 <DataTable
                   caption="Permissões operacionais por módulo"
                   className={styles.matrix}
-                  rows={modules}
+                  rows={pageModules}
                   columns={columns}
                   getRowKey={(module) => module.key}
                 />

@@ -35,9 +35,12 @@ export interface RequestUpdate {
   data_necessidade: string
 }
 const requestPath = (id: string) => `/solicitacoes/${encodeURIComponent(id)}`
-export async function listPendingRequests(page: number): Promise<RequestPage> {
+export async function listPendingRequests(
+  page: number,
+  limit = 20,
+): Promise<RequestPage> {
   const result = await api<{ message: RequestPage }>(
-    `/solicitacoes?status=Pendente&pagina=${page}&limite=20`,
+    `/solicitacoes?status=Pendente&pagina=${page}&limite=${limit}`,
   )
   return result.message
 }

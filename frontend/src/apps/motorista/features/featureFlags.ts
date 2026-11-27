@@ -72,7 +72,7 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureApp, FeatureFlagDefinition[]> 
       key: 'gestor_relatorios',
       label: 'Relatórios',
       description: 'Consultas e exportação de relatórios.',
-      defaultValue: false,
+      defaultValue: true,
       status: 'em_desenvolvimento',
     },
     {

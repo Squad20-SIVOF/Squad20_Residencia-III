@@ -4,7 +4,7 @@ import { Button } from '@/components/Button'
 import { ButtonLink } from '@/components/ButtonLink'
 import { Alert } from '@/components/Alert'
 import { DataTable, TablePanel, type DataTableColumn } from '@/components/DataTable'
-import { Pagination } from '@/components/Pagination'
+import { Pagination, TABLE_PAGE_SIZE } from '@/components/Pagination'
 import { Badge, type BadgeVariant } from '@/components/Badge'
 import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { SelectField } from '@/components/SelectField'
@@ -17,7 +17,7 @@ import { MercosulPlate } from '@/pages/vehicles/components/MercosulPlate'
 import { CircleCheck, TriangleAlert, Upload } from 'lucide-react'
 import type { Vehicle } from './types/vehicle'
 import { useMemo, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMaintenances } from './hooks/useMaintenances'
 import { maintenanceService } from './services/maintenanceService'
 import {
@@ -51,7 +51,6 @@ const emptyFilters: MaintenanceFiltersValue = {
   vehicleId: 'all',
   status: 'all',
 }
-const PAGE_SIZE = 6
 const maintenanceStatusVariant: Record<Maintenance['status'], BadgeVariant> = {
   Agendada: 'info',
   'Em andamento': 'warning',
@@ -74,8 +73,12 @@ export function ManutencoesPage() {
     refresh,
     canManage,
   } = useMaintenances()
-  const [draft, setDraft] = useState<MaintenanceFiltersValue>(emptyFilters)
-  const [filters, setFilters] = useState<MaintenanceFiltersValue>(emptyFilters)
+  const [params] = useSearchParams()
+  const [filters, setFilters] = useState<MaintenanceFiltersValue>(() => ({
+    ...emptyFilters,
+    search: params.get('placa') ?? '',
+  }))
+  const [draft, setDraft] = useState<MaintenanceFiltersValue>(filters)
   const [page, setPage] = useState(1)
   const [period, setPeriod] = useState('all')
   const [selected, setSelected] = useState<Maintenance | null>(null)
@@ -87,9 +90,12 @@ export function ManutencoesPage() {
     [maintenances, vehicles, filters],
   )
   const stats = computeStats(filtered)
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const pageCount = Math.max(1, Math.ceil(filtered.length / TABLE_PAGE_SIZE))
   const currentPage = Math.min(page, pageCount)
-  const rows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const rows = filtered.slice(
+    (currentPage - 1) * TABLE_PAGE_SIZE,
+    currentPage * TABLE_PAGE_SIZE,
+  )
   const selectedVehicle =
     selected && vehicles.find((vehicle) => vehicle.id === selected.vehicleId)
 

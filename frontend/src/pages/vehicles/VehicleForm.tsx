@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useCallback, useState, type FormEvent } from 'react'
 import { BackLink } from '@/components/BackLink/BackLink'
 import { Button } from '@/components/Button'
 import { TextField } from '@/components/TextField'
@@ -7,13 +7,15 @@ import { CheckboxField } from '@/components/CheckboxField'
 import { Card } from '@/components/Card'
 import { PageHeader } from '@/components/PageHeader'
 import { Alert } from '@/components/Alert'
+import { useAsync } from '@/hooks/useAsync'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { classNames } from '@/utils/classNames'
+import { readPhoto } from '@/utils/photo'
 import styles from './VehicleForm.module.scss'
 import { api } from '@/service/api'
 import { SwitchField } from './components/SwitchField'
 import { VehicleFormAside } from './components/VehicleFormAside'
-import type { Vehicle, Fleet } from './types'
+import type { Vehicle, VehicleResponse, Fleet } from './types'
 
 const FLEET_OPTIONS = (
   ['Não informada', 'Administrativa', 'Assistencial', 'Operacional', 'SVO'] as Fleet[]
@@ -48,9 +50,41 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
   const [checklist, setChecklist] = useState(vehicle?.inspectionChecklist ?? [])
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [photoChange, setPhotoChange] = useState<string | null>()
+  const [photoError, setPhotoError] = useState('')
+  const [readingPhoto, setReadingPhoto] = useState(false)
+  const vehicleId = vehicle?.id
+  const needsPhoto = vehicle?.hasPhoto === true && vehicle.photo === undefined
+  const loadPhoto = useCallback(async () => {
+    if (!vehicleId || !needsPhoto) return null
+    const { message } = await api<{ message: VehicleResponse }>(
+      `/vehicles/${encodeURIComponent(vehicleId)}`,
+    )
+    return message.foto ?? null
+  }, [needsPhoto, vehicleId])
+  const photoRequest = useAsync(loadPhoto)
+  const photo =
+    photoChange === undefined
+      ? (vehicle?.photo ?? (photoRequest.status === 'success' ? photoRequest.data : null))
+      : photoChange
+
+  async function selectPhoto(file: File) {
+    setReadingPhoto(true)
+    setPhotoError('')
+    try {
+      setPhotoChange(await readPhoto(file))
+    } catch (cause) {
+      setPhotoError(
+        cause instanceof Error ? cause.message : 'Não foi possível ler a foto.',
+      )
+    } finally {
+      setReadingPhoto(false)
+    }
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault()
-    if (saving) return
+    if (saving || readingPhoto) return
     setSaving(true)
     setError('')
     try {
@@ -60,6 +94,7 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
         checklist_vistoria: checklist,
         frota: fleet === 'Não informada' ? null : fleet,
         exclusivo_svo: exclusiveSvo,
+        ...(photoChange !== undefined && { foto: photoChange }),
         ...(!vehicle && { ativo: available }),
         capacidade_maxima: Number(values.capacidade_maxima),
         quilometragem: Number(values.quilometragem),
@@ -267,6 +302,21 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
           isExclusiveSvo={exclusiveSvo}
           fuelType={values.tipo_combustivel}
           capacity={values.capacidade_maxima}
+          photo={photo}
+          photoError={
+            photoError ||
+            (photoChange === undefined && photoRequest.status === 'error'
+              ? 'Não foi possível carregar a foto atual.'
+              : '')
+          }
+          photoDisabled={
+            saving || readingPhoto || (needsPhoto && photoRequest.status === 'loading')
+          }
+          onPhotoSelected={selectPhoto}
+          onPhotoRemoved={() => {
+            setPhotoChange(null)
+            setPhotoError('')
+          }}
         />
         <footer className={styles.footer}>
           <p className={styles.hint}>Revise os dados antes de salvar.</p>
@@ -274,7 +324,7 @@ export function VehicleForm({ vehicle, onSave, onCancel, onBackToList }: Props) 
             <Button variant="secondary" onClick={onCancel} disabled={saving}>
               Cancelar
             </Button>
-            <Button type="submit" isLoading={saving}>
+            <Button type="submit" isLoading={saving} disabled={readingPhoto}>
               {vehicle ? 'Salvar alterações' : 'Cadastrar veículo'}
             </Button>
           </div>

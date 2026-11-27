@@ -1,14 +1,16 @@
 import { useState } from 'react'
+import { useFeatureFlag } from '@/apps/motorista/features/useFeatureFlags'
 import { Button } from '@/components/Button'
 import { LoadingState } from '@/components/LoadingState/LoadingState'
 import { PageHeader } from '@/components/PageHeader'
 import { StateMessage } from '@/components/StateMessage'
+import { StatGrid } from '@/components/StatCard'
+import type { StatCardProps } from '@/components/StatCard'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { formatLongDate } from '@/utils/format'
 import { AlertsCard } from './components/AlertsCard'
 import { AvailabilityCard } from './components/AvailabilityCard'
 import { FleetTodayCard } from './components/FleetTodayCard'
-import { KpiCard } from './components/KpiCard'
 import { OperationalDetailsCard } from './components/OperationalDetailsCard'
 import type { OperationalDetail } from './components/OperationalDetailsCard'
 import { SectionErrorCard } from './components/SectionErrorCard'
@@ -37,6 +39,7 @@ interface DashboardContentProps {
 }
 
 function DashboardContent({ data, today, onRetry }: DashboardContentProps) {
+  const notificationsEnabled = useFeatureFlag('gestor_notificacoes')
   const { vehicles, alerts, maintenances } = data
   const fleet = vehicles.status === 'ok' ? summarizeFleet(vehicles.data) : null
   const trips = summarizeTrips(data.trips)
@@ -86,58 +89,67 @@ function DashboardContent({ data, today, onRetry }: DashboardContentProps) {
     })
   }
 
+  const cards: StatCardProps[] = []
+  if (vehicles.status !== 'forbidden') {
+    cards.push({
+      to: '/veiculos',
+      variant: 'success',
+      label: 'Veículos disponíveis',
+      value: fleet?.available ?? UNAVAILABLE,
+      ...(fleet
+        ? {
+            total: fleet.active,
+            hint: formatSignedNumber(data.availableVsYesterday),
+            detail: 'vs. ontem',
+          }
+        : { detail: 'Não foi possível carregar' }),
+    })
+  }
+  cards.push({
+    to: '/viagens',
+    variant: 'info',
+    label: 'Viagens em andamento',
+    value: trips.inProgress,
+    hint: plural(trips.delayed, 'atrasada', 'atrasadas'),
+    detail: `${trips.onTime} dentro do prazo`,
+  })
+  if (alerts.status !== 'forbidden') {
+    cards.push({
+      ...(notificationsEnabled ? { to: '/notificacoes' } : {}),
+      variant: 'danger',
+      label: 'Alertas operacionais',
+      value: openAlerts?.total ?? UNAVAILABLE,
+      ...(openAlerts
+        ? {
+            hint: plural(openAlerts.critical, 'crítico', 'críticos'),
+            detail: `${openAlerts.total - openAlerts.critical} em análise`,
+          }
+        : { detail: 'Não foi possível carregar' }),
+    })
+  }
+  if (maintenances.status !== 'forbidden') {
+    cards.push({
+      to: '/manutencoes',
+      variant: 'warning',
+      label: 'Manutenções agendadas',
+      value: scheduled?.scheduled ?? UNAVAILABLE,
+      ...(scheduled
+        ? {
+            hint: `${scheduled.today} hoje`,
+            detail: `${scheduled.untilFriday} até sexta`,
+          }
+        : { detail: 'Não foi possível carregar' }),
+    })
+  }
+
   return (
     <>
-      <section className={styles.kpis} aria-label="Indicadores principais">
-        {vehicles.status !== 'forbidden' && (
-          <KpiCard
-            to="/veiculos"
-            variant="success"
-            label="Veículos disponíveis"
-            value={fleet ? `${fleet.available} / ${fleet.active}` : UNAVAILABLE}
-            {...(fleet
-              ? {
-                  hint: formatSignedNumber(data.availableVsYesterday),
-                  detail: 'vs. ontem',
-                }
-              : { detail: 'Não foi possível carregar' })}
-          />
-        )}
-        <KpiCard
-          to="/viagens"
-          variant="info"
-          label="Viagens em andamento"
-          value={trips.inProgress}
-          hint={plural(trips.delayed, 'atrasada', 'atrasadas')}
-          detail={`${trips.onTime} dentro do prazo`}
+      <section aria-label="Indicadores principais">
+        <StatGrid
+          label="Resumo operacional"
+          cards={cards}
+          columns={cards.length === 4 ? 4 : 3}
         />
-        {alerts.status !== 'forbidden' && (
-          <KpiCard
-            variant="danger"
-            label="Alertas operacionais"
-            value={openAlerts?.total ?? UNAVAILABLE}
-            {...(openAlerts
-              ? {
-                  hint: plural(openAlerts.critical, 'crítico', 'críticos'),
-                  detail: `${openAlerts.total - openAlerts.critical} em análise`,
-                }
-              : { detail: 'Não foi possível carregar' })}
-          />
-        )}
-        {maintenances.status !== 'forbidden' && (
-          <KpiCard
-            to="/manutencoes"
-            variant="warning"
-            label="Manutenções agendadas"
-            value={scheduled?.scheduled ?? UNAVAILABLE}
-            {...(scheduled
-              ? {
-                  hint: `${scheduled.today} hoje`,
-                  detail: `${scheduled.untilFriday} até sexta`,
-                }
-              : { detail: 'Não foi possível carregar' })}
-          />
-        )}
       </section>
 
       <div className={styles.panels}>
@@ -185,28 +197,10 @@ export function HomePage() {
   const request = useDashboard()
   // A data de referência é fixada ao abrir a tela, para todos os blocos usarem o mesmo "hoje".
   const [today] = useState(() => new Date())
-  const vehicles = request.status === 'success' ? request.data.vehicles : null
 
-  function renderContent() {
-    if (request.status === 'loading') {
-      return <LoadingState label="Carregando dashboard" />
-    }
-    if (request.status === 'error') {
-      return (
-        <StateMessage
-          variant="error"
-          title="Não foi possível carregar o dashboard."
-          description="Verifique sua conexão e tente novamente."
-          action={
-            <Button variant="secondary" onClick={request.reload}>
-              Tentar novamente
-            </Button>
-          }
-        />
-      )
-    }
-    return <DashboardContent data={request.data} today={today} onRetry={request.reload} />
-  }
+  if (request.status === 'loading') return <LoadingState label="Carregando dashboard" />
+
+  const vehicles = request.status === 'success' ? request.data.vehicles : null
 
   return (
     <div className={styles.page}>
@@ -219,7 +213,20 @@ export function HomePage() {
           <FleetTodayCard fleet={summarizeFleet(vehicles.data)} />
         )}
       </div>
-      {renderContent()}
+      {request.status === 'error' ? (
+        <StateMessage
+          variant="error"
+          title="Não foi possível carregar o dashboard."
+          description="Verifique sua conexão e tente novamente."
+          action={
+            <Button variant="secondary" onClick={request.reload}>
+              Tentar novamente
+            </Button>
+          }
+        />
+      ) : (
+        <DashboardContent data={request.data} today={today} onRetry={request.reload} />
+      )}
     </div>
   )
 }

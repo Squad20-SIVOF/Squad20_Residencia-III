@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react'
+import { TABLE_PAGE_SIZE } from '@/components/Pagination'
 import { normalizeText } from '@/utils/format'
 import type { FleetFilter, Vehicle, VehicleStatusFilter } from '../types'
-
-export const VEHICLES_PAGE_SIZE = 6
 
 export function useVehicleFilters(vehicles: Vehicle[]) {
   const [search, setSearchState] = useState('')
@@ -25,11 +24,11 @@ export function useVehicleFilters(vehicles: Vehicle[]) {
     })
   }, [vehicles, search, status, fleet])
 
-  const totalPages = Math.max(1, Math.ceil(filteredVehicles.length / VEHICLES_PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(filteredVehicles.length / TABLE_PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
   const pageVehicles = filteredVehicles.slice(
-    (currentPage - 1) * VEHICLES_PAGE_SIZE,
-    currentPage * VEHICLES_PAGE_SIZE,
+    (currentPage - 1) * TABLE_PAGE_SIZE,
+    currentPage * TABLE_PAGE_SIZE,
   )
 
   // Aplicar filtros sempre volta para a primeira página.

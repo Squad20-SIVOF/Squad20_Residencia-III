@@ -10,11 +10,17 @@ import styles from './VehicleOption.module.scss'
 
 export interface VehicleOptionProps {
   vehicle: Vehicle
+  specifications?: string | undefined
   isSelected: boolean
   onSelect: (vehicleId: string) => void
 }
 
-export function VehicleOption({ vehicle, isSelected, onSelect }: VehicleOptionProps) {
+export function VehicleOption({
+  vehicle,
+  specifications,
+  isSelected,
+  onSelect,
+}: VehicleOptionProps) {
   return (
     <ResourceOption
       name="vehicle"
@@ -26,8 +32,8 @@ export function VehicleOption({ vehicle, isSelected, onSelect }: VehicleOptionPr
     >
       <MercosulPlate plate={vehicle.plate} />
       <span className={styles.specs}>
-        {getVehicleKind(vehicle.maxCapacity)} · Capacidade: {vehicle.maxCapacity} lugares
-        · CNH {getRequiredCnh(vehicle.maxCapacity)}
+        {specifications ??
+          `${getVehicleKind(vehicle.maxCapacity)} · Capacidade: ${vehicle.maxCapacity} lugares · CNH ${getRequiredCnh(vehicle.maxCapacity)}`}
       </span>
     </ResourceOption>
   )

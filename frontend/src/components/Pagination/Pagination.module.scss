@@ -7,15 +7,29 @@
   gap: 0.75rem;
 
   @include up(sm) {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    &:not(.stacked) {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
   }
 }
 
 .summary {
+  margin: 0;
   font-size: $font-size-xsmall;
   color: $color-text-muted;
+}
+
+.pageNumber {
+  white-space: nowrap;
+}
+
+.stacked .summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-1 $space-2;
 }
 
 .buttons {
@@ -24,6 +38,8 @@
   gap: $space-2;
 
   @include up(sm) {
-    grid-template-columns: repeat(2, auto);
+    .pagination:not(.stacked) & {
+      grid-template-columns: repeat(2, auto);
+    }
   }
 }

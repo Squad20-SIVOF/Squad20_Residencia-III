@@ -6,6 +6,8 @@ const toVehicle = (row: VehicleResponse): Vehicle => ({
   id: row.id,
   identification: row.identificacao || '—',
   brand: row.marca ?? '',
+  ...(row.foto !== undefined && { photo: row.foto }),
+  ...(row.tem_foto !== undefined && { hasPhoto: row.tem_foto }),
   inspectionChecklist: row.checklist_vistoria ?? [],
   plate: row.placa,
   model: row.modelo,

@@ -42,9 +42,3 @@ export async function getAlertSummary(): Promise<AlertSummary> {
   }
   return summary as AlertSummary
 }
-
-/** Total de alertas abertos (CNH + manutenção) do resumo da API. */
-export async function getAlertCount(): Promise<number> {
-  const summary = await getAlertSummary()
-  return summary.cnh.total + summary.manutencao.total
-}

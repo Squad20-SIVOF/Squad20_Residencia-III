@@ -35,6 +35,29 @@
   gap: $space-1;
 }
 
+.photo {
+  width: 100%;
+  max-height: 12rem;
+  object-fit: contain;
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.aside .photoButton {
+  width: 100%;
+  padding-inline: $space-2;
+  color: $color-primary;
+  background-color: $color-card;
+  border-color: $color-primary;
+  white-space: normal;
+}
+
+.photoError {
+  color: $color-danger;
+  font-size: $font-size-small;
+}
+
 .name {
   font-size: $font-size-small;
   color: $color-text;

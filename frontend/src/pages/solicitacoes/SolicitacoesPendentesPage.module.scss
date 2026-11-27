@@ -1,29 +1,152 @@
-@use '../../styles/tokens' as *;
-@use '../../styles/mixins' as *;
+@use '@/styles/dark';
+@use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
 
 .page {
-  display: flex;
-  flex-direction: column;
-  gap: $space-4;
+  display: grid;
+  gap: $space-3;
   min-width: 0;
 }
-.backLink {
-  display: inline-flex;
-  align-items: center;
-  min-height: $touch-target;
-  color: $color-primary;
-  font-weight: 600;
-  &:focus-visible {
-    @include focus-ring;
-  }
-}
-.filterBar {
+
+.filterBar,
+.counts,
+.cardHeader,
+.cardTitle,
+.actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: $space-3;
+  gap: $space-2;
 }
-.filterBar > search {
-  flex: 1;
-  min-width: min(100%, 16rem);
+
+.filterBar {
+  gap: $space-gutter-xs;
+}
+
+.search {
+  flex: 1 1 16rem;
+  max-width: 24rem;
+}
+
+.note {
+  margin: 0;
+  color: $color-text-muted;
+  font-size: $font-size-small;
+}
+
+.cards {
+  display: grid;
+  gap: $space-3;
+  min-width: 0;
+}
+
+.card {
+  display: grid;
+  gap: $space-gutter-xs;
+  min-width: 0;
+  padding: $space-3;
+  background-color: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: 0 1px 3px rgba(11, 37, 69, 0.09);
+
+  &[data-important] {
+    border-color: $color-warning;
+  }
+}
+
+.cardHeader {
+  justify-content: space-between;
+}
+
+.cardTitle {
+  min-width: 0;
+
+  h2 {
+    margin: 0;
+    color: $color-heading;
+    font-size: $font-size-body;
+    font-weight: 600;
+  }
+}
+
+.schedule {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+  color: $color-text-muted;
+  font-size: $font-size-xsmall;
+}
+
+.detailSection {
+  padding: $space-2 $space-3;
+}
+
+.detailRoute {
+  background-color: $color-surface;
+  border-radius: $radius-md;
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2 $space-3;
+  margin: 0;
+  font-size: $font-size-small;
+
+  > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-1;
+    min-width: 0;
+  }
+
+  dt {
+    color: $color-text-muted;
+  }
+
+  dd {
+    margin: 0;
+    color: $color-text;
+    overflow-wrap: anywhere;
+  }
+}
+
+.actions {
+  .approve {
+    color: $color-on-primary;
+    background-color: light-dark(#2e7d32, dark.$success-fill);
+  }
+
+  .reject {
+    color: $color-danger;
+    background-color: $color-card;
+    border-color: $color-danger;
+  }
+
+  .assign {
+    color: $color-primary;
+    background-color: $color-card;
+    border-color: $color-primary;
+
+    @include hover {
+      background-color: $color-primary-soft;
+    }
+  }
+}
+
+@media (width < 36rem) {
+  .search {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > * {
+      padding-inline: $space-2;
+    }
+  }
 }

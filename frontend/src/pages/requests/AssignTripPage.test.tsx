@@ -102,6 +102,8 @@ const confirmButton = () => screen.getByRole('button', { name: 'Confirmar atribu
 
 beforeEach(() => {
   vi.mocked(api).mockImplementation(async (path) => {
+    if (path === '/solicitacoes?status=Pendente&pagina=1&limite=5')
+      return { message: { dados: [], total: 0, pagina: 1, limite: 5 } } as never
     if (path === `/solicitacoes/${id}`)
       return {
         message: {
@@ -129,6 +131,33 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers()
   vi.resetAllMocks()
+})
+
+test('abre a atribuição de exemplo pelo card sem consultar recursos reais', async () => {
+  const user = userEvent.setup()
+  renderAt('/viagens/solicitacoes')
+
+  await user.click(
+    await screen.findByRole('link', {
+      name: 'Atribuir veículo e motorista à solicitação #2401',
+    }),
+  )
+  expect(
+    await screen.findByRole('heading', { name: 'Solicitação #2401 · Logística' }),
+  ).toBeVisible()
+  expect(screen.getByText('Equipamentos · 120 kg · 4 caixas')).toBeVisible()
+  expect(within(vehicleColumn()).getAllByRole('radio')).toHaveLength(3)
+  expect(within(driverColumn()).getAllByRole('radio')).toHaveLength(3)
+  expect(screen.getByRole('radio', { name: 'Fiat Fiorino' })).toBeChecked()
+  expect(screen.getByRole('radio', { name: 'Ana Martins' })).toBeChecked()
+  expect(getAvailableVehicles).not.toHaveBeenCalled()
+  expect(getAvailableDrivers).not.toHaveBeenCalled()
+  expect(api).not.toHaveBeenCalledWith('/solicitacoes/exemplo-2401')
+
+  await user.click(screen.getByRole('link', { name: 'Cancelar' }))
+  expect(
+    await screen.findByRole('heading', { name: 'Descrição da Solicitação #2401' }),
+  ).toBeVisible()
 })
 
 test('mostra o resumo da solicitação real e os recursos disponíveis', async () => {

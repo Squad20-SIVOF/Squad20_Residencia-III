@@ -1,4 +1,7 @@
+import { useRef } from 'react'
+import { Upload } from 'lucide-react'
 import { Badge } from '@/components/Badge'
+import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { vehicleFullModel } from '../../utils/vehicleRules'
 import { MercosulPlate } from '../MercosulPlate'
@@ -14,6 +17,11 @@ export interface VehicleFormAsideProps {
   isExclusiveSvo: boolean
   fuelType: string
   capacity: string
+  photo: string | null
+  photoError: string
+  photoDisabled: boolean
+  onPhotoSelected: (file: File) => void
+  onPhotoRemoved: () => void
 }
 
 /** Prévia que acompanha o que é digitado e orientações do que vem depois do cadastro. */
@@ -27,7 +35,13 @@ export function VehicleFormAside({
   isExclusiveSvo,
   fuelType,
   capacity,
+  photo,
+  photoError,
+  photoDisabled,
+  onPhotoSelected,
+  onPhotoRemoved,
 }: VehicleFormAsideProps) {
+  const photoInput = useRef<HTMLInputElement>(null)
   const name = [
     identification.trim(),
     model.trim() ? vehicleFullModel({ brand, model: model.trim() }) : 'Modelo do veículo',
@@ -50,6 +64,47 @@ export function VehicleFormAside({
           <p className={styles.name}>{name.join(' · ')}</p>
           <p className={styles.meta}>{meta.join(' · ')}</p>
         </div>
+        {isEditing && (
+          <>
+            {photo && <img src={photo} alt="Foto do veículo" className={styles.photo} />}
+            <input
+              ref={photoInput}
+              type="file"
+              accept="image/jpeg,image/png"
+              aria-label="Arquivo da foto do veículo"
+              disabled={photoDisabled}
+              hidden
+              onChange={(event) => {
+                const file = event.currentTarget.files?.[0]
+                event.currentTarget.value = ''
+                if (file) onPhotoSelected(file)
+              }}
+            />
+            <Button
+              variant="secondary"
+              className={styles.photoButton}
+              iconStart={<Upload size={16} />}
+              disabled={photoDisabled}
+              onClick={() => photoInput.current?.click()}
+            >
+              {photo ? 'Trocar foto do veículo' : 'Adicionar foto do veículo'}
+            </Button>
+            {photo && (
+              <Button
+                variant="secondary"
+                disabled={photoDisabled}
+                onClick={onPhotoRemoved}
+              >
+                Remover foto
+              </Button>
+            )}
+            {photoError && (
+              <p className={styles.photoError} role="alert">
+                {photoError}
+              </p>
+            )}
+          </>
+        )}
       </Card>
       {!isEditing && (
         <Card title="Depois de cadastrar" className={styles.card}>

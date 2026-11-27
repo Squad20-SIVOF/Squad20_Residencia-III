@@ -1,10 +1,12 @@
 import { z } from "zod";
+import { verifiedPhotoSchema } from "./contactSchema";
 import { fleetSchema } from "./fleetSchema";
 
 export const vehicleSchema = z
   .object({
     identificacao: z.string().trim().max(50).nullable().optional(),
     marca: z.string().trim().max(100).nullable().optional(),
+    foto: verifiedPhotoSchema.nullable().optional(),
     proxima_vistoria: z.iso.date().nullable().optional(),
     checklist_vistoria: z
       .array(

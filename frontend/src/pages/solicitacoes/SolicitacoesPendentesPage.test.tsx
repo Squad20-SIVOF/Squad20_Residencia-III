@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useParams } from 'react-router-dom'
 import { beforeEach, expect, test, vi } from 'vitest'
@@ -9,7 +9,7 @@ const id = '11111111-1111-4111-8111-111111111111'
 let total: number
 beforeEach(() => {
   vi.resetAllMocks()
-  total = 21
+  total = 6
   vi.mocked(api).mockImplementation(
     async (path) =>
       ({
@@ -26,7 +26,7 @@ beforeEach(() => {
           ],
           total,
           pagina: path.includes('pagina=2') ? 2 : 1,
-          limite: 20,
+          limite: 5,
         },
       }) as never,
   )
@@ -41,7 +41,7 @@ function mount() {
 test('consulta pendentes reais e abre detalhes pelo UUID, sem ações simuladas', async () => {
   mount()
   expect(await screen.findByText('Maria Real')).toBeInTheDocument()
-  expect(api).toHaveBeenCalledWith('/solicitacoes?status=Pendente&pagina=1&limite=20')
+  expect(api).toHaveBeenCalledWith('/solicitacoes?status=Pendente&pagina=1&limite=5')
   expect(
     screen.getByRole('link', { name: 'Ver detalhes da solicitação #11111111' }),
   ).toHaveAttribute('href', `/viagens/solicitacoes/${id}`)
@@ -52,13 +52,13 @@ test('consulta pendentes reais e abre detalhes pelo UUID, sem ações simuladas'
       name: 'Atribuir veículo e motorista à solicitação #11111111',
     }),
   ).toHaveAttribute('href', `/viagens/solicitacoes/${id}/atribuir`)
-  expect(screen.getByText('21 pendentes')).toBeInTheDocument()
+  expect(screen.getByText('6 pendentes')).toBeInTheDocument()
 })
 test('paginação consulta a próxima página na API', async () => {
   mount()
   await userEvent.click(await screen.findByRole('button', { name: 'Próxima' }))
   expect(await screen.findByText('Página 2 de 2')).toBeInTheDocument()
-  expect(api).toHaveBeenCalledWith('/solicitacoes?status=Pendente&pagina=2&limite=20')
+  expect(api).toHaveBeenCalledWith('/solicitacoes?status=Pendente&pagina=2&limite=5')
   expect(screen.getByRole('button', { name: 'Próxima' })).toBeDisabled()
 })
 test('busca é explicitamente limitada à página carregada', async () => {
@@ -75,13 +75,35 @@ test('erro do servidor não gera uma lista fictícia', async () => {
   expect(await screen.findByRole('alert')).toHaveTextContent('Permissão insuficiente')
   expect(screen.queryByText('Maria Real')).not.toBeInTheDocument()
 })
-test('lista vazia é mostrada sem os exemplos antigos', async () => {
+test('sem pendências reais, mostra os exemplos sinalizados com detalhes locais', async () => {
   vi.mocked(api).mockResolvedValue({
-    message: { dados: [], total: 0, pagina: 1, limite: 20 },
+    message: { dados: [], total: 0, pagina: 1, limite: 5 },
   })
   mount()
   expect(await screen.findByText('Nenhuma solicitação pendente.')).toBeInTheDocument()
+  expect(screen.getByText('Demonstração')).toBeVisible()
+  expect(
+    screen.getByRole('heading', { name: 'Descrição da Solicitação #2401' }),
+  ).toBeVisible()
+  expect(
+    screen.getByRole('heading', { name: 'Descrição da Solicitação #2402' }),
+  ).toBeVisible()
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Ver detalhes da solicitação #2401' }),
+  )
+  const details = within(
+    screen.getByRole('dialog', { name: 'Detalhes da Solicitação #2401' }),
+  )
+  expect(details.getByText('Central SVO')).toBeVisible()
+  expect(details.getByText('Equipamentos')).toBeVisible()
+  expect(details.getByText('Hoje · 10:30')).toBeVisible()
+  expect(details.getByRole('link', { name: 'Atribuir' })).toHaveAttribute(
+    'href',
+    '/viagens/solicitacoes/exemplo-2401/atribuir',
+  )
+  await userEvent.click(details.getByRole('button', { name: 'Fechar' }))
   expect(screen.getByRole('button', { name: 'Próxima' })).toBeDisabled()
+  expect(api).toHaveBeenCalledTimes(1)
 })
 test('o botão Atribuir abre a tela de atribuir veículo e motorista', async () => {
   function AssignRoute() {

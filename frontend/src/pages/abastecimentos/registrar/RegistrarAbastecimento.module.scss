@@ -2,6 +2,7 @@
 @use '../../../styles/tokens' as *;
 
 .page {
+  container: fuel-page / inline-size;
   display: flex;
   flex-direction: column;
   gap: $space-4;
@@ -13,7 +14,7 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 2rem;
 
-  @media (min-width: 1024px) {
+  @container fuel-page (min-width: 1024px) {
     grid-template-columns: minmax(0, 2fr) minmax(350px, 1fr);
   }
 }
@@ -24,6 +25,10 @@
   flex-direction: column;
   gap: 1.5rem;
   min-width: 0;
+}
+
+.formColumn {
+  container: fuel-form / inline-size;
 }
 
 .card {
@@ -55,7 +60,7 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 
-  @media (min-width: 600px) {
+  @container fuel-form (min-width: 600px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -365,4 +370,30 @@
   font-size: 0.8rem;
   color: light-dark(#64748b, dark.$muted);
   margin: 0;
+}
+
+@container fuel-form (width < 600px) {
+  .card {
+    padding: 1rem;
+  }
+
+  .uploadArea,
+  .totalBox {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .uploadInfo {
+    min-width: 0;
+  }
+
+  .footer,
+  .actions {
+    width: 100%;
+  }
+
+  .actions > * {
+    flex: 1;
+    min-width: 0;
+  }
 }

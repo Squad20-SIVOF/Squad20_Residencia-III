@@ -69,10 +69,10 @@ test('mostra os cards da frota, a tabela paginada e filtra só ao clicar em Filt
 
   const table = screen.getByRole('region', { name: 'Veículos cadastrados' })
   expect(within(table).getByText('7 registros')).toBeInTheDocument()
-  expect(within(table).getAllByRole('row')).toHaveLength(7) // cabeçalho + 6 por página
-  expect(screen.getByText('Mostrando 6 de 7 veículos')).toBeInTheDocument()
+  expect(within(table).getAllByRole('row')).toHaveLength(6) // cabeçalho + 5 por página
+  expect(screen.getByText('Mostrando 5 de 7 veículos')).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Próxima' }))
-  expect(screen.getByText('Mostrando 1 de 7 veículos')).toBeInTheDocument()
+  expect(screen.getByText('Mostrando 2 de 7 veículos')).toBeInTheDocument()
 
   await user.selectOptions(screen.getByLabelText('Status'), 'inativo')
   expect(within(table).getByText('7 registros')).toBeInTheDocument()

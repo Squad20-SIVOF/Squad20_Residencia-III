@@ -44,7 +44,7 @@ const getAllVehicles = async () =>
 
 const getVehicleById = async (id: string) => {
   if (invalidId(id)) return error("Invalid vehicle ID", 400);
-  const vehicle = await vehicleModel.getVehicleById(id);
+  const vehicle = await vehicleModel.getVehicleById(id, true);
   return vehicle ? success(checkVehicleAvailability(vehicle)) : notFound();
 };
 

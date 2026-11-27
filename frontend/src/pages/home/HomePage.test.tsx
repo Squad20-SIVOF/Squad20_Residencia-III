@@ -175,13 +175,23 @@ test('mostra o carregamento e depois os números calculados a partir dos dados',
   expect(screen.getByRole('status', { name: 'Carregando dashboard' })).toBeInTheDocument()
 
   expect(
+    screen.queryByRole('heading', { level: 1, name: 'Dashboard Principal' }),
+  ).not.toBeInTheDocument()
+  expect(
+    screen.queryByRole('region', { name: 'Indicadores principais' }),
+  ).not.toBeInTheDocument()
+
+  const fleetToday = await screen.findByRole('link', { name: /Frota ativa hoje/ })
+  expect(
+    screen.queryByRole('status', { name: 'Carregando dashboard' }),
+  ).not.toBeInTheDocument()
+  expect(
     screen.getByRole('heading', { level: 1, name: 'Dashboard Principal' }),
-  ).toBeInTheDocument()
+  ).toBeVisible()
   expect(
     screen.getByText('Visão gerencial completa da operação em 18 de novembro de 2026'),
   ).toBeInTheDocument()
 
-  const fleetToday = await screen.findByRole('link', { name: /Frota ativa hoje/ })
   expect(fleetToday).toHaveTextContent('4 veículos')
   expect(fleetToday).toHaveTextContent(
     '3 disponíveis · 1 em manutenção · — em abastecimento',
@@ -198,7 +208,8 @@ test('mostra o carregamento e depois os números calculados a partir dos dados',
   expect(trips).toHaveTextContent('1 dentro do prazo')
 
   const kpis = screen.getByRole('region', { name: 'Indicadores principais' })
-  const alertsKpi = within(kpis).getByText('Alertas operacionais').closest('article')
+  const alertsKpi = within(kpis).getByRole('link', { name: /Alertas operacionais/ })
+  expect(alertsKpi).toHaveAttribute('href', '/notificacoes')
   expect(alertsKpi).toHaveTextContent('2')
   expect(alertsKpi).toHaveTextContent('1 crítico')
   expect(alertsKpi).toHaveTextContent('1 em análise')
